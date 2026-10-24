@@ -1,0 +1,11 @@
+parameters:
+    level: 8
+    paths:
+        - src/Domain
+        - src/Application
+        - src/Support
+        - src/Infrastructure/Provider
+        - src/Infrastructure/Storage
+        - src/Infrastructure/Crypto
+        - src/Infrastructure/OAuth
+    tmpDir: .phpstan.cache

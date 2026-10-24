@@ -1,0 +1,6 @@
+.swc-card { height: 100%; display: flex; flex-direction: column; border: 1px solid rgba(0,0,0,.12); border-radius: 8px; overflow: hidden; background: #fff; }
+.swc-card__image { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; display: block; }
+.swc-card__body { padding: 1rem; }
+.swc-card__date { margin: 0 0 .25rem; font-weight: 600; font-size: .9em; }
+.swc-card__title { margin: 0 0 .5rem; font-size: 1.1em; }
+.swc-card__location, .swc-card__excerpt { margin: .25rem 0 0; font-size: .95em; opacity: .85; }

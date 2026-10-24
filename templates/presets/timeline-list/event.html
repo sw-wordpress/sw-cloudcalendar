@@ -1,0 +1,9 @@
+<article class="swc-tl">
+  <div class="swc-tl__marker" style="background-color: {{event.color}}" aria-hidden="true"></div>
+  <div class="swc-tl__date"><span class="swc-tl__day">{{event.day}}</span><span class="swc-tl__month">{{event.month_short}}</span></div>
+  <div class="swc-tl__content">
+    <h3 class="swc-tl__title"><a href="{{event.detail_url}}" data-swc-detail="">{{event.title}}</a></h3>
+    <p class="swc-tl__meta"><time datetime="{{event.start_iso}}">{{event.date_range}}</time>{{#event.location}} · {{event.location}}{{/event.location}}</p>
+    {{#event.excerpt}}<p class="swc-tl__excerpt">{{event.excerpt}}</p>{{/event.excerpt}}
+  </div>
+</article>

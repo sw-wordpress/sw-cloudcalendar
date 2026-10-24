@@ -1,0 +1,6 @@
+.swc-row { display: flex; gap: 1rem; padding: .75rem 0 .75rem .75rem; border-left: 4px solid currentColor; }
+.swc-row__when { flex: 0 0 9rem; display: flex; flex-direction: column; font-variant-numeric: tabular-nums; }
+.swc-row__time { opacity: .8; }
+.swc-row__title { margin: 0; font-size: 1.05em; }
+.swc-row__location { margin: .25rem 0 0; opacity: .85; }
+@media (max-width: 600px) { .swc-row { flex-direction: column; gap: .25rem; } .swc-row__when { flex-basis: auto; } }

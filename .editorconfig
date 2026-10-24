@@ -1,0 +1,22 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+# WordPress adapter (WPCS): tabs.
+[{sw-cloudcalendar.php,uninstall.php,src/Plugin.php,src/Services.php,src/Lifecycle.php,src/Infrastructure/Database/**.php,src/Infrastructure/WordPress/**.php,src/Infrastructure/Http/**.php,src/Presentation/**.php,blocks/**}]
+indent_style = tab
+
+[*.{ts,vue,js,json,yml,yaml,css,scss,html}]
+indent_size = 2
+
+[{blocks/**.js,assets/js/**.js,assets/css/**.css}]
+indent_style = tab
+
+[*.md]
+trim_trailing_whitespace = false

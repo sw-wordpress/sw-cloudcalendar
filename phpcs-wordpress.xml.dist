@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<ruleset name="sw-cloudcalendar WordPress adapter">
+    <description>WordPress Coding Standards for every file that talks to WordPress (docs/CODE-STYLE.md §3).</description>
+    <arg name="extensions" value="php"/>
+    <arg name="colors"/>
+    <arg value="sp"/>
+    <arg name="cache" value=".phpcs-wp.cache"/>
+    <file>sw-cloudcalendar.php</file>
+    <file>uninstall.php</file>
+    <file>src/Plugin.php</file>
+    <file>src/Services.php</file>
+    <file>src/Lifecycle.php</file>
+    <file>src/Infrastructure/Database</file>
+    <file>src/Infrastructure/WordPress</file>
+    <file>src/Infrastructure/Http</file>
+    <file>src/Presentation</file>
+    <file>blocks</file>
+
+    <config name="minimum_wp_version" value="6.5"/>
+    <config name="testVersion" value="8.2-"/>
+
+    <rule ref="WordPress">
+        <!-- Documented project decision (CODE-STYLE 3.1): PSR-4 class names/files (PascalCase) in the namespaced adapter. -->
+        <exclude name="WordPress.Files.FileName"/>
+        <exclude name="Universal.Operators.DisallowShortTernary"/>
+        <!-- Port interfaces (framework independent, camelCase) are implemented with their dictated method names. -->
+        <exclude name="WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid"/>
+        <exclude name="WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase"/>
+        <exclude name="WordPress.NamingConventions.ValidVariableName.PropertyNotSnakeCase"/>
+        <exclude name="WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase"/>
+        <exclude name="WordPress.NamingConventions.ValidVariableName.InterpolatedVariableNotSnakeCase"/>
+        <!-- Exception messages are plain text that the REST layer JSON encodes or WP-CLI prints; never echoed as HTML. -->
+        <exclude name="WordPress.Security.EscapeOutput.ExceptionNotEscaped"/>
+        <!-- Typed signatures carry the contract (same documented exception as sw-backupit). -->
+        <exclude name="Squiz.Commenting.FunctionComment.Missing"/>
+        <exclude name="Squiz.Commenting.FunctionComment.MissingParamTag"/>
+        <exclude name="Squiz.Commenting.ClassComment.Missing"/>
+        <exclude name="Squiz.Commenting.VariableComment.Missing"/>
+        <exclude name="Squiz.Commenting.FunctionComment.MissingParamComment"/>
+        <exclude name="Squiz.Commenting.FunctionComment.ParamCommentFullStop"/>
+        <exclude name="Squiz.Commenting.FileComment.SpacingAfterOpen"/>
+        <exclude name="Generic.Commenting.DocComment.MissingShort"/>
+        <exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames"/>
+        <!-- Docblocks are only written for parameters whose type needs more than the native hint (array shapes, generics,
+             see MissingParamTag above); the order/hint sniffs would force redundant tags for every scalar parameter. -->
+        <exclude name="Squiz.Commenting.FunctionComment.ParamNameNoMatch"/>
+        <exclude name="Squiz.Commenting.FunctionComment.IncorrectTypeHint"/>
+        <!-- Exceptions of the adapter are the CalendarException/ValidationException contracts documented on the ports and
+             mapped centrally (BaseController::from_exception). -->
+        <exclude name="Squiz.Commenting.FunctionCommentThrowTag.Missing"/>
+        <!-- Custom tables are the documented storage (SPECIFICATIONS.md §4); every query is prepared or uses a fixed allowlisted table name. -->
+        <exclude name="WordPress.DB.DirectDatabaseQuery.NoCaching"/>
+    </rule>
+    <rule ref="WordPress.WP.I18n">
+        <properties>
+            <property name="text_domain" type="array"><element value="sw-cloudcalendar"/></property>
+        </properties>
+    </rule>
+    <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+        <properties>
+            <property name="prefixes" type="array"><element value="sw_calendar"/><element value="SW\Calendar"/><element value="SW_CALENDAR"/></property>
+        </properties>
+    </rule>
+    <rule ref="PHPCompatibilityWP"/>
+    <!-- WP-CLI dictates the (array $args, array $assoc_args) signature of command methods. -->
+    <rule ref="Generic.CodeAnalysis.UnusedFunctionParameter.FoundAfterLastUsed">
+        <exclude-pattern>src/Presentation/Cli/*</exclude-pattern>
+    </rule>
+</ruleset>

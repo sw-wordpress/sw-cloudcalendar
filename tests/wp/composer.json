@@ -1,0 +1,30 @@
+{
+    "name": "sw/sw-cloudcalendar-wp-tests",
+    "description": "WordPress integration test environment (isolated from the main dev dependencies: the WP test suite needs PHPUnit 9.6).",
+    "type": "project",
+    "require-dev": {
+        "johnpbloch/wordpress-core": "^6.8",
+        "phpunit/phpunit": "^9.6",
+        "wp-phpunit/wp-phpunit": "^6.8",
+        "yoast/phpunit-polyfills": "^2.0",
+        "sabre/vobject": "^4.5"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "SW\\Calendar\\": "../../src/",
+            "SW\\Calendar\\Tests\\": "../"
+        }
+    },
+    "config": {
+        "platform": {
+            "php": "8.2.0"
+        },
+        "allow-plugins": {
+            "johnpbloch/wordpress-core-installer": true
+        }
+    },
+    "extra": {
+        "wordpress-install-dir": "vendor/wordpress"
+    },
+    "minimum-stability": "stable"
+}

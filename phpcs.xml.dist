@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<ruleset name="sw-cloudcalendar">
+    <description>PSR-12 for the framework independent code and tests (docs/CODE-STYLE.md, docs/decisions.md D-03).</description>
+    <arg name="extensions" value="php"/>
+    <arg name="colors"/>
+    <arg value="sp"/>
+    <arg name="cache" value=".phpcs.cache"/>
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/vendor-prefixed/*</exclude-pattern>
+    <exclude-pattern>*/node_modules/*</exclude-pattern>
+
+    <file>src/Domain</file>
+    <file>src/Application</file>
+    <file>src/Support</file>
+    <file>src/Infrastructure/Provider</file>
+    <file>src/Infrastructure/Storage</file>
+    <file>src/Infrastructure/Crypto</file>
+    <file>src/Infrastructure/OAuth</file>
+    <file>tests</file>
+    <exclude-pattern>*/tests/wp/*</exclude-pattern>
+
+    <rule ref="PSR12"/>
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+            <property name="lineLimit" value="200"/>
+            <property name="absoluteLineLimit" value="0"/>
+        </properties>
+        <exclude-pattern>tests/*</exclude-pattern>
+    </rule>
+    <!-- Test doubles: several small classes per file are not used; one file per class (PSR-4). -->
+
+    <config name="testVersion" value="8.2-"/>
+    <rule ref="PHPCompatibility">
+        <exclude-pattern>tests/*</exclude-pattern>
+    </rule>
+    <!-- Documented exception (as in sw-backupit): PHPCompatibility 9 misreads $this/self inside enum methods. -->
+    <rule ref="PHPCompatibility.Variables.ForbiddenThisUseContexts.OutsideObjectContext">
+        <exclude-pattern>src/Domain/*</exclude-pattern>
+    </rule>
+    <rule ref="PHPCompatibility.FunctionDeclarations.NewParamTypeDeclarations.SelfOutsideClassScopeFound">
+        <exclude-pattern>src/Domain/*</exclude-pattern>
+    </rule>
+</ruleset>

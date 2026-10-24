@@ -1,0 +1,11 @@
+<article class="swc-row" style="border-left-color: {{event.color}}">
+  <div class="swc-row__when">
+    <time datetime="{{event.start_iso}}">{{event.start_date}}</time>
+    {{^event.all_day}}<span class="swc-row__time">{{event.start_time}}{{#event.end_time}} – {{event.end_time}}{{/event.end_time}}</span>{{/event.all_day}}
+  </div>
+  <div class="swc-row__what">
+    <h3 class="swc-row__title"><a href="{{event.detail_url}}" data-swc-detail="">{{event.title}}</a></h3>
+    {{#event.location}}<p class="swc-row__location">{{event.location}}</p>{{/event.location}}
+    {{event.attachments.file_list}}
+  </div>
+</article>

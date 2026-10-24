@@ -1,0 +1,7 @@
+.swc-tl { position: relative; display: grid; grid-template-columns: 3.5rem 1fr; gap: 1rem; padding: 0 0 1.25rem 1.25rem; border-left: 2px solid rgba(0,0,0,.15); }
+.swc-tl__marker { position: absolute; left: -7px; top: .35rem; width: 12px; height: 12px; border-radius: 50%; }
+.swc-tl__date { display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
+.swc-tl__day { font-size: 1.6em; font-weight: 700; }
+.swc-tl__month { text-transform: uppercase; font-size: .8em; }
+.swc-tl__title { margin: 0; font-size: 1.05em; }
+.swc-tl__meta, .swc-tl__excerpt { margin: .25rem 0 0; opacity: .85; }

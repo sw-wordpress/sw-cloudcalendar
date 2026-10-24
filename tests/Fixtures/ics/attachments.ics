@@ -1,0 +1,15 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Test//EN
+X-WR-TIMEZONE:Europe/Berlin
+BEGIN:VEVENT
+UID:files-1@test
+DTSTART;TZID=Europe/Berlin:20261105T180000
+DTEND;TZID=Europe/Berlin:20261105T200000
+SUMMARY:Gemeindeabend
+ATTACH;FMTTYPE=image/png;FILENAME=Plakat.png:https://files.example.org/plakat.png
+ATTACH;FMTTYPE=application/pdf;FILENAME=Programm.pdf:https://files.example.org/programm.pdf
+ATTACH;FMTTYPE=application/pdf;FILENAME=Rechnung.pdf:https://files.example.org/fake.pdf
+ATTACH;FMTTYPE=image/svg+xml;FILENAME=logo.svg:https://files.example.org/logo.svg
+END:VEVENT
+END:VCALENDAR

@@ -1,0 +1,36 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "sw-cloudcalendar/calendar",
+	"version": "1.0.0",
+	"title": "Kalender (SW CloudCalendar)",
+	"category": "widgets",
+	"icon": "calendar-alt",
+	"description": "Shows a saved calendar view with optional filters.",
+	"keywords": [ "calendar", "kalender", "events", "termine" ],
+	"textdomain": "sw-cloudcalendar",
+	"supports": {
+		"html": false,
+		"align": [ "wide", "full" ],
+		"multiple": true
+	},
+	"attributes": {
+		"viewId": { "type": "integer", "default": 0 },
+		"displayMode": { "type": "string", "enum": [ "", "month", "list", "cards" ], "default": "" },
+		"limit": { "type": "integer" },
+		"days": { "type": "integer" },
+		"start": { "type": "string" },
+		"end": { "type": "string" },
+		"past": { "type": "boolean" },
+		"search": { "type": "string" },
+		"location": { "type": "string" },
+		"source": { "type": "string" },
+		"template": { "type": "integer" },
+		"sort": { "type": "string", "enum": [ "", "asc", "desc" ], "default": "" },
+		"showImages": { "type": "boolean" },
+		"showAttachments": { "type": "boolean" }
+	},
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./editor.css",
+	"viewStyle": "sw-cloudcalendar-frontend"
+}

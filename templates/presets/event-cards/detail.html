@@ -1,0 +1,16 @@
+<article class="swc-detail-card">
+  <header class="swc-detail-card__header">
+    <h2 class="swc-detail-card__title">{{event.title}}</h2>
+    <p class="swc-detail-card__meta">
+      <span class="swc-dot" style="background-color: {{event.color}}" aria-hidden="true"></span>
+      <time datetime="{{event.start_iso}}">{{event.date_range}}</time>
+      {{#event.tentative}}<span class="swc-badge">?</span>{{/event.tentative}}
+    </p>
+    {{#event.location}}<p class="swc-detail-card__location">{{event.location}}</p>{{/event.location}}
+    {{#event.calendar_name}}<p class="swc-detail-card__calendar">{{event.calendar_name}}</p>{{/event.calendar_name}}
+  </header>
+  {{event.attachments.gallery}}
+  <div class="swc-detail-card__description">{{event.description_html}}</div>
+  {{event.attachments.file_list}}
+  {{#event.url}}<p class="swc-detail-card__link"><a href="{{event.url}}" target="_blank">{{event.calendar_name}} &#8599;</a></p>{{/event.url}}
+</article>

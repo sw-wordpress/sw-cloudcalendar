@@ -1,0 +1,71 @@
+{
+    "name": "sw/sw-cloudcalendar",
+    "description": "SW CloudCalendar - read-only integration of Google Calendar, Microsoft 365 and ICS feeds into WordPress.",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": ">=8.2",
+        "ext-json": "*",
+        "ext-mbstring": "*",
+        "ext-sodium": "*",
+        "sabre/vobject": "^4.5"
+    },
+    "require-dev": {
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+        "phpcompatibility/phpcompatibility-wp": "^2.1",
+        "phpstan/phpstan": "^2.0",
+        "phpunit/phpunit": "^11.0",
+        "squizlabs/php_codesniffer": "^3.10",
+        "wp-coding-standards/wpcs": "^3.1"
+    },
+    "suggest": {
+        "ext-fileinfo": "Content based MIME detection of attachments (strongly recommended).",
+        "ext-gd": "Image previews (alternatively ext-imagick)."
+    },
+    "autoload": {
+        "psr-4": {
+            "SW\\Calendar\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "SW\\Calendar\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "mozart": {
+            "dep_namespace": "SW\\Calendar\\Dependencies\\",
+            "dep_directory": "/vendor-prefixed/",
+            "classmap_directory": "/vendor-prefixed/",
+            "classmap_prefix": "SWCalendar_",
+            "constant_prefix": "SWCALENDAR_",
+            "functions_prefix": "swcalendar_",
+            "generate_autoloader": true,
+            "delete_vendor_directories": true
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "optimize-autoloader": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        },
+        "platform": {
+            "php": "8.2.0"
+        }
+    },
+    "scripts": {
+        "test": "phpunit --testsuite unit,integration",
+        "stan": "phpstan analyse --memory-limit=1G",
+        "cs": "phpcs --runtime-set ignore_warnings_on_exit 1",
+        "cs:fix": "phpcbf",
+        "cs:wp": "phpcs --standard=phpcs-wordpress.xml.dist --runtime-set ignore_warnings_on_exit 1",
+        "test:wp": "cd tests/wp && vendor/bin/phpunit -c phpunit.xml.dist",
+        "check": [
+            "@cs",
+            "@cs:wp",
+            "@stan",
+            "@test"
+        ]
+    }
+}
