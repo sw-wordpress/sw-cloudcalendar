@@ -18,6 +18,8 @@
     <file>src/Infrastructure/OAuth</file>
     <file>tests</file>
     <exclude-pattern>*/tests/wp/*</exclude-pattern>
+    <!-- Browser E2E setup scripts bootstrap a throw-away WordPress (WordPress style, not part of the plugin). -->
+    <exclude-pattern>*/tests/E2E/*</exclude-pattern>
 
     <rule ref="PSR12"/>
     <rule ref="Generic.Files.LineLength">
