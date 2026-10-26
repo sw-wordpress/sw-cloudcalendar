@@ -26,7 +26,7 @@ watch(
 
 <template>
   <q-dialog v-model="open" :aria-labelledby="titleId">
-    <q-card class="swc-kd" role="dialog" :aria-labelledby="titleId">
+    <q-card class="swc-kd">
       <q-card-section class="swc-kd__head">
         <span class="swc-kd__icon" aria-hidden="true"><q-icon name="r_key" size="24px" /></span>
         <div>

@@ -7,6 +7,7 @@ import FormSection from '@/components/ui/FormSection.vue';
 import FormSheet from '@/components/ui/FormSheet.vue';
 import SecretInput from '@/components/ui/SecretInput.vue';
 import SegmentedControl from '@/components/ui/SegmentedControl.vue';
+import ProviderSetupDialog from './ProviderSetupDialog.vue';
 import { useFieldErrors } from '@/composables/useFieldErrors';
 import { useFormError } from '@/composables/useFormError';
 import { useNotify } from '@/composables/useNotify';
@@ -24,6 +25,7 @@ const lookups = useLookupsStore();
 const formError = useFormError();
 const fields = useFieldErrors(formError.error);
 const saving = ref(false);
+const guideOpen = ref(false);
 
 const FALLBACK_MODES: Record<Provider, AuthMode[]> = {
   google: ['oauth', 'api_key'],
@@ -46,7 +48,7 @@ function blankSettings(): Required<ConnectionSettings> {
     client_id: '',
     attachment_access: false,
     test_calendar_id: '',
-    tenant_id: 'common',
+    tenant_id: '',
   };
 }
 function wipeSecrets(): void {
@@ -165,7 +167,7 @@ const required = (v: unknown): true | string =>
     :subtitle="connection?.name"
     :loading="saving"
     :error="formError.error.value"
-    :width="760"
+    :width="840"
     @submit="submit"
   >
     <div class="swc-stack">
@@ -262,6 +264,15 @@ const required = (v: unknown): true | string =>
           :error-message="fields.field('settings.tenant_id')"
         />
         <template v-if="authMode === 'oauth'">
+          <q-btn
+            outline
+            no-caps
+            color="primary"
+            icon="r_menu_book"
+            class="self-start"
+            :label="t('connections.openGuide')"
+            @click="guideOpen = true"
+          />
           <q-input
             v-model="settings.client_id"
             outlined
@@ -316,20 +327,15 @@ const required = (v: unknown): true | string =>
             :label="t('connections.copyRedirectUri')"
           />
         </div>
-        <q-expansion-item
-          dense
-          dense-toggle
-          switch-toggle-side
-          icon="r_menu_book"
-          :label="t(`connections.${provider}.setupTitle`)"
-          class="swc-setup"
-        >
-          <ol class="swc-setup__steps">
-            <li v-for="n in 5" :key="n">{{ t(`connections.${provider}.setup${n}`) }}</li>
-          </ol>
-        </q-expansion-item>
       </FormSection>
     </div>
+    <ProviderSetupDialog
+      v-if="provider !== 'ics'"
+      v-model="guideOpen"
+      :provider="provider"
+      :redirect-uri="redirectUri"
+      :attachment-access="settings.attachment_access"
+    />
   </FormSheet>
 </template>
 
@@ -353,17 +359,5 @@ const required = (v: unknown): true | string =>
   overflow-wrap: anywhere;
   background: none;
   padding: 0;
-}
-.swc-setup {
-  border: 1px solid var(--swc-border);
-  border-radius: var(--swc-radius-sm);
-}
-.swc-setup__steps {
-  list-style: decimal;
-  padding: 4px 16px 12px 36px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 14px;
 }
 </style>

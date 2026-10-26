@@ -272,6 +272,75 @@ const de = {
       authHeader: 'Authorization-Header',
       authHeaderHint: 'Vollständiger Header-Wert, z. B. „Basic dXNlcjpwYXNz“ oder „Bearer …“.',
     },
+    openGuide: 'Anleitung: Client-ID und Client-Secret erstellen',
+    guide: {
+      linksTitle: 'Direkt zur Konsole',
+      newTab: 'öffnet in neuem Tab',
+      links: {
+        googleConsole: 'Google Cloud Console',
+        googleCalendarApi: 'Google Calendar API aktivieren',
+        googleDriveApi: 'Google Drive API aktivieren',
+        googleConsent: 'Google Auth Platform (Zustimmungsbildschirm)',
+        googleCredentials: 'Anmeldedaten / OAuth-Clients',
+        entraCenter: 'Microsoft Entra Admin Center',
+        entraAppRegistrations: 'App-Registrierungen',
+      },
+      valuesTitle: 'Diese Werte eintragen',
+      stepsTitle: 'Schritt für Schritt',
+      copyValue: '{name} kopieren',
+      values: {
+        applicationType: 'Anwendungstyp',
+        redirectUri: 'Autorisierte Weiterleitungs-URI',
+        jsOrigin: 'Autorisierter JavaScript-Ursprung',
+        authorizedDomain: 'Autorisierte Domain',
+        apis: 'Zu aktivierende APIs',
+        scopes: 'Bereiche (Scopes)',
+        accountTypes: 'Unterstützte Kontotypen',
+        platform: 'Plattform der Umleitungs-URI',
+        graphPermissions: 'Delegierte Microsoft-Graph-Berechtigungen',
+      },
+      google: {
+        title: 'Google: OAuth-Client einrichten',
+        intro:
+          'Einmalig in der Google Cloud Console (console.cloud.google.com) mit einem Konto, das Projekte anlegen darf. Dauer: etwa 10 Minuten.',
+        steps: [
+          'Oben in der Projektauswahl ein bestehendes Projekt wählen oder ein neues Projekt anlegen (z. B. „Website-Kalender“).',
+          'Menü „APIs & Dienste“ → „Bibliothek“: die oben genannten APIs suchen und jeweils „Aktivieren“ wählen.',
+          'Menü „Google Auth Platform“ (bzw. „APIs & Dienste“ → „OAuth-Zustimmungsbildschirm“) → „Erste Schritte“: App-Name und Support-E-Mail angeben. Zielgruppe „Intern“ bei Google Workspace, sonst „Extern“. Kontakt-E-Mail eintragen und abschließen.',
+          'Unter „Branding“ bei „Autorisierte Domains“ die oben genannte Domain hinzufügen.',
+          'Unter „Datenzugriff“ → „Bereiche hinzufügen oder entfernen“ die oben genannten Bereiche auswählen bzw. manuell einfügen und speichern.',
+          'Nur bei Zielgruppe „Extern“: Unter „Zielgruppe“ das Konto, dessen Kalender verbunden wird, als Testnutzer hinzufügen oder die App mit „App veröffentlichen“ in den Produktionsstatus setzen (siehe Hinweise).',
+          'Unter „Clients“ (bzw. „Anmeldedaten“ → „Anmeldedaten erstellen“ → „OAuth-Client-ID“) einen Client mit Anwendungstyp „Webanwendung“ erstellen. Bei „Autorisierte Weiterleitungs-URIs“ die URI von oben exakt eintragen, optional den JavaScript-Ursprung.',
+          'Nach „Erstellen“ die Client-ID und den Clientschlüssel (Client-Secret) kopieren und hier in die Felder „Client-ID“ und „Client-Secret“ eintragen.',
+          'Verbindung speichern und in der Liste „Autorisieren“ wählen. Mit dem Google-Konto anmelden, dessen Kalender eingebunden werden sollen, und den Zugriff bestätigen.',
+        ],
+        notes: [
+          'Bei Zielgruppe „Extern“ im Status „Testen“ laufen die Berechtigungen nach 7 Tagen ab; die Verbindung muss dann neu autorisiert werden. Dauerhaft: App veröffentlichen oder bei Google Workspace „Intern“ wählen.',
+          'Der Kalender-Lesebereich ist ein „sensibler“ Bereich, der Drive-Lesebereich ein „eingeschränkter“. Ohne Google-Prüfung erscheint bei der Anmeldung ein Warnhinweis „Google hat diese App nicht überprüft“, der über „Erweitert“ bestätigt werden kann.',
+          'Den Clientschlüssel nicht weitergeben. Er wird im Plugin verschlüsselt gespeichert und nie wieder angezeigt.',
+        ],
+      },
+      microsoft: {
+        title: 'Microsoft 365: App-Registrierung anlegen',
+        intro:
+          'Einmalig im Microsoft Entra Admin Center (entra.microsoft.com) mit einem Konto, das App-Registrierungen anlegen darf (z. B. Anwendungsadministrator). Dauer: etwa 10 Minuten.',
+        steps: [
+          '„Entra ID“ (bzw. „Identität“) → „App-Registrierungen“ → „Neue Registrierung“ öffnen.',
+          'Einen Namen vergeben (z. B. „Website-Kalender“) und bei „Unterstützte Kontotypen“ die oben genannte Option wählen.',
+          'Bei „Umleitungs-URI“ die Plattform „Web“ wählen, die URI von oben exakt eintragen und „Registrieren“ klicken.',
+          'Auf der Seite „Übersicht“ die „Anwendungs-ID (Client)“ kopieren und hier als Client-ID eintragen; die „Verzeichnis-ID (Mandant)“ hier als Tenant-ID eintragen.',
+          '„Zertifikate & Geheimnisse“ → „Geheime Clientschlüssel“ → „Neuer geheimer Clientschlüssel“: Beschreibung und Ablaufdatum wählen, hinzufügen und sofort den Inhalt der Spalte „Wert“ kopieren (nicht die „Geheimnis-ID“). Hier als Client-Secret eintragen.',
+          '„API-Berechtigungen“ → „Berechtigung hinzufügen“ → „Microsoft Graph“ → „Delegierte Berechtigungen“: die oben genannten Berechtigungen auswählen und hinzufügen.',
+          'Falls Benutzer in Ihrer Organisation Apps nicht selbst zustimmen dürfen: „Administratorzustimmung für … erteilen“ klicken.',
+          'Verbindung hier speichern und in der Liste „Autorisieren“ wählen. Mit dem Konto anmelden, dessen Kalender eingebunden werden sollen.',
+        ],
+        notes: [
+          'Geheime Clientschlüssel laufen ab (höchstens 24 Monate). Ablaufdatum notieren und rechtzeitig einen neuen Schlüssel erzeugen und hier eintragen.',
+          'Der Wert des Clientschlüssels wird in Entra nur direkt nach dem Erstellen angezeigt.',
+          'Freigegebene Postfächer und Gruppenkalender werden in Version 1 nicht unterstützt; es werden die Kalender des angemeldeten Kontos gelesen.',
+        ],
+      },
+    },
     google: {
       title: 'Google Kalender',
       hint: 'OAuth-Client aus der Google Cloud Console oder ein API-Schlüssel für öffentliche Kalender.',
@@ -282,31 +351,15 @@ const de = {
       testCalendarHint: "z. B. abc123{'@'}group.calendar.google.com",
       attachmentHint:
         'Erlaubt das Herunterladen von Drive-Anhängen (zusätzlicher Lesezugriff auf Google Drive). Nur öffentlich freigegebene Dateien gelten als „öffentlich bestätigt“.',
-      setupTitle: 'Einrichtung in der Google Cloud Console',
-      setup1: 'In der Google Cloud Console ein Projekt wählen oder anlegen.',
-      setup2:
-        'Unter „APIs & Dienste“ die Google Calendar API (und bei Dateizugriff die Drive API) aktivieren.',
-      setup3: 'Den OAuth-Zustimmungsbildschirm konfigurieren (Typ „Intern“ für Workspace-Konten).',
-      setup4:
-        'Unter „Anmeldedaten“ eine OAuth-Client-ID vom Typ „Webanwendung“ anlegen und die Weiterleitungs-URI oben eintragen.',
-      setup5: 'Client-ID und Client-Secret hier eintragen, speichern und „Autorisieren“ wählen.',
     },
     microsoft: {
       title: 'Microsoft 365',
       hint: 'App-Registrierung in Microsoft Entra ID mit delegierten Graph-Berechtigungen.',
       tenantId: 'Tenant-ID',
-      tenantHint: 'Verzeichnis-ID oder Domain, alternativ „common“ bzw. „organizations“.',
+      tenantHint:
+        'Die „Verzeichnis-ID (Mandant)“ aus der App-Registrierung (oder die Domain, z. B. contoso.onmicrosoft.com).',
       attachmentHint:
         'Erlaubt das Herunterladen von Terminanhängen. Dateien aus Postfächern können nie als öffentlich bestätigt werden.',
-      setupTitle: 'Einrichtung in Microsoft Entra ID',
-      setup1: 'Im Entra Admin Center unter „App-Registrierungen“ eine neue Registrierung anlegen.',
-      setup2: 'Plattform „Web“ hinzufügen und die Weiterleitungs-URI oben eintragen.',
-      setup3:
-        'Unter „API-Berechtigungen“ die delegierten Microsoft-Graph-Berechtigungen Calendars.Read und offline_access hinzufügen.',
-      setup4:
-        'Unter „Zertifikate & Geheimnisse“ einen geheimen Clientschlüssel erzeugen (Wert sofort kopieren).',
-      setup5:
-        'Anwendungs-ID (Client-ID), Verzeichnis-ID (Tenant) und Secret hier eintragen, speichern und „Autorisieren“ wählen.',
     },
   },
   sources: {

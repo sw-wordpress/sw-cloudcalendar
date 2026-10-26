@@ -51,7 +51,8 @@ const titleId = uid('swc-sheet');
 <style scoped>
 .swc-sheet {
   width: min(var(--sheet-w), 100vw);
-  max-width: 100vw;
+  /* Quasar caps dialog children at 560px; without this the requested width is ignored and content overflows. */
+  max-width: 100vw !important;
   height: 100%;
   display: flex;
   flex-direction: column;

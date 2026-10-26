@@ -266,6 +266,75 @@ const en: typeof de = {
       authHeader: 'Authorization header',
       authHeaderHint: 'Complete header value, e.g. “Basic dXNlcjpwYXNz” or “Bearer …”.',
     },
+    openGuide: 'Guide: create client ID and client secret',
+    guide: {
+      linksTitle: 'Open the console',
+      newTab: 'opens in a new tab',
+      links: {
+        googleConsole: 'Google Cloud Console',
+        googleCalendarApi: 'Enable Google Calendar API',
+        googleDriveApi: 'Enable Google Drive API',
+        googleConsent: 'Google Auth Platform (consent screen)',
+        googleCredentials: 'Credentials / OAuth clients',
+        entraCenter: 'Microsoft Entra admin center',
+        entraAppRegistrations: 'App registrations',
+      },
+      valuesTitle: 'Enter these values',
+      stepsTitle: 'Step by step',
+      copyValue: 'Copy {name}',
+      values: {
+        applicationType: 'Application type',
+        redirectUri: 'Authorised redirect URI',
+        jsOrigin: 'Authorised JavaScript origin',
+        authorizedDomain: 'Authorised domain',
+        apis: 'APIs to enable',
+        scopes: 'Scopes',
+        accountTypes: 'Supported account types',
+        platform: 'Redirect URI platform',
+        graphPermissions: 'Delegated Microsoft Graph permissions',
+      },
+      google: {
+        title: 'Google: set up an OAuth client',
+        intro:
+          'Once in the Google Cloud Console (console.cloud.google.com) with an account that may create projects. Takes about 10 minutes.',
+        steps: [
+          'In the project picker at the top select an existing project or create a new one (e.g. “Website calendar”).',
+          'Menu “APIs & Services” → “Library”: search the APIs listed above and click “Enable” for each.',
+          'Menu “Google Auth Platform” (or “APIs & Services” → “OAuth consent screen”) → “Get started”: enter app name and support email. Audience “Internal” for Google Workspace, otherwise “External”. Enter a contact email and finish.',
+          'Under “Branding” add the domain listed above to “Authorised domains”.',
+          'Under “Data access” → “Add or remove scopes” select or paste the scopes listed above and save.',
+          'Only for audience “External”: under “Audience” add the account whose calendars are connected as a test user, or move the app to production with “Publish app” (see notes).',
+          'Under “Clients” (or “Credentials” → “Create credentials” → “OAuth client ID”) create a client of type “Web application”. Enter the redirect URI from above exactly under “Authorised redirect URIs”, optionally the JavaScript origin.',
+          'After “Create” copy the client ID and the client secret and enter them here in “Client ID” and “Client secret”.',
+          'Save the connection and choose “Authorize” in the list. Sign in with the Google account whose calendars should be shown and allow the access.',
+        ],
+        notes: [
+          'For audience “External” in status “Testing” the authorisation expires after 7 days and the connection has to be authorised again. For a permanent connection publish the app or choose “Internal” with Google Workspace.',
+          'The calendar read scope is “sensitive”, the Drive read scope “restricted”. Without a Google verification the sign-in shows “Google hasn’t verified this app”, which can be confirmed via “Advanced”.',
+          'Do not share the client secret. The plugin stores it encrypted and never shows it again.',
+        ],
+      },
+      microsoft: {
+        title: 'Microsoft 365: create an app registration',
+        intro:
+          'Once in the Microsoft Entra admin center (entra.microsoft.com) with an account that may create app registrations (e.g. Application Administrator). Takes about 10 minutes.',
+        steps: [
+          'Open “Entra ID” (or “Identity”) → “App registrations” → “New registration”.',
+          'Enter a name (e.g. “Website calendar”) and choose the supported account type listed above.',
+          'Under “Redirect URI” select the platform “Web”, enter the URI from above exactly and click “Register”.',
+          'On the “Overview” page copy the “Application (client) ID” and enter it here as client ID; enter the “Directory (tenant) ID” here as tenant ID.',
+          '“Certificates & secrets” → “Client secrets” → “New client secret”: choose a description and expiry, add it and immediately copy the content of the “Value” column (not the “Secret ID”). Enter it here as client secret.',
+          '“API permissions” → “Add a permission” → “Microsoft Graph” → “Delegated permissions”: select and add the permissions listed above.',
+          'If users in your organisation may not consent to apps themselves: click “Grant admin consent for …”.',
+          'Save the connection here and choose “Authorize” in the list. Sign in with the account whose calendars should be shown.',
+        ],
+        notes: [
+          'Client secrets expire (24 months at most). Note the expiry date and create and enter a new secret in time.',
+          'Entra shows the value of a client secret only right after it was created.',
+          'Shared mailboxes and group calendars are not supported in version 1; the calendars of the signed-in account are read.',
+        ],
+      },
+    },
     google: {
       title: 'Google Calendar',
       hint: 'OAuth client from the Google Cloud Console or an API key for public calendars.',
@@ -276,30 +345,15 @@ const en: typeof de = {
       testCalendarHint: "e.g. abc123{'@'}group.calendar.google.com",
       attachmentHint:
         'Allows downloading Drive attachments (additional read access to Google Drive). Only publicly shared files count as “verified public”.',
-      setupTitle: 'Setup in the Google Cloud Console',
-      setup1: 'Select or create a project in the Google Cloud Console.',
-      setup2:
-        'Under “APIs & Services” enable the Google Calendar API (and the Drive API for file access).',
-      setup3: 'Configure the OAuth consent screen (type “Internal” for Workspace accounts).',
-      setup4:
-        'Under “Credentials” create an OAuth client ID of type “Web application” and add the redirect URI above.',
-      setup5: 'Enter client ID and client secret here, save and choose “Authorise”.',
     },
     microsoft: {
       title: 'Microsoft 365',
       hint: 'App registration in Microsoft Entra ID with delegated Graph permissions.',
       tenantId: 'Tenant ID',
-      tenantHint: 'Directory ID or domain, alternatively “common” or “organizations”.',
+      tenantHint:
+        'The “Directory (tenant) ID” of the app registration (or the domain, e.g. contoso.onmicrosoft.com).',
       attachmentHint:
         'Allows downloading event attachments. Files from mailboxes can never be verified as public.',
-      setupTitle: 'Setup in Microsoft Entra ID',
-      setup1: 'In the Entra admin center create a new registration under “App registrations”.',
-      setup2: 'Add the platform “Web” and enter the redirect URI above.',
-      setup3:
-        'Under “API permissions” add the delegated Microsoft Graph permissions Calendars.Read and offline_access.',
-      setup4: 'Under “Certificates & secrets” create a client secret (copy the value immediately).',
-      setup5:
-        'Enter application (client) ID, directory (tenant) ID and secret here, save and choose “Authorise”.',
     },
   },
   sources: {
