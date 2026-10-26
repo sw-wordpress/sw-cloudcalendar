@@ -182,7 +182,7 @@ final class SourceManager {
 		);
 		$settings    = new SourceSettings(
 			$settings->syncEnabled,
-			$settings->syncIntervalMinutes,
+			$settings->syncIntervalHours,
 			$settings->pastDays,
 			$settings->futureDays,
 			$settings->excludePrivateEvents,

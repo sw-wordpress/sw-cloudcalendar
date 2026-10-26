@@ -40,12 +40,14 @@ final class PolicyAndVaultTest extends TestCase
     {
         $errors = [];
         $settings = SourceSettings::fromArray([
-            'sync_interval_minutes' => 2, 'past_days' => 5000, 'excluded_event_types' => ['focusTime', 'evil'],
+            'sync_interval_hours' => 49, 'past_days' => 5000, 'excluded_event_types' => ['focusTime', 'evil'],
             'attachments' => ['max_file_size_mb' => 999, 'allowed_mime_types' => ['image/svg+xml', 'application/pdf']],
         ], 1095, $errors);
-        self::assertSame(['sync_interval_minutes', 'past_days', 'excluded_event_types', 'attachments.max_file_size_mb', 'attachments.allowed_mime_types'], $errors);
+        self::assertSame(['sync_interval_hours', 'past_days', 'excluded_event_types', 'attachments.max_file_size_mb', 'attachments.allowed_mime_types'], $errors);
         self::assertSame(['application/pdf'], $settings->attachments->allowedMimeTypes);
-        self::assertSame(15, $settings->syncIntervalMinutes);
+        self::assertSame(6, $settings->syncIntervalHours, 'Default interval is 6 hours');
+        self::assertSame(2, SourceSettings::fromArray(['sync_interval_minutes' => 90])->syncIntervalHours, 'Legacy minutes are rounded up to hours');
+        self::assertSame(24, SourceSettings::fromArray(['sync_interval_hours' => '24'])->syncIntervalHours);
     }
 
     public function testVaultEncryptsWithContextAndRotates(): void

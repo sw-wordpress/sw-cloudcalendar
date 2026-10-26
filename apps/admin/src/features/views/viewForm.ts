@@ -79,6 +79,7 @@ export function blankView(): ViewInput {
     language: '',
     color_rules: {},
     html_cache: true,
+    show_navigation: true,
     date_format: '',
     time_format: '',
   };
@@ -103,6 +104,7 @@ export function toViewInput(v: CalendarView): ViewInput {
     language: v.language ?? '',
     color_rules: { ...rules },
     html_cache: v.html_cache,
+    show_navigation: v.show_navigation ?? true,
     date_format: v.date_format ?? '',
     time_format: v.time_format ?? '',
   };

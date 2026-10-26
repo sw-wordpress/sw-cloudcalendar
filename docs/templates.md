@@ -34,7 +34,10 @@ Regeln:
 
 Alle Arten: `calendar.title`, `calendar.timezone`, `calendar.range_label`, `calendar.count`, `calendar.has_events` (Flag).
 
-Container zusätzlich: `calendar.events` (gerenderte Liste/Karten/Monatsraster), `calendar.navigation` (Monatsnavigation).
+Container zusätzlich: `calendar.events` (gerenderte Liste/Karten/Monatsraster), `calendar.navigation` (Navigation:
+„Vorheriger/Nächster Monat“ im Monatsraster, „Frühere/Weitere Termine“ bei Liste und Karten; leer, wenn die Navigation
+in der Ansicht oder per `navigation="false"` ausgeschaltet ist). Enthält ein Container-Template den Platzhalter nicht,
+fügt das Plugin die Navigation automatisch ein (über dem Monatsraster, unter Listen und Karten).
 
 Event und Detail zusätzlich:
 

@@ -46,7 +46,7 @@ const source = {
   revision: 2,
   settings: {
     sync_enabled: true,
-    sync_interval_minutes: 15,
+    sync_interval_hours: 6,
     past_days: 90,
     future_days: 365,
     exclude_private_events: false,

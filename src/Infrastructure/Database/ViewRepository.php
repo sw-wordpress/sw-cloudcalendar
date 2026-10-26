@@ -126,7 +126,8 @@ final class ViewRepository implements ViewRepositoryInterface {
 			(int) $row['revision'],
 			(bool) ( $config['html_cache'] ?? true ),
 			(string) ( $config['date_format'] ?? '' ),
-			(string) ( $config['time_format'] ?? '' )
+			(string) ( $config['time_format'] ?? '' ),
+			(bool) ( $config['show_navigation'] ?? true )
 		);
 	}
 }

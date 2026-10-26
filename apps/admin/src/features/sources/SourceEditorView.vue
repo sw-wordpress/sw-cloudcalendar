@@ -730,17 +730,18 @@ const fileConfirmation = computed(
             <q-toggle v-model="settings.sync_enabled" :label="t('sources.syncEnabled')" />
             <div class="swc-form-grid">
               <q-input
-                v-model.number="settings.sync_interval_minutes"
+                v-model.number="settings.sync_interval_hours"
                 outlined
                 dense
                 type="number"
-                min="5"
-                max="1440"
+                min="1"
+                max="48"
                 :label="t('sources.interval')"
-                :suffix="t('common.minutesShort')"
-                :rules="[intIn(5, 1440)]"
-                :error="!!fields.field('settings.sync_interval_minutes')"
-                :error-message="fields.field('settings.sync_interval_minutes')"
+                :hint="t('sources.intervalHint')"
+                :suffix="t('common.hoursShort')"
+                :rules="[intIn(1, 48)]"
+                :error="!!fields.field('settings.sync_interval_hours')"
+                :error-message="fields.field('settings.sync_interval_hours')"
               />
               <q-input
                 v-model.number="settings.past_days"

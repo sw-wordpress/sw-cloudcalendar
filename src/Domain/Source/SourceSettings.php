@@ -9,8 +9,10 @@ namespace SW\Calendar\Domain\Source;
  */
 final class SourceSettings
 {
-    public const MIN_INTERVAL_MINUTES = 5;
-    public const MAX_INTERVAL_MINUTES = 1440;
+    /** Sync interval in hours (docs/decisions.md D-28). */
+    public const MIN_INTERVAL_HOURS = 1;
+    public const MAX_INTERVAL_HOURS = 48;
+    public const DEFAULT_INTERVAL_HOURS = 6;
     /** Default hard limit for each window direction; a server constant may raise it (SPECIFICATIONS.md §7.2). */
     public const DEFAULT_MAX_WINDOW_DAYS = 1095;
     /** Google event types that are personal status entries, not publishable appointments. */
@@ -22,7 +24,7 @@ final class SourceSettings
      */
     public function __construct(
         public readonly bool $syncEnabled = true,
-        public readonly int $syncIntervalMinutes = 15,
+        public readonly int $syncIntervalHours = self::DEFAULT_INTERVAL_HOURS,
         public readonly int $pastDays = 90,
         public readonly int $futureDays = 365,
         public readonly bool $excludePrivateEvents = false,
@@ -39,7 +41,11 @@ final class SourceSettings
     public static function fromArray(array $data, int $maxWindowDays = self::DEFAULT_MAX_WINDOW_DAYS, array &$errors = []): self
     {
         $default = new self();
-        $interval = self::intIn($data, 'sync_interval_minutes', $default->syncIntervalMinutes, self::MIN_INTERVAL_MINUTES, self::MAX_INTERVAL_MINUTES, $errors);
+        if (!array_key_exists('sync_interval_hours', $data) && is_numeric($data['sync_interval_minutes'] ?? null)) {
+            // Settings stored before the interval was configured in hours.
+            $data['sync_interval_hours'] = max(self::MIN_INTERVAL_HOURS, min(self::MAX_INTERVAL_HOURS, (int) ceil((int) $data['sync_interval_minutes'] / 60)));
+        }
+        $interval = self::intIn($data, 'sync_interval_hours', $default->syncIntervalHours, self::MIN_INTERVAL_HOURS, self::MAX_INTERVAL_HOURS, $errors);
         $past = self::intIn($data, 'past_days', $default->pastDays, 0, $maxWindowDays, $errors);
         $future = self::intIn($data, 'future_days', $default->futureDays, 1, $maxWindowDays, $errors);
         $types = $default->excludedEventTypes;
@@ -96,7 +102,7 @@ final class SourceSettings
     {
         return [
             'sync_enabled' => $this->syncEnabled,
-            'sync_interval_minutes' => $this->syncIntervalMinutes,
+            'sync_interval_hours' => $this->syncIntervalHours,
             'past_days' => $this->pastDays,
             'future_days' => $this->futureDays,
             'exclude_private_events' => $this->excludePrivateEvents,

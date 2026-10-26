@@ -18,6 +18,9 @@
 .swc-nav { display: flex; align-items: center; gap: .75rem; }
 .swc-nav a { text-decoration: none; padding: .25rem .5rem; border: 1px solid var(--swc-border); border-radius: 4px; }
 .swc-nav__label { font-weight: 600; min-width: 9em; text-align: center; }
+.swc-nav--list { justify-content: space-between; margin-top: 1rem; }
+.swc-nav .is-disabled { padding: .25rem .5rem; border: 1px solid transparent; color: var(--swc-muted); opacity: .6; }
+.swc-calendar:focus { outline: none; }
 .swc-month { width: 100%; border-collapse: collapse; table-layout: fixed; }
 .swc-month__caption { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); }
 .swc-month th { padding: .4rem; font-weight: 600; text-align: left; border-bottom: 2px solid var(--swc-border); }

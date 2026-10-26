@@ -44,6 +44,7 @@ final class ViewManager {
 			'html_cache'            => $view->htmlCache,
 			'date_format'           => $view->dateFormat,
 			'time_format'           => $view->timeFormat,
+			'show_navigation'       => $view->showNavigation,
 			'shortcode'             => '[sw_calendar id="' . $view->id . '"]',
 			'dynamic'               => $this->services->renderer()->requiresDynamicLoading( $view->id ),
 		);
@@ -191,6 +192,7 @@ final class ViewManager {
 			'html_cache'            => (bool) ( $data['html_cache'] ?? true ),
 			'date_format'           => $formats['date_format'],
 			'time_format'           => $formats['time_format'],
+			'show_navigation'       => (bool) ( $data['show_navigation'] ?? true ),
 		);
 		return array( $name, (bool) ( $data['enabled'] ?? true ), $config );
 	}

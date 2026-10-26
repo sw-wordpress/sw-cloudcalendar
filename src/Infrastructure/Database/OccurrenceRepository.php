@@ -83,7 +83,8 @@ final class OccurrenceRepository implements OccurrenceStoreInterface, Occurrence
 		bool $descending,
 		int $limit,
 		int $offset,
-		int $sortOffsetSeconds
+		int $sortOffsetSeconds,
+		bool $endedBeforeRangeEnd = false
 	): array {
 		$wpdb = Db::wpdb();
 		$ids  = array_values( array_filter( array_map( 'intval', $sourceIds ), static fn ( int $id ): bool => $id > 0 ) );
@@ -107,6 +108,10 @@ final class OccurrenceRepository implements OccurrenceStoreInterface, Occurrence
 				Db::format( $range->floatingStart ),
 			)
 		);
+		if ( $endedBeforeRangeEnd ) {
+			$where .= ' AND ((all_day = 0 AND end_utc <= %s) OR (all_day = 1 AND end_utc <= %s))';
+			array_push( $args, Db::format( $range->endUtc ), Db::format( $range->floatingEnd ) );
+		}
 		if ( null !== $search && '' !== $search ) {
 			$like   = '%' . $wpdb->esc_like( $search ) . '%';
 			$where .= ' AND (title LIKE %s OR description_text LIKE %s OR location LIKE %s)';

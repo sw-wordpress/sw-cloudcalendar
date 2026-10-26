@@ -127,7 +127,8 @@ export interface AttachmentSettings {
 
 export interface SourceSettings {
   sync_enabled: boolean;
-  sync_interval_minutes: number;
+  /** Hours between synchronisations (1–48, default 6). */
+  sync_interval_hours: number;
   past_days: number;
   future_days: number;
   exclude_private_events: boolean;
@@ -264,6 +265,8 @@ export interface ViewInput {
   html_cache: boolean;
   date_format: string;
   time_format: string;
+  /** Previous/next navigation (months in the grid, earlier/more events in lists). */
+  show_navigation: boolean;
 }
 
 export interface CalendarView extends ViewInput {

@@ -34,6 +34,7 @@ final class RenderFilter
         public readonly ?string $month = null,
         public readonly int $page = 1,
         public readonly ?int $perPage = null,
+        public readonly ?bool $navigation = null,
     ) {
     }
 
@@ -66,6 +67,7 @@ final class RenderFilter
             $this->month ?? $defaults->month,
             $this->page,
             $this->perPage ?? $defaults->perPage,
+            $this->navigation ?? $defaults->navigation,
         );
     }
 
@@ -100,6 +102,7 @@ final class RenderFilter
             'month' => $this->month,
             'page' => $this->page,
             'per_page' => $this->perPage,
+            'navigation' => $this->navigation,
         ];
     }
 

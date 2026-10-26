@@ -128,18 +128,7 @@ final class ViewRenderer
         }
 
         $limit = $mode === DisplayMode::Month ? 1000 : min($filter->limit ?? $filter->perPage ?? $this->settings->defaultLimit, FilterSchema::MAX_LIMIT);
-        $offset = $mode === DisplayMode::Month ? 0 : ($filter->page - 1) * $limit;
-        $found = $allowed === [] ? ['items' => [], 'total' => 0] : $this->occurrences->find(
-            $allowed,
-            $range,
-            $filter->search,
-            $filter->location,
-            $filter->exclude,
-            $filter->sort === 'desc',
-            $limit,
-            $offset,
-            $tz->getOffset($now),
-        );
+        $found = $this->page($allowed, $range, $filter, $mode === DisplayMode::Month ? 1 : $filter->page, $limit, $tz, $now);
         $items = $found['items'];
         $showImages = $filter->showImages ?? true;
         $showFiles = $filter->showAttachments ?? true;
@@ -170,17 +159,25 @@ final class ViewRenderer
         }
 
         $grid = new MonthGrid($this->dates, $this->urls, $this->settings->labels);
+        $showNavigation = $filter->navigation ?? $view->showNavigation;
         if ($mode === DisplayMode::Month) {
             $eventsHtml = $grid->render($range, $rendered, $tz, $now);
-            $navigation = $grid->navigation($view->id, $range->month ?? $now, $tz);
+            $navigation = $showNavigation ? $grid->navigation($view->id, $range->month ?? $now, $tz) : new TrustedHtml('');
         } else {
             $eventsHtml = $this->listHtml($rendered, $mode);
-            $navigation = new TrustedHtml('');
+            $navigation = $showNavigation
+                ? $grid->listNavigation($view->id, $filter->page, $found['hasPrevious'], $found['hasNext'])
+                : new TrustedHtml('');
         }
         $html = $this->renderer->render($container->compiled, $calendar + [
             'calendar.events' => $eventsHtml,
             'calendar.navigation' => $navigation,
         ]);
+        // Container templates without {{calendar.navigation}} (custom or older copies) still get the navigation:
+        // above the month grid, below lists and cards.
+        if (!$navigation->isEmpty() && !self::uses($container->compiled->nodes, 'calendar.navigation')) {
+            $html = $mode === DisplayMode::Month ? $navigation . $html : $html . $navigation;
+        }
         $wrapped = $this->wrap($view, $mode, [$container, $event], $html, $filter, $range);
         $result = new RenderResult(
             RenderResult::OK,
@@ -249,7 +246,7 @@ final class ViewRenderer
      * Normalized event data for `GET /views/{id}/events` (only fields intended for publication).
      *
      * @param array<string, mixed> $rawFilter
-     * @return array{status: string, errors?: array<string, string>, events?: list<array<string, mixed>>, pagination?: array<string, int>, meta?: array<string, mixed>, public?: bool}
+     * @return array{status: string, errors?: array<string, string>, events?: list<array<string, mixed>>, pagination?: array<string, int|bool>, meta?: array<string, mixed>, public?: bool}
      */
     public function events(int $viewId, array $rawFilter, ?int $userId): array
     {
@@ -268,17 +265,7 @@ final class ViewRenderer
         $now = $this->clock->now();
         $range = $this->ranges->resolve($filter, $mode, $tz, $now, $this->settings->weekStart);
         $perPage = min($filter->perPage ?? $filter->limit ?? 20, FilterSchema::MAX_LIMIT);
-        $found = $allowed === [] ? ['items' => [], 'total' => 0] : $this->occurrences->find(
-            $allowed,
-            $range,
-            $filter->search,
-            $filter->location,
-            $filter->exclude,
-            $filter->sort === 'desc',
-            $perPage,
-            ($filter->page - 1) * $perPage,
-            $tz->getOffset($now),
-        );
+        $found = $this->page($allowed, $range, $filter, $filter->page, $perPage, $tz, $now);
         $attachments = $this->attachmentsFor($found['items'], $allowed, ($filter->showAttachments ?? true) || ($filter->showImages ?? true));
         $events = [];
         $lastSync = null;
@@ -316,13 +303,77 @@ final class ViewRenderer
         return [
             'status' => RenderResult::OK,
             'events' => $events,
-            'pagination' => ['page' => $filter->page, 'per_page' => $perPage, 'total' => $found['total']],
+            'pagination' => [
+                'page' => $filter->page,
+                'per_page' => $perPage,
+                'total' => $found['total'],
+                'has_previous' => $found['hasPrevious'],
+                'has_next' => $found['hasNext'],
+            ],
             'meta' => [
                 'timezone' => $tz->getName(),
                 'last_synced_at' => $lastSync?->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d\TH:i:s\Z'),
             ],
             'public' => $allowed !== [] && $this->allPublic($sources) && !$this->containsRestricted($view),
         ];
+    }
+
+    /**
+     * One page of the result. Positive pages go forward from the window start (1 = first page); negative pages go
+     * backwards in time before the window start (-1 = the events right before it, e.g. past events of an "upcoming"
+     * list). Backward pages only contain events that ENDED before the window start, so ongoing events never appear
+     * on both sides. Items are always returned in the requested display order.
+     *
+     * @param list<int> $allowed
+     * @return array{items: list<Occurrence>, total: int, hasPrevious: bool, hasNext: bool}
+     */
+    private function page(array $allowed, QueryRange $range, RenderFilter $filter, int $page, int $limit, \DateTimeZone $tz, \DateTimeImmutable $now): array
+    {
+        if ($allowed === []) {
+            return ['items' => [], 'total' => 0, 'hasPrevious' => false, 'hasNext' => false];
+        }
+        $descending = $filter->sort === 'desc';
+        $offset = $tz->getOffset($now);
+        $before = QueryRange::fromLocal(
+            (new \DateTimeImmutable($range->floatingStart->format('Y-m-d H:i:s'), $tz))->modify('-' . FilterSchema::MAX_DAYS . ' days'),
+            new \DateTimeImmutable($range->floatingStart->format('Y-m-d H:i:s'), $tz),
+        );
+        $query = fn (QueryRange $r, bool $desc, int $lim, int $skip, bool $ended): array => $this->occurrences->find(
+            $allowed,
+            $r,
+            $filter->search,
+            $filter->location,
+            $filter->exclude,
+            $desc,
+            $lim,
+            $skip,
+            $offset,
+            $ended,
+        );
+        if ($page >= 1) {
+            $found = $query($range, $descending, $limit, ($page - 1) * $limit, false);
+            $hasPrevious = $page > 1 || $query($before, true, 1, 0, true)['total'] > 0;
+            return ['items' => $found['items'], 'total' => $found['total'], 'hasPrevious' => $hasPrevious, 'hasNext' => $found['total'] > $page * $limit];
+        }
+        $back = abs($page);
+        $found = $query($before, true, $limit, ($back - 1) * $limit, true);
+        $items = $descending ? $found['items'] : array_reverse($found['items']);
+        return ['items' => $items, 'total' => $found['total'], 'hasPrevious' => $found['total'] > $back * $limit, 'hasNext' => true];
+    }
+
+    /**
+     * Whether a compiled node list references a placeholder (also inside sections).
+     *
+     * @param list<array<int, mixed>> $nodes
+     */
+    private static function uses(array $nodes, string $name): bool
+    {
+        foreach ($nodes as $node) {
+            if (($node[0] === 'v' && $node[1] === $name) || ($node[0] === 's' && ($node[1] === $name || self::uses($node[3], $name)))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

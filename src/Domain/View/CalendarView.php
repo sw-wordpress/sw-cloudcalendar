@@ -36,6 +36,8 @@ final class CalendarView
         public readonly bool $htmlCache = true,
         public readonly string $dateFormat = '',
         public readonly string $timeFormat = '',
+        /** Previous/next navigation (months in the grid, earlier/further events in lists). */
+        public readonly bool $showNavigation = true,
     ) {
     }
 

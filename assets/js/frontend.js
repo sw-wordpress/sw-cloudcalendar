@@ -188,6 +188,21 @@
 			} );
 			return;
 		}
+		if ( link.hasAttribute( 'data-swc-page' ) ) {
+			event.preventDefault();
+			const filters = Object.assign( stateOf( calendar ), { page: link.getAttribute( 'data-swc-page' ), view: calendar.getAttribute( 'data-swc-mode' ) } );
+			renderInto( calendar, viewId, filters ).then( function ( root ) {
+				if ( root ) {
+					// Keep the reading position at the top of the new page and announce it to screen readers.
+					root.setAttribute( 'tabindex', '-1' );
+					root.focus( { preventScroll: true } );
+					if ( root.getBoundingClientRect().top < 0 ) {
+						root.scrollIntoView( { block: 'start' } );
+					}
+				}
+			} );
+			return;
+		}
 		const item = link.closest( '[data-swc-event]' );
 		if ( link.hasAttribute( 'data-swc-detail' ) && item ) {
 			if ( openDetail( link, viewId, item.getAttribute( 'data-swc-event' ) ) ) {

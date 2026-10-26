@@ -11,7 +11,8 @@ interface OccurrenceQueryInterface
 {
     /**
      * Overlap query (SPECIFICATIONS.md §4.2) over the given, already AUTHORIZED source ids; visible statuses only;
-     * deterministic order by start, source id, id.
+     * deterministic order by start, source id, id. `$endedBeforeRangeEnd` additionally requires the occurrence to
+     * have ended at the range end (backward paging).
      *
      * @param list<int> $sourceIds
      * @param list<int> $excludeIds
@@ -27,6 +28,7 @@ interface OccurrenceQueryInterface
         int $limit,
         int $offset,
         int $sortOffsetSeconds,
+        bool $endedBeforeRangeEnd = false,
     ): array;
 
     public function findById(int $id): ?Occurrence;

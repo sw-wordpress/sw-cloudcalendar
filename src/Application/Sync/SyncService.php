@@ -103,7 +103,7 @@ final class SyncService
                 $this->items->applyStaging($runId, $sourceId, $fullSnapshot);
                 $occurrences = $this->builder->build($sourceId, $this->items->loadItems($sourceId), $window, $source->settings);
                 $diff = $this->occurrences->replaceSnapshot($sourceId, $occurrences, $generation);
-                $nextAttempt = $now->modify('+' . $source->settings->syncIntervalMinutes . ' minutes');
+                $nextAttempt = $now->modify('+' . $source->settings->syncIntervalHours . ' hours');
                 $this->state->saveSuccess($sourceId, $finalCursor, $window, $generation, $metrics->mode, $now, $nextAttempt);
                 if ($diff->hasChanges()) {
                     $this->sources->bumpRevision($sourceId);
@@ -132,7 +132,7 @@ final class SyncService
                 'updated' => $diff->updated,
                 'deleted' => $diff->deleted,
             ]);
-            return new SyncReport($sourceId, SyncReport::SUCCESS, $metrics, null, null, $now->modify('+' . $source->settings->syncIntervalMinutes . ' minutes'));
+            return new SyncReport($sourceId, SyncReport::SUCCESS, $metrics, null, null, $now->modify('+' . $source->settings->syncIntervalHours . ' hours'));
         } catch (\Throwable $e) {
             if ($runId !== null) {
                 $this->items->discardStaging($runId);
@@ -240,7 +240,7 @@ final class SyncService
         $record ??= $this->state->load($source->id);
         $failures = $record->failures + 1;
         $retryAfter = $e instanceof CalendarException ? $e->retryAfterSeconds : null;
-        $nextAttempt = $now->modify('+' . $this->backoffSeconds($source->settings->syncIntervalMinutes, $failures, $retryAfter) . ' seconds');
+        $nextAttempt = $now->modify('+' . $this->backoffSeconds($source->settings->syncIntervalHours, $failures, $retryAfter) . ' seconds');
 
         if ($code === ErrorCode::AuthRequired) {
             $this->connections->setStatus($source->connectionId, ConnectionStatus::ReauthRequired);
@@ -266,9 +266,10 @@ final class SyncService
     /**
      * Exponential backoff with jitter, capped; a provider supplied Retry-After is respected as the minimum.
      */
-    public function backoffSeconds(int $intervalMinutes, int $failures, ?int $retryAfter): int
+    public function backoffSeconds(int $intervalHours, int $failures, ?int $retryAfter): int
     {
-        $base = max(60, min($intervalMinutes * 60, 900));
+        // Failures are retried after 15 minutes at first (not after the regular interval), then exponentially.
+        $base = max(60, min($intervalHours * 3600, 900));
         $delay = min(self::MAX_BACKOFF_SECONDS, $base * (2 ** min(10, max(0, $failures - 1))));
         $delay += random_int(0, (int) max(1, $delay / 10));
         if ($retryAfter !== null) {

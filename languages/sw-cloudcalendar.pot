@@ -63,6 +63,7 @@ msgid "Only layouts allowed by the view are used."
 msgstr ""
 
 #: blocks/calendar/index.js:77 blocks/calendar/index.js:103
+#: blocks/calendar/index.js:119
 msgid "View default"
 msgstr ""
 
@@ -142,19 +143,35 @@ msgstr ""
 msgid "Only templates allowed by the view."
 msgstr ""
 
-#: blocks/calendar/index.js:114
+#: blocks/calendar/index.js:115
+msgid "Navigation"
+msgstr ""
+
+#: blocks/calendar/index.js:116
+msgid "Previous/next month in the month view, earlier/more events in lists."
+msgstr ""
+
+#: blocks/calendar/index.js:120
+msgid "Show"
+msgstr ""
+
+#: blocks/calendar/index.js:121
+msgid "Hide"
+msgstr ""
+
+#: blocks/calendar/index.js:125
 msgid "Show images"
 msgstr ""
 
-#: blocks/calendar/index.js:115
+#: blocks/calendar/index.js:126
 msgid "Show file list"
 msgstr ""
 
-#: blocks/calendar/index.js:124
+#: blocks/calendar/index.js:135
 msgid "Calendar views could not be loaded."
 msgstr ""
 
-#: blocks/calendar/index.js:124
+#: blocks/calendar/index.js:135
 msgid "Select a calendar view in the block settings."
 msgstr ""
 
@@ -231,23 +248,23 @@ msgstr ""
 msgid "Detail"
 msgstr ""
 
-#: src/Presentation/Frontend/CalendarOutput.php:132
+#: src/Presentation/Frontend/CalendarOutput.php:136
 msgid "Back to the calendar"
 msgstr ""
 
-#: src/Presentation/Frontend/CalendarOutput.php:181
+#: src/Presentation/Frontend/CalendarOutput.php:185
 msgid "Close"
 msgstr ""
 
-#: src/Presentation/Frontend/CalendarOutput.php:182 src/Services.php:295
+#: src/Presentation/Frontend/CalendarOutput.php:186 src/Services.php:295
 msgid "Loading calendar…"
 msgstr ""
 
-#: src/Presentation/Frontend/CalendarOutput.php:183
+#: src/Presentation/Frontend/CalendarOutput.php:187
 msgid "The calendar could not be loaded."
 msgstr ""
 
-#: src/Presentation/Frontend/CalendarOutput.php:184
+#: src/Presentation/Frontend/CalendarOutput.php:188
 msgid "Event details"
 msgstr ""
 
@@ -436,6 +453,18 @@ msgstr ""
 
 #: src/Services.php:299
 msgid "Preview"
+msgstr ""
+
+#: src/Services.php:300
+msgid "Earlier events"
+msgstr ""
+
+#: src/Services.php:301
+msgid "More events"
+msgstr ""
+
+#: src/Services.php:302
+msgid "Event navigation"
 msgstr ""
 
 #. translators: 1: required PHP version, 2: current PHP version

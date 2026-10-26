@@ -17,7 +17,7 @@ const DEFAULT_MIMES = [
 export function defaultSourceSettings(meta: Meta | null): SourceSettings {
   return {
     sync_enabled: true,
-    sync_interval_minutes: 15,
+    sync_interval_hours: 6,
     past_days: 90,
     future_days: 365,
     exclude_private_events: false,
@@ -41,7 +41,7 @@ export function writableSettings(s: SourceSettings): SourceSettings {
   const a = s.attachments;
   return {
     sync_enabled: s.sync_enabled,
-    sync_interval_minutes: Number(s.sync_interval_minutes),
+    sync_interval_hours: Number(s.sync_interval_hours),
     past_days: Number(s.past_days),
     future_days: Number(s.future_days),
     exclude_private_events: s.exclude_private_events,

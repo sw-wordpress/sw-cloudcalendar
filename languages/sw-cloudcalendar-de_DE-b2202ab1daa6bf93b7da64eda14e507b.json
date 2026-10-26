@@ -83,6 +83,18 @@
             "Only templates allowed by the view.": [
                 "Nur von der Ansicht freigegebene Vorlagen."
             ],
+            "Navigation": [
+                "Navigation"
+            ],
+            "Previous/next month in the month view, earlier/more events in lists.": [
+                "Vorheriger/nächster Monat in der Monatsansicht, frühere/weitere Termine in Listen."
+            ],
+            "Show": [
+                "Anzeigen"
+            ],
+            "Hide": [
+                "Ausblenden"
+            ],
             "Show images": [
                 "Bilder anzeigen"
             ],

@@ -21,7 +21,7 @@ use SW\Calendar\Presentation\Frontend\ViewLocale;
  */
 final class PublicController extends BaseController {
 
-	private const FILTER_PARAMS = array( 'source', 'view', 'limit', 'days', 'start', 'end', 'past', 'search', 'location', 'category', 'exclude', 'sort', 'template', 'show_images', 'show_attachments', 'month', 'page', 'per_page' );
+	private const FILTER_PARAMS = array( 'source', 'view', 'limit', 'days', 'start', 'end', 'past', 'search', 'location', 'category', 'exclude', 'sort', 'template', 'show_images', 'show_attachments', 'month', 'page', 'per_page', 'navigation' );
 
 	public function register_routes(): void {
 		register_rest_route(
@@ -298,7 +298,7 @@ final class PublicController extends BaseController {
 		}
 		$url = esc_url_raw( $url, array( 'http', 'https' ) );
 		if ( '' !== $url && wp_parse_url( $url, PHP_URL_HOST ) === wp_parse_url( home_url(), PHP_URL_HOST ) ) {
-			$this->services->urls()->set_base_url( remove_query_arg( array( 'swc_event', 'swc_view', 'swc_month' ), $url ) );
+			$this->services->urls()->set_base_url( remove_query_arg( array( 'swc_event', 'swc_view', 'swc_month', 'swc_page' ), $url ) );
 		}
 	}
 }

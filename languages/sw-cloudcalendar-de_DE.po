@@ -55,6 +55,7 @@ msgid "Only layouts allowed by the view are used."
 msgstr "Es werden nur von der Ansicht freigegebene Darstellungen verwendet."
 
 #: blocks/calendar/index.js:77 blocks/calendar/index.js:103
+#: blocks/calendar/index.js:119
 msgid "View default"
 msgstr "Vorgabe der Ansicht"
 
@@ -134,19 +135,35 @@ msgstr "ID der Termin-Vorlage"
 msgid "Only templates allowed by the view."
 msgstr "Nur von der Ansicht freigegebene Vorlagen."
 
-#: blocks/calendar/index.js:114
+#: blocks/calendar/index.js:115
+msgid "Navigation"
+msgstr "Navigation"
+
+#: blocks/calendar/index.js:116
+msgid "Previous/next month in the month view, earlier/more events in lists."
+msgstr "Vorheriger/nächster Monat in der Monatsansicht, frühere/weitere Termine in Listen."
+
+#: blocks/calendar/index.js:120
+msgid "Show"
+msgstr "Anzeigen"
+
+#: blocks/calendar/index.js:121
+msgid "Hide"
+msgstr "Ausblenden"
+
+#: blocks/calendar/index.js:125
 msgid "Show images"
 msgstr "Bilder anzeigen"
 
-#: blocks/calendar/index.js:115
+#: blocks/calendar/index.js:126
 msgid "Show file list"
 msgstr "Dateiliste anzeigen"
 
-#: blocks/calendar/index.js:124
+#: blocks/calendar/index.js:135
 msgid "Calendar views could not be loaded."
 msgstr "Die Kalenderansichten konnten nicht geladen werden."
 
-#: blocks/calendar/index.js:124
+#: blocks/calendar/index.js:135
 msgid "Select a calendar view in the block settings."
 msgstr "Wählen Sie in den Block-Einstellungen eine Kalenderansicht aus."
 
@@ -223,23 +240,23 @@ msgstr "Termin"
 msgid "Detail"
 msgstr "Detail"
 
-#: src/Presentation/Frontend/CalendarOutput.php:132
+#: src/Presentation/Frontend/CalendarOutput.php:136
 msgid "Back to the calendar"
 msgstr "Zurück zum Kalender"
 
-#: src/Presentation/Frontend/CalendarOutput.php:181
+#: src/Presentation/Frontend/CalendarOutput.php:185
 msgid "Close"
 msgstr "Schließen"
 
-#: src/Presentation/Frontend/CalendarOutput.php:182 src/Services.php:295
+#: src/Presentation/Frontend/CalendarOutput.php:186 src/Services.php:295
 msgid "Loading calendar…"
 msgstr "Kalender wird geladen …"
 
-#: src/Presentation/Frontend/CalendarOutput.php:183
+#: src/Presentation/Frontend/CalendarOutput.php:187
 msgid "The calendar could not be loaded."
 msgstr "Der Kalender konnte nicht geladen werden."
 
-#: src/Presentation/Frontend/CalendarOutput.php:184
+#: src/Presentation/Frontend/CalendarOutput.php:188
 msgid "Event details"
 msgstr "Termindetails"
 
@@ -429,6 +446,18 @@ msgstr "Bitte aktivieren Sie JavaScript, um diesen Kalender zu sehen."
 #: src/Services.php:299
 msgid "Preview"
 msgstr "Vorschau"
+
+#: src/Services.php:300
+msgid "Earlier events"
+msgstr "Frühere Termine"
+
+#: src/Services.php:301
+msgid "More events"
+msgstr "Weitere Termine"
+
+#: src/Services.php:302
+msgid "Event navigation"
+msgstr "Terminnavigation"
 
 #. translators: 1: required PHP version, 2: current PHP version
 #: sw-cloudcalendar.php:35

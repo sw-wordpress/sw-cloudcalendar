@@ -17,7 +17,7 @@ Base: `/wp-json/sw-cloudcalendar/v1/` (plain permalinks: `/?rest_route=/sw-cloud
 
 | Method | Path | Notes |
 |---|---|---|
-| GET | `/views/{id}/events` | Filter params (below), `page`, `per_page` (≤100). Response see SPECIFICATIONS.md §13. `Cache-Control: public, max-age=60` only if every source is public, otherwise `private, no-store` + `Vary: Cookie`. |
+| GET | `/views/{id}/events` | Filter params (below), `page`, `per_page` (≤100). Response see SPECIFICATIONS.md §13; `pagination` additionally contains `has_previous` and `has_next`. `Cache-Control: public, max-age=60` only if every source is public, otherwise `private, no-store` + `Vary: Cookie`. |
 | GET | `/views/{id}/render` | Same filters + `page_url` (same host; detail/month links point there). `{ html, css: {scopeClass: css}, total }`. Invalid filters → 400 `swc_invalid_filter` with `params`. |
 | GET | `/events/{id}?view={viewId}` | Rendered detail `{ html, css }`; 404 unless the occurrence belongs to an authorized source of the enabled view. |
 | GET | `/attachments/{id}/content` | Streams the stored file after source ACL + policy + publication check. `nosniff`, `Content-Disposition` inline only for raster images, sandbox CSP. Public sources: `public, max-age=300`; others `private, no-store`. |
@@ -33,7 +33,9 @@ script for dynamically loaded (protected) views on publicly cached pages.
 `source` (ids, comma separated; intersection with the view), `view` (`month|list|cards`), `limit` (1–100), `days`
 (1–1095, from now to the end of the N-th local day), `start`/`end` (`YYYY-MM-DD`, inclusive dates), `past` (bool),
 `search`/`location` (≤150 chars), `exclude` (occurrence ids), `sort` (`asc|desc`), `template` (event template id
-allowed by the view), `show_images`/`show_attachments` (bool), `month` (`YYYY-MM`, month mode), `page`, `per_page`.
+allowed by the view), `show_images`/`show_attachments` (bool), `month` (`YYYY-MM`, month mode), `page` (1…10000 forward,
+-1…-10000 backward = events that ended before the window start; 0 is invalid), `per_page`, `navigation` (bool, overrides
+the view's `show_navigation`).
 `category` is rejected (`not_supported`, docs/decisions.md D-12). Precedence: `start/end` > `days` > view default.
 
 ## Admin
@@ -87,7 +89,7 @@ Source:
   "timezone": "Europe/Berlin", "visibility": "public|authenticated|roles", "roles": ["editor"],
   "status": "draft|active|paused|error|disabled", "revision": 7,
   "settings": {
-    "sync_enabled": true, "sync_interval_minutes": 15, "past_days": 90, "future_days": 365,
+    "sync_enabled": true, "sync_interval_hours": 6, "past_days": 90, "future_days": 365,
     "exclude_private_events": false, "excluded_event_types": ["workingLocation","focusTime","outOfOffice"],
     "attachments": { "sync_attachments": false, "public_only": true, "max_file_size_mb": 20,
       "allowed_mime_types": ["image/jpeg", "…"], "generate_image_previews": true, "show_images": true,
@@ -105,13 +107,13 @@ Source:
 Validation codes worth handling in the UI: `confirm_publication: required` (public source from a private provider
 calendar → show a confirmation dialog, resend with `confirm_publication: true`), `confirm_private_attachments:
 required` (public source with `public_only=false`), `settings.attachments.sync_attachments: storage_unsafe`,
-`roles: required|unknown_role`, `status: invalid`. Limits: interval 5–1440 min, window days 0/1–`max_window_days`.
+`roles: required|unknown_role`, `status: invalid`. Limits: interval 1–48 hours (default 6), window days 0/1–`max_window_days`.
 
 ### Views
 
 | Method | Path | Body / result |
 |---|---|---|
-| GET/POST | `/admin/views` | View body: `{ name, enabled, source_ids, default_filters, display_mode, allowed_modes, container_template_id, event_template_id, detail_template_id, allowed_template_ids, timezone, language, color_rules, html_cache, date_format, time_format }` |
+| GET/POST | `/admin/views` | View body: `{ name, enabled, source_ids, default_filters, display_mode, allowed_modes, container_template_id, event_template_id, detail_template_id, allowed_template_ids, timezone, language, color_rules, html_cache, date_format, time_format, show_navigation }` |
 | GET/PUT/DELETE | `/admin/views/{id}` | result adds `id, revision, shortcode, dynamic` (dynamic = contains non-public sources → loaded via REST) |
 | POST | `/admin/views/preview` | `{ id?, view: <View body>, filters?: {…} }` → `{ html, css: {scope: css}, total }` – renders the unsaved (or disabled) form state with the ACL of the current admin; validation errors like PUT; never cached |
 

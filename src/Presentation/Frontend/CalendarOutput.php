@@ -46,9 +46,13 @@ final class CalendarOutput {
 		$targeted = isset( $_GET[ WpUrlGenerator::VIEW_PARAM ] ) && absint( $_GET[ WpUrlGenerator::VIEW_PARAM ] ) === $view_id;
 		$event_id = $targeted && isset( $_GET[ WpUrlGenerator::EVENT_PARAM ] ) ? absint( $_GET[ WpUrlGenerator::EVENT_PARAM ] ) : 0;
 		$month    = $targeted && isset( $_GET[ WpUrlGenerator::MONTH_PARAM ] ) ? sanitize_text_field( wp_unslash( $_GET[ WpUrlGenerator::MONTH_PARAM ] ) ) : '';
+		$page     = $targeted && isset( $_GET[ WpUrlGenerator::PAGE_PARAM ] ) ? (int) $_GET[ WpUrlGenerator::PAGE_PARAM ] : 0;
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 		if ( '' !== $month && 1 === preg_match( '/^\d{4}-(0[1-9]|1[0-2])$/', $month ) ) {
 			$filters['month'] = $month;
+		}
+		if ( 0 !== $page && abs( $page ) <= 10000 ) {
+			$filters['page'] = (string) $page;
 		}
 
 		return ViewLocale::run(

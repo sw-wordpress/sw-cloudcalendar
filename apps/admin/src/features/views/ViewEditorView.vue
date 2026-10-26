@@ -478,6 +478,8 @@ watch(previewMode, () => void renderPreview());
                 :error-message="fields.field('time_format')"
               />
             </div>
+            <q-toggle v-model="form.show_navigation" :label="t('views.showNavigation')" />
+            <p class="swc-hint">{{ t('views.showNavigationHint') }}</p>
             <q-toggle v-model="form.html_cache" :label="t('views.htmlCache')" />
             <p class="swc-hint">{{ t('views.htmlCacheHint') }}</p>
           </SwcCard>

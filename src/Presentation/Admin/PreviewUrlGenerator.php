@@ -31,4 +31,8 @@ final class PreviewUrlGenerator implements UrlGeneratorInterface {
 	public function month( int $viewId, string $month ): string {
 		return '#month-' . $month;
 	}
+
+	public function page( int $viewId, int $page ): string {
+		return '#page-' . $page;
+	}
 }

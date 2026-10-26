@@ -13,4 +13,7 @@ interface UrlGeneratorInterface
     public function eventDetail(int $viewId, int $occurrenceId): string;
 
     public function month(int $viewId, string $month): string;
+
+    /** Earlier (negative) or further (positive) result page of a list. */
+    public function page(int $viewId, int $page): string;
 }

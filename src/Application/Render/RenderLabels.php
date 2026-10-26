@@ -27,6 +27,9 @@ final class RenderLabels
         public readonly string $decimalPoint = '.',
         public readonly string $thousandsSeparator = ',',
         public readonly string $previewTitle = 'Preview',
+        public readonly string $previousEvents = 'Earlier events',
+        public readonly string $nextEvents = 'More events',
+        public readonly string $eventNavigation = 'Event navigation',
     ) {
     }
 }

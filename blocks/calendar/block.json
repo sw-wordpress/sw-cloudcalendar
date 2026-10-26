@@ -77,6 +77,15 @@
 		},
 		"showAttachments": {
 			"type": "boolean"
+		},
+		"navigation": {
+			"type": "string",
+			"enum": [
+				"",
+				"true",
+				"false"
+			],
+			"default": ""
 		}
 	},
 	"editorScript": "file:./index.js",

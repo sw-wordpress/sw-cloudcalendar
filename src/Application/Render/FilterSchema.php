@@ -64,6 +64,7 @@ final class FilterSchema
                     $this->accept($values, $errors, 'month', $month, 'invalid_month');
                     break;
                 case 'past':
+                case 'navigation':
                 case 'show_images':
                 case 'show_attachments':
                     $bool = $this->bool($value);
@@ -83,8 +84,9 @@ final class FilterSchema
                     $this->accept($values, $errors, 'template', $int, 'invalid_id');
                     break;
                 case 'page':
-                    $int = $this->int($value, 1, 10000);
-                    $this->accept($values, $errors, 'page', $int, 'out_of_range');
+                    // Negative pages go backwards in time (earlier events); 0 does not exist.
+                    $int = $this->int($value, -10000, 10000);
+                    $this->accept($values, $errors, 'page', $int === 0 ? null : $int, 'out_of_range');
                     break;
                 case 'per_page':
                     $int = $this->int($value, 1, self::MAX_LIMIT);
@@ -126,6 +128,7 @@ final class FilterSchema
                 $values['month'] ?? null,
                 $values['page'] ?? 1,
                 $values['per_page'] ?? null,
+                $values['navigation'] ?? null,
             ),
             $errors,
             $unknown,

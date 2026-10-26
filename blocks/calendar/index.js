@@ -111,6 +111,17 @@
 				PanelBody,
 				{ title: __( 'Display', 'sw-cloudcalendar' ), initialOpen: false },
 				el( TextControl, { label: __( 'Event template ID', 'sw-cloudcalendar' ), help: __( 'Only templates allowed by the view.', 'sw-cloudcalendar' ), type: 'number', min: 1, value: a.template || '', onChange: function ( v ) { setAttributes( { template: numberOrUndefined( v ) } ); } } ),
+				el( SelectControl, {
+					label: __( 'Navigation', 'sw-cloudcalendar' ),
+					help: __( 'Previous/next month in the month view, earlier/more events in lists.', 'sw-cloudcalendar' ),
+					value: a.navigation || '',
+					options: [
+						{ label: __( 'View default', 'sw-cloudcalendar' ), value: '' },
+						{ label: __( 'Show', 'sw-cloudcalendar' ), value: 'true' },
+						{ label: __( 'Hide', 'sw-cloudcalendar' ), value: 'false' },
+					],
+					onChange: function ( v ) { setAttributes( { navigation: v } ); },
+				} ),
 				el( ToggleControl, { label: __( 'Show images', 'sw-cloudcalendar' ), checked: a.showImages !== false, onChange: function ( v ) { setAttributes( { showImages: v ? undefined : false } ); } } ),
 				el( ToggleControl, { label: __( 'Show file list', 'sw-cloudcalendar' ), checked: a.showAttachments !== false, onChange: function ( v ) { setAttributes( { showAttachments: v ? undefined : false } ); } } )
 			)

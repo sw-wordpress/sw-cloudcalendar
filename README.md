@@ -65,14 +65,19 @@ nötig); andernfalls bleibt der Anhangs-Sync gesperrt.
 [sw_calendar id="12" source="2,3" search="Gottesdienst"]
 [sw_calendar id="12" start="2026-11-01" end="2026-12-31" location="Kirche"]
 [sw_calendar id="12" template="7" show_images="true" show_attachments="false"]
+[sw_calendar id="12" navigation="false"]
 ```
+
+Navigation: In der Monatsansicht „Vorheriger/Nächster Monat“, bei Liste und Karten „Frühere/Weitere Termine“
+(frühere = bereits beendete Termine vor dem Anzeigezeitraum). Pro Ansicht abschaltbar, per `navigation` überschreibbar.
 
 Filter können eine Ansicht nur einschränken, nie erweitern. Ansichten mit nicht-öffentlichen Quellen werden per
 JavaScript nachgeladen und nie in (evtl. öffentlich gecachtes) Seiten-HTML geschrieben.
 
 ## Betrieb
 
-- Synchronisierung über WP-Cron alle 5 Minuten. Für Seiten mit wenig Besuchern oder `DISABLE_WP_CRON` in den
+- Jede Quelle wird standardmäßig alle 6 Stunden synchronisiert (einstellbar 1–48 Stunden, „Jetzt synchronisieren“
+  jederzeit). Die Warteschlange prüft über WP-Cron alle 5 Minuten, ob etwas fällig ist. Für Seiten mit wenig Besuchern oder `DISABLE_WP_CRON` in den
   Einstellungen „System-Cron“ wählen und z. B. `* * * * * wp sw-cloudcalendar queue run` einrichten.
 - WP-CLI: `wp sw-cloudcalendar sources list | connections test --id=1 | sync --source=3 | sync --all --full |
   attachments sync --source=3 | attachments prune --dry-run | cache clear | diagnostics | queue run`.

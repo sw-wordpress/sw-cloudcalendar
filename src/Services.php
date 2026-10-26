@@ -296,7 +296,10 @@ final class Services {
 					__( 'Please enable JavaScript to see this calendar.', 'sw-cloudcalendar' ),
 					isset( $wp_locale ) ? (string) $wp_locale->number_format['decimal_point'] : '.',
 					isset( $wp_locale ) ? (string) $wp_locale->number_format['thousands_sep'] : ',',
-					__( 'Preview', 'sw-cloudcalendar' )
+					__( 'Preview', 'sw-cloudcalendar' ),
+					__( 'Earlier events', 'sw-cloudcalendar' ),
+					__( 'More events', 'sw-cloudcalendar' ),
+					__( 'Event navigation', 'sw-cloudcalendar' )
 				);
 			}
 		);

@@ -17,6 +17,7 @@ final class WpUrlGenerator implements UrlGeneratorInterface {
 	public const EVENT_PARAM = 'swc_event';
 	public const VIEW_PARAM  = 'swc_view';
 	public const MONTH_PARAM = 'swc_month';
+	public const PAGE_PARAM  = 'swc_page';
 
 	private ?string $base_url = null;
 
@@ -55,6 +56,16 @@ final class WpUrlGenerator implements UrlGeneratorInterface {
 		);
 	}
 
+	public function page( int $viewId, int $page ): string {
+		return add_query_arg(
+			array(
+				self::VIEW_PARAM => $viewId,
+				self::PAGE_PARAM => $page,
+			),
+			remove_query_arg( array( self::EVENT_PARAM, self::MONTH_PARAM ), $this->base() )
+		);
+	}
+
 	private function base(): string {
 		if ( null !== $this->base_url ) {
 			return $this->base_url;
@@ -64,6 +75,6 @@ final class WpUrlGenerator implements UrlGeneratorInterface {
 			return home_url( '/' );
 		}
 		$uri = isset( $_SERVER['REQUEST_URI'] ) ? sanitize_url( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '/'; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		return remove_query_arg( array( self::EVENT_PARAM, self::MONTH_PARAM, self::VIEW_PARAM ), home_url( $uri ) );
+		return remove_query_arg( array( self::EVENT_PARAM, self::MONTH_PARAM, self::VIEW_PARAM, self::PAGE_PARAM ), home_url( $uri ) );
 	}
 }
