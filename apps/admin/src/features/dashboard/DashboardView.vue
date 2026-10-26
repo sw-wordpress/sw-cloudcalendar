@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useApi } from '@/api';
 import DataState from '@/components/ui/DataState.vue';
@@ -11,12 +11,14 @@ import EmptyState from '@/components/ui/EmptyState.vue';
 import { useAsyncData } from '@/composables/useAsyncData';
 import { useFormat } from '@/composables/useFormat';
 import { healthIssues, overallHealth } from './health';
+import EncryptionKeyDialog from '@/features/diagnostics/EncryptionKeyDialog.vue';
 
 const { t } = useI18n();
 const fmt = useFormat();
 const api = useApi();
 
 const diag = useAsyncData(() => api.system.diagnostics());
+const keyDialog = ref(false);
 const d = computed(() => diag.data.value);
 const issues = computed(() => (d.value ? healthIssues(d.value) : []));
 const level = computed(() => overallHealth(issues.value));
@@ -97,7 +99,17 @@ function issueText(key: string, params?: Record<string, string | number>): strin
               />
               <span class="swc-sr-only">{{ t(`health.level.${issue.level}`) }}:</span>
               <span>{{ issueText(issue.key, issue.params) }}</span>
-              <router-link v-if="issue.to" :to="issue.to" class="swc-dash-issues__link">{{
+              <q-btn
+                v-if="issue.key === 'encryptionFallback'"
+                flat
+                dense
+                no-caps
+                color="primary"
+                class="swc-dash-issues__link"
+                :label="t('diagnostics.showSolution')"
+                @click="keyDialog = true"
+              />
+              <router-link v-else-if="issue.to" :to="issue.to" class="swc-dash-issues__link">{{
                 t('dashboard.resolve')
               }}</router-link>
             </li>
@@ -254,6 +266,7 @@ function issueText(key: string, params?: Record<string, string | number>): strin
         </SwcCard>
       </template>
     </DataState>
+    <EncryptionKeyDialog v-model="keyDialog" />
   </div>
 </template>
 

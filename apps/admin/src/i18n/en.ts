@@ -795,6 +795,15 @@ const en: typeof de = {
     },
     fallbackHint:
       'Define a dedicated key in wp-config.php so that secrets stay readable when the WordPress salts change.',
+    keyDialogTitle: 'Set up a dedicated key',
+    showSolution: 'Show solution',
+    keyStepCopy: 'Copy the following line (the key was just generated in your browser).',
+    keyStepPaste: 'Paste it into {file} above the line {marker} and save the file.',
+    keyStepReload: 'Reload this page – the status changes to “Dedicated key”.',
+    copyKeySnippet: 'Copy line for wp-config.php',
+    newKey: 'Generate new key',
+    keyNotes:
+      'Credentials stored so far stay readable and are re-encrypted with the new key on their next use. Keep the key secret and backed up and do not change it later (a change is possible with SW_CALENDAR_ENCRYPTION_KEY_PREVIOUS).',
     capabilityHolders: 'Roles with manage_sw_calendar',
     storage: 'Private file storage',
     recheck: 'Check again',

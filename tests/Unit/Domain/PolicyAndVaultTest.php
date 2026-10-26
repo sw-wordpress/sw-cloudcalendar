@@ -65,6 +65,14 @@ final class PolicyAndVaultTest extends TestCase
         $old->decrypt($cipher, 'connection:2');
     }
 
+    public function testSwitchingFromSaltFallbackToDedicatedKeyKeepsSecretsReadable(): void
+    {
+        $cipher = (new SecretVault(null, null, 'salts'))->encrypt('refresh-token', 'connection:1');
+        $dedicated = new SecretVault(base64_encode(random_bytes(32)), null, 'salts');
+        self::assertSame('refresh-token', $dedicated->decrypt($cipher, 'connection:1'));
+        self::assertTrue($dedicated->needsRotation($cipher), 'Re-encrypted with the dedicated key on the next read');
+    }
+
     public function testVaultDetectsTampering(): void
     {
         $vault = new SecretVault('k', null, 's');

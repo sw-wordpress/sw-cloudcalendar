@@ -813,6 +813,16 @@ const de = {
     },
     fallbackHint:
       'Lege einen eigenen Schlüssel in der wp-config.php fest, damit Geheimnisse beim Ändern der WordPress-Salts lesbar bleiben.',
+    keyDialogTitle: 'Eigenen Schlüssel einrichten',
+    showSolution: 'Lösung anzeigen',
+    keyStepCopy:
+      'Die folgende Zeile kopieren (der Schlüssel wurde gerade in deinem Browser erzeugt).',
+    keyStepPaste: 'In die {file} oberhalb der Zeile {marker} einfügen und speichern.',
+    keyStepReload: 'Diese Seite neu laden – der Status wechselt auf „Eigener Schlüssel“.',
+    copyKeySnippet: 'Zeile für wp-config.php kopieren',
+    newKey: 'Neuen Schlüssel erzeugen',
+    keyNotes:
+      'Bereits gespeicherte Zugangsdaten bleiben lesbar und werden beim nächsten Zugriff automatisch mit dem neuen Schlüssel verschlüsselt. Den Schlüssel geheim halten, sicher aufbewahren und später nicht mehr ändern (ein Wechsel ist über SW_CALENDAR_ENCRYPTION_KEY_PREVIOUS möglich).',
     capabilityHolders: 'Rollen mit manage_sw_calendar',
     storage: 'Privater Dateispeicher',
     recheck: 'Erneut prüfen',

@@ -11,6 +11,7 @@ import { useFormat } from '@/composables/useFormat';
 import { useNotify } from '@/composables/useNotify';
 import type { StorageCheck } from '@/types/api';
 import { attachmentTotals } from '@/features/sources/sourceForm';
+import EncryptionKeyDialog from './EncryptionKeyDialog.vue';
 
 const { t } = useI18n();
 const fmt = useFormat();
@@ -20,6 +21,7 @@ const notify = useNotify();
 const diag = useAsyncData(() => api.system.diagnostics());
 const d = computed(() => diag.data.value);
 const checking = ref(false);
+const keyDialog = ref(false);
 const check = ref<StorageCheck | null>(null);
 
 const environment = computed(() => {
@@ -173,12 +175,20 @@ function exportJson(): void {
               <dd>{{ d.security.capability_holders.join(', ') || '–' }}</dd>
             </div>
           </dl>
-          <p
+          <div
             v-if="d.security.encryption_key === 'wp_salts_fallback'"
             class="swc-callout is-warning"
           >
-            {{ t('diagnostics.fallbackHint') }}
-          </p>
+            <p>{{ t('diagnostics.fallbackHint') }}</p>
+            <q-btn
+              unelevated
+              no-caps
+              color="primary"
+              icon="r_key"
+              :label="t('diagnostics.showSolution')"
+              @click="keyDialog = true"
+            />
+          </div>
         </SwcCard>
 
         <SwcCard :title="t('diagnostics.storage')" icon="r_folder_special">
@@ -454,6 +464,7 @@ function exportJson(): void {
         </SwcCard>
       </div>
     </DataState>
+    <EncryptionKeyDialog v-model="keyDialog" />
   </div>
 </template>
 
