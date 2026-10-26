@@ -13,6 +13,7 @@ use SW\Calendar\Application\Render\FilterSchema;
 use SW\Calendar\Domain\Template\TemplateKind;
 use SW\Calendar\Domain\View\CalendarView;
 use SW\Calendar\Domain\View\DisplayMode;
+use SW\Calendar\Infrastructure\Database\ViewRepository;
 use SW\Calendar\Services;
 
 final class ViewManager {
@@ -56,6 +57,36 @@ final class ViewManager {
 		if ( null !== $id && null === $existing ) {
 			throw new ValidationException( array( 'id' => 'not_found' ), 'View not found.', 404 );
 		}
+		[ $name, $enabled, $config ] = $this->validated( $existing, $data );
+		$id                          = $this->services->views()->save( $id, $name, $enabled, $config );
+		$this->services->audit()->record( null === $existing ? 'view_created' : 'view_updated', 'view', $id );
+		return $this->services->views()->find( $id );
+	}
+
+	/**
+	 * Unsaved view object for the admin live preview (id 0, never cached, ACL of the current user applies).
+	 *
+	 * @param array<string, mixed> $data
+	 */
+	public function unsaved( ?int $id, array $data ): CalendarView {
+		$existing                    = null === $id ? null : $this->services->views()->find( $id );
+		[ $name, $enabled, $config ] = $this->validated( $existing, $data );
+		return ViewRepository::map(
+			array(
+				'id'          => 0,
+				'name'        => $name,
+				'enabled'     => $enabled ? 1 : 0,
+				'config_json' => (string) wp_json_encode( $config ),
+				'revision'    => 0,
+			)
+		);
+	}
+
+	/**
+	 * @param array<string, mixed> $data
+	 * @return array{0: string, 1: bool, 2: array<string, mixed>}
+	 */
+	private function validated( ?CalendarView $existing, array $data ): array {
 		$current = null === $existing ? array() : $this->to_array( $existing );
 		$data    = array_merge( $current, $data );
 		$errors  = array();
@@ -110,6 +141,10 @@ final class ViewManager {
 			}
 			$allowed_templates[] = $template->id;
 		}
+		$language = (string) ( $data['language'] ?? '' );
+		if ( '' !== $language && 1 !== preg_match( '/^[a-z]{2,3}(_[A-Z]{2})?(_[a-z0-9]+)?$/', $language ) ) {
+			$errors['language'] = 'invalid';
+		}
 		$timezone = (string) ( $data['timezone'] ?? '' );
 		if ( '' !== $timezone && ! in_array( $timezone, timezone_identifiers_list(), true ) ) {
 			$errors['timezone'] = 'invalid';
@@ -151,15 +186,13 @@ final class ViewManager {
 			'detail_template_id'    => $template_ids['detail_template_id'],
 			'allowed_template_ids'  => array_values( array_unique( $allowed_templates ) ),
 			'timezone'              => $timezone,
-			'language'              => sanitize_key( (string) ( $data['language'] ?? '' ) ),
+			'language'              => $language,
 			'color_rules'           => $colors,
 			'html_cache'            => (bool) ( $data['html_cache'] ?? true ),
 			'date_format'           => $formats['date_format'],
 			'time_format'           => $formats['time_format'],
 		);
-		$id     = $this->services->views()->save( $id, $name, (bool) ( $data['enabled'] ?? true ), $config );
-		$this->services->audit()->record( null === $existing ? 'view_created' : 'view_updated', 'view', $id );
-		return $this->services->views()->find( $id );
+		return array( $name, (bool) ( $data['enabled'] ?? true ), $config );
 	}
 
 	public function delete( int $id ): void {

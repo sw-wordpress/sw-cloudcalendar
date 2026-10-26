@@ -9,7 +9,9 @@ Base: `/wp-json/sw-cloudcalendar/v1/` (plain permalinks: `/?rest_route=/sw-cloud
 - Collections: `{ "items": [...], "total": n, "pages": n }`.
 - Errors: WordPress format `{ "code": "swc_…", "message": "translated text", "data": { "status": 400, "params": { "field": "error_code" } } }`.
   Field names in `params` use dots for nested fields (`settings.attachments.max_file_size_mb`).
-- Times are ISO 8601 UTC strings (`2026-10-24T17:20:00Z`) unless stated otherwise.
+- Times are ISO 8601 UTC strings (`2026-10-24T17:20:00Z`) everywhere in admin responses. Event times in public
+  responses carry the offset of the view time zone (`2026-11-01T09:00:00+01:00`) or are dates (all-day).
+- Maps are always JSON objects, also when empty (`{}`). DELETE responses: `{ "deleted": true }`.
 
 ## Public
 
@@ -64,7 +66,7 @@ Connection:
 ```
 
 Settings per provider: ICS `{ url, allow_http, max_feed_mb }`; Google `{ client_id, attachment_access, test_calendar_id }`;
-Microsoft `{ client_id, tenant_id, attachment_access }`. Secrets (write only, never returned): `client_secret` (oauth),
+Microsoft `{ client_id, tenant_id (required, e.g. contoso.onmicrosoft.com, a GUID or "organizations"), attachment_access }`. Secrets (write only, never returned): `client_secret` (oauth),
 `api_key` (Google api_key mode), `auth_header` (ICS http_header mode, full header value e.g. `Basic …`). Empty secret
 values keep the stored value. Auth modes per provider: `GET /admin/meta` → `auth_modes`.
 
@@ -111,32 +113,34 @@ required` (public source with `public_only=false`), `settings.attachments.sync_a
 |---|---|---|
 | GET/POST | `/admin/views` | View body: `{ name, enabled, source_ids, default_filters, display_mode, allowed_modes, container_template_id, event_template_id, detail_template_id, allowed_template_ids, timezone, language, color_rules, html_cache, date_format, time_format }` |
 | GET/PUT/DELETE | `/admin/views/{id}` | result adds `id, revision, shortcode, dynamic` (dynamic = contains non-public sources → loaded via REST) |
+| POST | `/admin/views/preview` | `{ id?, view: <View body>, filters?: {…} }` → `{ html, css: {scope: css}, total }` – renders the unsaved (or disabled) form state with the ACL of the current admin; validation errors like PUT; never cached |
 
-Template ids `null` mean the built-in preset of the display mode. Live preview of a saved view: public
+Template ids `null` mean the built-in preset of the display mode. `language` is empty (site/user locale) or a
+WordPress locale such as `de_DE`; it is switched to while the view is rendered (month/weekday names, labels). Live preview of a saved view: public
 `GET /views/{id}/render` (the admin has access to all sources it may see).
 
 ### Templates
 
 | Method | Path | Body / result |
 |---|---|---|
-| GET | `/admin/templates?kind=` | collection without body |
+| GET | `/admin/templates?kind=` | collection of summaries `{ id, name, kind, editor_mode, revision, preset_key, updated_at, used_by: [viewIds] }` |
 | POST | `/admin/templates` | `{ name, kind: container|event|detail, editor_mode: visual|html, body, css, visual_schema }` |
 | GET/PUT/DELETE | `/admin/templates/{id}` | kind immutable; DELETE → 409 `swc_conflict` if used by a view |
 | POST | `/admin/templates/validate` | `{ kind, body, css }` → `{ valid, errors: [{code, message, line, column, params}], css_error }` |
-| POST | `/admin/templates/preview` | `{ mode: list|cards|month, container?: {body, css}, event?: {…}, detail?: {…} }` → `{ html, css, errors }` (missing parts use the preset of the mode). Render inside a sandboxed iframe. |
+| POST | `/admin/templates/preview` | `{ mode: list|cards|month, container?: {body, css}, event?: {…}, detail?: {…} }` → `{ html, css: {scope: css}, errors: {kind: [error]} }` (missing parts use the preset of the mode). Render inside a sandboxed iframe. |
 | GET | `/admin/templates/presets` | `[{ key, name, mode, description, templates: { container: {body, css}, event: …, detail: … } }]` |
 | POST | `/admin/templates/presets/{key}/install` | creates editable copies → 201 list |
 | GET | `/admin/templates/reference` | placeholder reference per kind: `{ container: [{name, type, description}], event: …, detail: … }` |
 
-Save errors: 400 `swc_invalid_template`, `data.params.body = "invalid_template"` and `data.validation` (same shape as
-`/validate`).
+Save errors: 400 `swc_invalid_template` with `data.params.body = "invalid_template"` and `data.validation` (same
+shape as `/validate`) when body or CSS are invalid; other field errors (e.g. `name`) are a plain `swc_invalid`.
 
 ### System
 
 | Method | Path | Result |
 |---|---|---|
 | GET | `/admin/diagnostics` | see `Diagnostics::collect()` (versions, environment, security, storage, cron, cache, connections, sources, recent_errors) |
-| POST | `/admin/diagnostics/storage-check` | re-verifies the private storage `{ root, checked_at, safe, method, reason }` |
+| POST | `/admin/diagnostics/storage-check` | re-verifies the private storage `{ checked_at, safe, method, reason }` (`method`: `outside_document_root|http_probe`, `reason`: `not_writable|unverifiable_location|probe_failed|publicly_accessible|probe_inconclusive_<status>`) |
 | POST | `/admin/cache/clear` | `{ scope }` → template AST and HTML caches are cleared together |
 | GET/PUT | `/admin/settings` | `{ html_cache, delete_data_on_uninstall, cron_mode: wp|system, log_level, log_retention_days, run_retention_days, global_quota_mb, revoked_file_grace_hours, public_rate_limit, default_view_timezone }` |
 | GET | `/admin/logs?level=&source_id=` | paginated log entries `{ id, created_at, level, code, source_id, message, context }` |

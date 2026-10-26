@@ -64,9 +64,11 @@ final class ViewRenderer
     public function requiresDynamicLoading(int $viewId): bool
     {
         $view = $this->views->find($viewId);
-        if ($view === null || !$view->enabled) {
-            return false;
-        }
+        return $view !== null && $view->enabled && $this->containsRestricted($view);
+    }
+
+    private function containsRestricted(CalendarView $view): bool
+    {
         foreach ($this->sources->findMany($view->sourceIds) as $source) {
             if ($source->isReadable() && $source->visibility !== Visibility::Public) {
                 return true;
@@ -85,6 +87,17 @@ final class ViewRenderer
         if ($view === null || !$view->enabled) {
             return RenderResult::notFound();
         }
+        return $this->renderView($view, $rawFilter, $userId, $strict);
+    }
+
+    /**
+     * Renders a given (possibly unsaved or disabled) view object; the admin preview uses this with id 0. The source
+     * ACL of `$userId` applies unchanged; unsaved views are never written to the HTML cache.
+     *
+     * @param array<string, mixed> $rawFilter
+     */
+    public function renderView(CalendarView $view, array $rawFilter, ?int $userId, bool $strict = false): RenderResult
+    {
         $parsed = $this->schema->normalize($rawFilter);
         if ($strict && !$parsed->isValid()) {
             return new RenderResult(RenderResult::INVALID, errors: $parsed->errors);
@@ -103,8 +116,8 @@ final class ViewRenderer
 
         // "Public" is a property of the whole view: if it contains any restricted source the output depends on the
         // user and must never be shared through HTTP caches, even if this user only sees the public part.
-        $public = $allowed !== [] && $this->allPublic($sources) && !$this->requiresDynamicLoading($view->id);
-        $cacheable = $allowed !== [] && $this->allPublic($sources) && $view->htmlCache && $this->settings->htmlCacheEnabled;
+        $public = $allowed !== [] && $this->allPublic($sources) && !$this->containsRestricted($view);
+        $cacheable = $view->id > 0 && $allowed !== [] && $this->allPublic($sources) && $view->htmlCache && $this->settings->htmlCacheEnabled;
         $cacheKey = $cacheable ? $this->cacheKey($view, $sources, $filter, $mode, [$container, $event], $tz) : '';
         if ($cacheable) {
             $hit = $this->cache->get($cacheKey);
@@ -308,7 +321,7 @@ final class ViewRenderer
                 'timezone' => $tz->getName(),
                 'last_synced_at' => $lastSync?->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d\TH:i:s\Z'),
             ],
-            'public' => $allowed !== [] && $this->allPublic($sources) && !$this->requiresDynamicLoading($view->id),
+            'public' => $allowed !== [] && $this->allPublic($sources) && !$this->containsRestricted($view),
         ];
     }
 

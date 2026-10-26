@@ -1,0 +1,613 @@
+/*
+ * sw-cloudcalendar admin styles. Everything is namespaced with `swc-` / `.swc-root` so nothing
+ * leaks into wp-admin. Quasar's own CSS is scoped to `.swc-root` at build time
+ * (tools/postcssScope.ts).
+ */
+
+/* ---------- design tokens ---------- */
+.swc-root {
+  --swc-primary: #4f46e5;
+  --swc-primary-strong: #4338ca;
+  --swc-primary-soft: #eef2ff;
+  --swc-accent: #0d9488;
+  --swc-accent-bright: #14b8a6;
+  --swc-success: #16a34a;
+  --swc-warning: #f59e0b;
+  --swc-danger: #dc2626;
+  --swc-info: #0284c7;
+
+  --swc-success-text: #166534;
+  --swc-warning-text: #92400e;
+  --swc-danger-text: #b91c1c;
+  --swc-info-text: #075985;
+  --swc-neutral-text: #334155;
+  --swc-success-bg: #dcfce7;
+  --swc-warning-bg: #fef3c7;
+  --swc-danger-bg: #fee2e2;
+  --swc-info-bg: #e0f2fe;
+  --swc-neutral-bg: #eef1f6;
+  --swc-primary-text: #3730a3;
+  --swc-primary-bg: #e0e7ff;
+
+  --swc-bg: #f3f4fa;
+  --swc-surface: #ffffff;
+  --swc-surface-2: #f8f9fc;
+  --swc-surface-3: #eef0f7;
+  --swc-border: #e1e5ee;
+  --swc-text: #0f172a;
+  --swc-muted: #475569;
+  --swc-rail-bg: #ffffff;
+  --swc-focus: #4f46e5;
+  --swc-overlay: rgba(15, 23, 42, 0.45);
+
+  /* code editor (CodeMirror) */
+  --swc-cm-tag: #1d4ed8;
+  --swc-cm-attr: #7c3aed;
+  --swc-cm-string: #047857;
+  --swc-cm-comment: #64748b;
+  --swc-cm-keyword: #b45309;
+  --swc-cm-number: #be123c;
+  --swc-cm-punct: #475569;
+  --swc-cm-active: rgba(79, 70, 229, 0.06);
+  --swc-cm-selection: rgba(79, 70, 229, 0.2);
+
+  --swc-gradient: linear-gradient(135deg, #4f46e5 0%, #0d9488 100%);
+  --swc-gradient-soft: linear-gradient(
+    135deg,
+    rgba(79, 70, 229, 0.1) 0%,
+    rgba(20, 184, 166, 0.1) 100%
+  );
+
+  --swc-radius: 16px;
+  --swc-radius-sm: 10px;
+  --swc-shadow-1: 0 1px 2px rgba(15, 23, 42, 0.05), 0 2px 6px rgba(15, 23, 42, 0.04);
+  --swc-shadow-2:
+    0 1px 2px rgba(15, 23, 42, 0.04), 0 6px 16px rgba(15, 23, 42, 0.06),
+    0 18px 40px rgba(15, 23, 42, 0.05);
+  --swc-font: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --swc-mono: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* map to Quasar brand variables (set here instead of Quasar's runtime brand plugin) */
+  --q-primary: var(--swc-primary);
+  --q-secondary: var(--swc-accent);
+  --q-accent: var(--swc-accent-bright);
+  --q-positive: var(--swc-success);
+  --q-negative: var(--swc-danger);
+  --q-info: var(--swc-info);
+  --q-warning: var(--swc-warning);
+  --q-dark: var(--swc-surface);
+  --q-dark-page: var(--swc-bg);
+
+  color-scheme: light;
+  font-family: var(--swc-font);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--swc-text);
+  font-feature-settings: 'cv11', 'ss03';
+  -webkit-font-smoothing: antialiased;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+.swc-root.swc-dark {
+  --swc-primary: #818cf8;
+  --swc-primary-strong: #a5b4fc;
+  --swc-primary-soft: rgba(129, 140, 248, 0.14);
+  --swc-accent: #2dd4bf;
+  --swc-accent-bright: #2dd4bf;
+  --swc-success: #4ade80;
+  --swc-warning: #fbbf24;
+  --swc-danger: #f87171;
+  --swc-info: #38bdf8;
+
+  --swc-success-text: #86efac;
+  --swc-warning-text: #fcd34d;
+  --swc-danger-text: #fca5a5;
+  --swc-info-text: #7dd3fc;
+  --swc-neutral-text: #cbd5e1;
+  --swc-primary-text: #c7d2fe;
+  --swc-success-bg: rgba(74, 222, 128, 0.14);
+  --swc-warning-bg: rgba(251, 191, 36, 0.14);
+  --swc-danger-bg: rgba(248, 113, 113, 0.16);
+  --swc-info-bg: rgba(56, 189, 248, 0.14);
+  --swc-neutral-bg: rgba(148, 163, 184, 0.16);
+  --swc-primary-bg: rgba(129, 140, 248, 0.2);
+
+  --swc-bg: #0a0f1f;
+  --swc-surface: #131a2e;
+  --swc-surface-2: #182038;
+  --swc-surface-3: #1f2946;
+  --swc-border: #263250;
+  --swc-text: #e8ecf8;
+  --swc-muted: #a3aecb;
+  --swc-rail-bg: #0e1427;
+  --swc-focus: #a5b4fc;
+  --swc-overlay: rgba(2, 6, 20, 0.65);
+
+  --swc-cm-tag: #93c5fd;
+  --swc-cm-attr: #c4b5fd;
+  --swc-cm-string: #6ee7b7;
+  --swc-cm-comment: #94a3b8;
+  --swc-cm-keyword: #fcd34d;
+  --swc-cm-number: #fda4af;
+  --swc-cm-punct: #cbd5e1;
+  --swc-cm-active: rgba(129, 140, 248, 0.08);
+  --swc-cm-selection: rgba(129, 140, 248, 0.3);
+
+  --swc-gradient: linear-gradient(135deg, #6366f1 0%, #14b8a6 100%);
+  --swc-gradient-soft: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.18) 0%,
+    rgba(20, 184, 166, 0.14) 100%
+  );
+  --swc-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --swc-shadow-2: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 30px rgba(0, 0, 0, 0.35);
+  color-scheme: dark;
+}
+
+/* ---------- isolation reset (wp-admin styles bleeding in) ---------- */
+.swc-root *,
+.swc-root *::before,
+.swc-root *::after {
+  box-sizing: border-box;
+}
+.swc-root h1,
+.swc-root h2,
+.swc-root h3,
+.swc-root h4,
+.swc-root h5,
+.swc-root h6,
+.swc-root p,
+.swc-root ul,
+.swc-root ol,
+.swc-root dl,
+.swc-root dd,
+.swc-root figure {
+  margin: 0;
+  padding: 0;
+  color: inherit;
+  font-family: inherit;
+  letter-spacing: normal;
+  text-transform: none;
+  line-height: 1.35;
+}
+.swc-root ul,
+.swc-root ol {
+  list-style: none;
+}
+.swc-root a {
+  color: var(--swc-primary);
+  text-decoration: none;
+}
+.swc-root a:hover {
+  text-decoration: underline;
+}
+.swc-root button,
+.swc-root input,
+.swc-root select,
+.swc-root textarea {
+  font-family: inherit;
+}
+.swc-root table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  margin: 0;
+  width: 100%;
+  background: transparent;
+  border: 0;
+}
+.swc-root th,
+.swc-root td {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  vertical-align: middle;
+}
+.swc-root code {
+  font-family: var(--swc-mono);
+  font-size: 0.9em;
+  background: var(--swc-surface-3);
+  padding: 0.1em 0.4em;
+  border-radius: 6px;
+}
+.swc-root label {
+  display: inline;
+  margin: 0;
+  font-weight: inherit;
+}
+
+/* Standalone pseudo-roots created by Quasar for dialogs/menus/notifications */
+.swc-root.q-portal--dialog,
+.swc-root.q-portal--menu {
+  font-size: 15px;
+}
+
+/* ---------- WordPress integration ---------- */
+.swc-fullbleed {
+  margin: 0 0 0 -20px;
+}
+@media screen and (max-width: 782px) {
+  .swc-fullbleed {
+    margin-left: -10px;
+  }
+}
+body.swc-admin-page #wpfooter {
+  display: none;
+}
+body.swc-admin-page #wpbody-content {
+  padding-bottom: 0;
+}
+/* Quasar locks scroll with a class on body when a dialog is open */
+body.q-body--prevent-scroll {
+  overflow: hidden;
+}
+/* Dialogs/menus/notifications must sit above the WP admin bar (99999) and admin menu */
+.swc-root.q-portal--dialog .q-dialog,
+.swc-root.q-portal--menu .q-menu,
+.swc-root.q-portal--dialog .q-dialog__backdrop {
+  z-index: 100100;
+}
+.swc-root .q-notifications__list {
+  z-index: 100200;
+}
+.swc-root .q-menu,
+.swc-root.q-portal--menu .q-menu {
+  z-index: 100150;
+}
+.swc-root.q-portal--tooltip .q-tooltip,
+.swc-root .q-tooltip {
+  z-index: 100300;
+}
+
+/* ---------- utilities ---------- */
+.swc-sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.swc-num {
+  font-variant-numeric: tabular-nums;
+}
+.swc-muted {
+  color: var(--swc-muted);
+}
+.swc-mono {
+  font-family: var(--swc-mono);
+  font-size: 0.88em;
+}
+.swc-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.swc-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.swc-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.swc-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+}
+.swc-grid--wide {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+}
+.swc-eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--swc-muted);
+}
+
+/* ---------- focus ---------- */
+.swc-root :focus-visible {
+  outline: 3px solid var(--swc-focus);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+.swc-root .q-btn:focus-visible,
+.swc-root .q-field:focus-within .q-field__control {
+  outline: 3px solid var(--swc-focus);
+  outline-offset: 1px;
+}
+.swc-root .q-field__native:focus-visible,
+.swc-root .q-field__input:focus-visible {
+  outline: none;
+}
+
+/* ---------- Quasar tuning ---------- */
+.swc-root .q-btn {
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  border-radius: 10px;
+}
+.swc-root .q-btn--standard.bg-primary,
+.swc-root .q-btn.swc-btn-gradient {
+  background: var(--swc-gradient) !important;
+}
+.swc-root .q-btn.bg-primary {
+  color: #fff !important;
+}
+.swc-root .q-field--outlined .q-field__control {
+  border-radius: 10px;
+}
+.swc-root .q-field--outlined .q-field__control:before {
+  border-color: var(--swc-border);
+}
+.swc-root .q-field--outlined:not(.q-field--readonly) .q-field__control:hover:before {
+  border-color: var(--swc-muted);
+}
+.swc-root .q-field__label,
+.swc-root .q-field__bottom {
+  color: var(--swc-muted);
+}
+.swc-root .q-field--dark .q-field__native,
+.swc-root .q-field--dark .q-field__prefix,
+.swc-root .q-field--dark .q-field__suffix,
+.swc-root .q-field--dark .q-field__input {
+  color: var(--swc-text);
+}
+.swc-root .q-card {
+  background: var(--swc-surface);
+  color: var(--swc-text);
+  box-shadow: var(--swc-shadow-2);
+  border-radius: var(--swc-radius);
+}
+.swc-root .q-menu {
+  background: var(--swc-surface);
+  color: var(--swc-text);
+  border: 1px solid var(--swc-border);
+  border-radius: 12px;
+  box-shadow: var(--swc-shadow-2);
+}
+.swc-root .q-item--active,
+.swc-root .q-item.q-router-link--active {
+  color: var(--swc-primary);
+}
+.swc-root .q-tooltip {
+  background: var(--swc-text);
+  color: var(--swc-surface);
+  font-size: 13px;
+  border-radius: 8px;
+}
+.swc-root .q-tab {
+  text-transform: none;
+  font-weight: 600;
+}
+.swc-root .q-tabs {
+  color: var(--swc-muted);
+}
+.swc-root .q-tab--active {
+  color: var(--swc-primary);
+}
+.swc-root .q-skeleton {
+  background: var(--swc-surface-3);
+}
+.swc-root .q-skeleton--type-text,
+.swc-root .q-skeleton--type-rect {
+  border-radius: 8px;
+}
+.swc-root .q-notification {
+  border-radius: 12px;
+  box-shadow: var(--swc-shadow-2);
+  font-size: 14px;
+}
+.swc-root .q-linear-progress {
+  border-radius: 999px;
+}
+.swc-root .q-toggle__label,
+.swc-root .q-checkbox__label {
+  font-size: 14px;
+}
+.swc-root .q-dialog__backdrop {
+  background: var(--swc-overlay);
+}
+.swc-root .q-drawer {
+  background: var(--swc-surface);
+}
+.swc-root .q-separator {
+  background: var(--swc-border);
+}
+
+/* ---------- native tables that stack on small screens ---------- */
+.swc-table {
+  font-variant-numeric: tabular-nums;
+}
+.swc-table th {
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--swc-muted);
+  border-bottom: 1px solid var(--swc-border);
+  white-space: nowrap;
+}
+.swc-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--swc-border);
+  font-size: 14px;
+}
+.swc-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+.swc-table tbody tr:hover {
+  background: var(--swc-surface-2);
+}
+.swc-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+@media (max-width: 760px) {
+  .swc-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+  .swc-table,
+  .swc-table tbody,
+  .swc-table tr,
+  .swc-table td {
+    display: block;
+  }
+  .swc-table tr {
+    padding: 10px 6px;
+    border-bottom: 1px solid var(--swc-border);
+  }
+  .swc-table tbody tr:last-child {
+    border-bottom: 0;
+  }
+  .swc-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 8px;
+    border: 0;
+    text-align: right;
+  }
+  .swc-table td::before {
+    content: attr(data-label);
+    flex: none;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--swc-muted);
+    text-align: left;
+  }
+  .swc-table td[data-label=''] {
+    justify-content: flex-end;
+  }
+  .swc-table td[data-label='']::before {
+    display: none;
+  }
+}
+
+/* ---------- callouts, definition lists, form grids ---------- */
+.swc-callout {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  border-radius: var(--swc-radius-sm);
+  font-size: 14px;
+  background: var(--swc-neutral-bg);
+  color: var(--swc-neutral-text);
+}
+.swc-callout.is-info {
+  background: var(--swc-info-bg);
+  color: var(--swc-info-text);
+}
+.swc-callout.is-success {
+  background: var(--swc-success-bg);
+  color: var(--swc-success-text);
+}
+.swc-callout.is-warning {
+  background: var(--swc-warning-bg);
+  color: var(--swc-warning-text);
+}
+.swc-callout.is-danger {
+  background: var(--swc-danger-bg);
+  color: var(--swc-danger-text);
+}
+.swc-callout code {
+  background: transparent;
+}
+.swc-dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
+  gap: 10px 16px;
+  font-size: 14px;
+}
+.swc-dl dt {
+  font-size: 12px;
+  color: var(--swc-muted);
+}
+.swc-dl dd {
+  font-weight: 600;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.swc-form-grid {
+  display: grid;
+  gap: 12px 16px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+}
+.swc-hint {
+  font-size: 13px;
+  color: var(--swc-muted);
+}
+.swc-swatch {
+  display: inline-block;
+  flex: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  vertical-align: middle;
+}
+.swc-table-wrap {
+  overflow-x: auto;
+}
+
+/* ---------- motion ---------- */
+@keyframes swc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes swc-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+@keyframes swc-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.swc-fade-enter-active,
+.swc-fade-leave-active {
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+.swc-fade-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
+}
+.swc-fade-leave-to {
+  opacity: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .swc-root *,
+  .swc-root *::before,
+  .swc-root *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

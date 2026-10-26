@@ -30,6 +30,11 @@ final class AuditLog {
 		);
 	}
 
+	public function count(): int {
+		$table = Schema::table( 'audit' );
+		return (int) Db::wpdb()->get_var( "SELECT COUNT(*) FROM {$table}" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+	}
+
 	/**
 	 * @return list<array<string, mixed>>
 	 */
@@ -40,7 +45,7 @@ final class AuditLog {
 		foreach ( is_array( $rows ) ? $rows : array() as $row ) {
 			$list[] = array(
 				'id'          => (int) $row['id'],
-				'created_at'  => (string) $row['created_at'],
+				'created_at'  => Db::iso( $row['created_at'] ),
 				'user_id'     => (int) $row['user_id'],
 				'action'      => (string) $row['action'],
 				'object_type' => (string) $row['object_type'],

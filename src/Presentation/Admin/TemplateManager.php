@@ -147,9 +147,11 @@ final class TemplateManager {
 		if ( ! $validation['valid'] ) {
 			$errors['body'] = 'invalid_template';
 		}
+		if ( isset( $errors['body'] ) ) {
+			throw new TemplateSaveException( $errors, $validation );
+		}
 		if ( array() !== $errors ) {
-			$exception = new ValidationException( $errors, 'The template is invalid.' );
-			throw new TemplateSaveException( $exception->errors, $validation );
+			throw new ValidationException( $errors );
 		}
 		$id = $this->services->templates()->save( $id, $name, $kind, $mode, $body, $css, $schema, $existing?->presetKey ?? ( isset( $data['preset_key'] ) ? sanitize_key( (string) $data['preset_key'] ) : null ) );
 		$this->services->audit()->record( null === $existing ? 'template_created' : 'template_updated', 'template', $id );
@@ -209,7 +211,7 @@ final class TemplateManager {
 	 * Safe preview of unsaved templates with the fixed datasets (no provider requests).
 	 *
 	 * @param array<string, mixed> $data
-	 * @return array{html: string, css: string, errors: array<string, mixed>}
+	 * @return array{html: string, css: object, errors: array<string, mixed>|object}
 	 */
 	public function preview( array $data ): array {
 		$mode   = DisplayMode::tryFrom( (string) ( $data['mode'] ?? 'list' ) ) ?? DisplayMode::List;
@@ -240,7 +242,7 @@ final class TemplateManager {
 		if ( array() !== $errors ) {
 			return array(
 				'html'   => '',
-				'css'    => '',
+				'css'    => (object) array(),
 				'errors' => $errors,
 			);
 		}
@@ -250,8 +252,8 @@ final class TemplateManager {
 		$result   = $renderer->render( $parts['container'], $parts['event'], $parts['detail'], $mode, $this->services->clock()->now(), $tz, $scopes, $css );
 		return array(
 			'html'   => $result['html'],
-			'css'    => implode( "\n", array_filter( $result['css'] ) ),
-			'errors' => array(),
+			'css'    => (object) array_filter( $result['css'] ),
+			'errors' => (object) array(),
 		);
 	}
 

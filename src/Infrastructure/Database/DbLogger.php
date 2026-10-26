@@ -71,7 +71,7 @@ final class DbLogger implements LoggerInterface {
 		foreach ( is_array( $rows ) ? $rows : array() as $row ) {
 			$list[] = array(
 				'id'         => (int) $row['id'],
-				'created_at' => (string) $row['created_at'],
+				'created_at' => Db::iso( $row['created_at'] ),
 				'level'      => (string) $row['level'],
 				'code'       => (string) $row['event_code'],
 				'source_id'  => null === $row['source_id'] ? null : (int) $row['source_id'],
@@ -80,6 +80,22 @@ final class DbLogger implements LoggerInterface {
 			);
 		}
 		return $list;
+	}
+
+	public function count( ?string $level = null, ?int $source_id = null ): int {
+		$table = Schema::table( 'logs' );
+		$where = '1 = 1';
+		$args  = array();
+		if ( null !== $level && isset( self::LEVELS[ $level ] ) ) {
+			$where .= ' AND level = %s';
+			$args[] = $level;
+		}
+		if ( null !== $source_id ) {
+			$where .= ' AND source_id = %d';
+			$args[] = $source_id;
+		}
+		$sql = "SELECT COUNT(*) FROM {$table} WHERE {$where}";
+		return (int) ( array() === $args ? Db::wpdb()->get_var( $sql ) : Db::wpdb()->get_var( Db::wpdb()->prepare( $sql, ...$args ) ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery,WordPress.DB.PreparedSQL.NotPrepared -- fixed SQL fragments and placeholders.
 	}
 
 	public function purge( \DateTimeImmutable $older_than, int $max_rows = 20000 ): int {

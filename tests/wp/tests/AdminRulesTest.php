@@ -111,4 +111,50 @@ final class AdminRulesTest extends SWC_TestCase {
 		$replay = $this->rest( 'GET', '/oauth/callback', array( 'state' => $state, 'code' => 'abc' ) );
 		$this->assertStringContainsString( 'invalid_state', $replay->get_headers()['Location'] );
 	}
+
+	public function test_unsaved_and_disabled_view_preview(): void {
+		$source = $this->source( $this->ics_connection() );
+		$this->sync( $source );
+		$body     = array(
+			'view'    => array( 'name' => 'Entwurf', 'enabled' => false, 'source_ids' => array( $source ), 'display_mode' => 'list' ),
+			'filters' => array( 'start' => '2026-10-01', 'end' => '2026-11-30' ),
+		);
+		$response = $this->rest( 'POST', '/admin/views/preview', array(), $body );
+		$this->assertSame( 200, $response->get_status() );
+		$this->assertStringContainsString( 'Gottesdienst', $response->get_data()['html'] );
+		$this->assertSame( 'no-store', $response->get_headers()['Cache-Control'] );
+		$invalid = $this->rest( 'POST', '/admin/views/preview', array(), array( 'view' => array( 'name' => '' ) ) );
+		$this->assertSame( 400, $invalid->get_status() );
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'editor' ) ) );
+		$this->assertSame( 403, $this->rest( 'POST', '/admin/views/preview', array(), $body )->get_status() );
+	}
+
+	public function test_admin_lists_use_iso_dates_and_real_totals(): void {
+		$source = $this->source( $this->ics_connection() );
+		$this->sync( $source );
+		$runs = $this->rest( 'GET', '/admin/sync/runs' )->get_data();
+		$this->assertMatchesRegularExpression( '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/', $runs['items'][0]['started_at'] );
+		for ( $i = 0; $i < 3; $i++ ) {
+			$this->services->audit()->record( 'test', 'system', $i );
+		}
+		$audit = $this->rest( 'GET', '/admin/audit', array( 'per_page' => 2 ) )->get_data();
+		$this->assertCount( 2, $audit['items'] );
+		$this->assertSame( $this->services->audit()->count(), $audit['total'] );
+		$this->assertMatchesRegularExpression( '/Z$/', $audit['items'][0]['created_at'] );
+		$this->assertIsObject( $this->rest( 'POST', '/admin/templates/preview', array(), array( 'mode' => 'cards' ) )->get_data()['css'] );
+	}
+
+	public function test_name_only_error_is_a_plain_validation_error(): void {
+		$response = $this->rest( 'POST', '/admin/templates', array(), array( 'name' => '', 'kind' => 'event', 'body' => '<p>{{event.title}}</p>' ) );
+		$this->assertSame( 400, $response->get_status() );
+		$this->assertSame( 'swc_invalid', $response->get_data()['code'] );
+	}
+
+	public function test_view_language_is_validated(): void {
+		$source   = $this->source( $this->ics_connection() );
+		$ok       = $this->rest( 'POST', '/admin/views', array(), array( 'name' => 'V', 'source_ids' => array( $source ), 'language' => 'de_DE' ) );
+		$this->assertSame( 'de_DE', $ok->get_data()['language'] );
+		$bad = $this->rest( 'POST', '/admin/views', array(), array( 'name' => 'V', 'source_ids' => array( $source ), 'language' => '../evil' ) );
+		$this->assertSame( 'invalid', $bad->get_data()['data']['params']['language'] );
+	}
 }

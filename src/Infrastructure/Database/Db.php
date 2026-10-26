@@ -24,6 +24,11 @@ final class Db {
 		return null === $time ? null : \DateTimeImmutable::createFromInterface( $time )->setTimezone( new \DateTimeZone( 'UTC' ) )->format( 'Y-m-d H:i:s' );
 	}
 
+	/** DB DATETIME (UTC) to the API format `Y-m-d\TH:i:s\Z`. */
+	public static function iso( mixed $value ): ?string {
+		return self::date( $value )?->format( 'Y-m-d\TH:i:s\Z' );
+	}
+
 	public static function date( mixed $value ): ?\DateTimeImmutable {
 		if ( ! is_string( $value ) || '' === $value || '0000-00-00 00:00:00' === $value ) {
 			return null;

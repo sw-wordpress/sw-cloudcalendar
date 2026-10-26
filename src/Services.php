@@ -301,6 +301,11 @@ final class Services {
 		);
 	}
 
+	/** Drops services that captured translated strings or the locale (after switch_to_locale()). */
+	public function forget_locale_dependent(): void {
+		unset( $this->services['labels'], $this->services['renderer'] );
+	}
+
 	public function renderer(): ViewRenderer {
 		return $this->share(
 			'renderer',

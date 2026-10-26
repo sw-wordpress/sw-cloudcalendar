@@ -62,8 +62,8 @@ final class SyncRunStore implements SyncRunStoreInterface {
 			$list[] = array(
 				'id'          => (int) $row['id'],
 				'source_id'   => (int) $row['source_id'],
-				'started_at'  => (string) $row['started_at'],
-				'finished_at' => $row['finished_at'],
+				'started_at'  => Db::iso( $row['started_at'] ),
+				'finished_at' => Db::iso( $row['finished_at'] ),
 				'status'      => (string) $row['status'],
 				'mode'        => (string) $row['sync_mode'],
 				'created'     => (int) $row['created_count'],

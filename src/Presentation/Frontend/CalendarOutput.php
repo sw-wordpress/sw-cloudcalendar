@@ -51,6 +51,17 @@ final class CalendarOutput {
 			$filters['month'] = $month;
 		}
 
+		return ViewLocale::run(
+			$this->services,
+			ViewLocale::for_view( $this->services, $view_id ),
+			fn (): string => $this->render_view( $view_id, $filters, $event_id )
+		);
+	}
+
+	/**
+	 * @param array<string, mixed> $filters
+	 */
+	private function render_view( int $view_id, array $filters, int $event_id ): string {
 		$renderer = $this->services->renderer();
 		if ( $renderer->requiresDynamicLoading( $view_id ) && ! $this->is_editor_preview() ) {
 			return $this->placeholder( $view_id, $filters, $event_id );

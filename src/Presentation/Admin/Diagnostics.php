@@ -96,7 +96,7 @@ final class Diagnostics {
 				'next_daily'       => $this->next_event( QueueRunner::HOOK_DAILY ),
 				'last_tick'        => $this->time_option( QueueRunner::LAST_TICK_OPTION ),
 				'last_maintenance' => $this->time_option( QueueRunner::LAST_MAINTENANCE_OPTION ),
-				'jobs'             => $this->services->jobs()->counts(),
+				'jobs'             => (object) $this->services->jobs()->counts(),
 			),
 			'cache'         => array(
 				'html_cache_enabled'      => (bool) Settings::get( 'html_cache' ),

@@ -69,7 +69,11 @@ final class SystemController extends BaseController {
 	}
 
 	public function storage_check(): \WP_REST_Response {
-		return new \WP_REST_Response( $this->services->storage_guard()->verify() );
+		$result               = $this->services->storage_guard()->verify();
+		$result['checked_at'] = gmdate( 'Y-m-d\TH:i:s\Z', (int) $result['checked_at'] );
+		// The absolute path is server internal information; the UI only needs the verdict.
+		unset( $result['root'] );
+		return new \WP_REST_Response( $result );
 	}
 
 	/**
@@ -87,9 +91,10 @@ final class SystemController extends BaseController {
 		$per_page = (int) $request['per_page'];
 		$level    = $request->get_param( 'level' );
 		$source   = $request->get_param( 'source_id' );
-		$items    = $this->services->logger()->recent( $per_page + 1, ( $page - 1 ) * $per_page, is_string( $level ) && '' !== $level ? $level : null, is_numeric( $source ) ? (int) $source : null );
-		$more     = count( $items ) > $per_page;
-		return $this->collection( array_slice( $items, 0, $per_page ), ( $page - 1 ) * $per_page + count( $items ), $page, $per_page + ( $more ? 1 : 0 ) );
+		$level    = is_string( $level ) && '' !== $level ? $level : null;
+		$source   = is_numeric( $source ) ? (int) $source : null;
+		$items    = $this->services->logger()->recent( $per_page, ( $page - 1 ) * $per_page, $level, $source );
+		return $this->collection( $items, $this->services->logger()->count( $level, $source ), $page, $per_page );
 	}
 
 	public function audit( \WP_REST_Request $request ): \WP_REST_Response {
@@ -101,7 +106,7 @@ final class SystemController extends BaseController {
 			$item['user_name'] = $user instanceof \WP_User ? $user->display_name : null;
 		}
 		unset( $item );
-		return $this->collection( $items, ( $page - 1 ) * $per_page + count( $items ) + ( count( $items ) === $per_page ? 1 : 0 ), $page, $per_page );
+		return $this->collection( $items, $this->services->audit()->count(), $page, $per_page );
 	}
 
 	public function runs( \WP_REST_Request $request ): \WP_REST_Response {

@@ -12,6 +12,7 @@ namespace SW\Calendar\Presentation\Rest;
 use SW\Calendar\Application\Render\RenderResult;
 use SW\Calendar\Domain\Source\Visibility;
 use SW\Calendar\Presentation\Admin\ConnectionManager;
+use SW\Calendar\Presentation\Frontend\ViewLocale;
 
 /**
  * The permission callbacks of these routes are open on purpose: authorization happens per SOURCE inside the
@@ -106,7 +107,7 @@ final class PublicController extends BaseController {
 		if ( $this->rate_limited() ) {
 			return $this->too_many();
 		}
-		$result = $this->services->renderer()->events( (int) $request['id'], $this->filters( $request ), $this->current_user() );
+		$result = ViewLocale::run( $this->services, ViewLocale::for_view( $this->services, (int) $request['id'] ), fn (): array => $this->services->renderer()->events( (int) $request['id'], $this->filters( $request ), $this->current_user() ) );
 		if ( RenderResult::NOT_FOUND === $result['status'] ) {
 			return $this->error( 'swc_not_found', __( 'Calendar not found.', 'sw-cloudcalendar' ), 404 );
 		}
@@ -123,7 +124,7 @@ final class PublicController extends BaseController {
 			return $this->too_many();
 		}
 		$this->use_page_url( $request );
-		$result = $this->services->renderer()->render( (int) $request['id'], $this->filters( $request ), $this->current_user(), true );
+		$result = ViewLocale::run( $this->services, ViewLocale::for_view( $this->services, (int) $request['id'] ), fn (): RenderResult => $this->services->renderer()->render( (int) $request['id'], $this->filters( $request ), $this->current_user(), true ) );
 		if ( RenderResult::NOT_FOUND === $result->status ) {
 			return $this->error( 'swc_not_found', __( 'Calendar not found.', 'sw-cloudcalendar' ), 404 );
 		}
@@ -147,7 +148,7 @@ final class PublicController extends BaseController {
 			return $this->too_many();
 		}
 		$this->use_page_url( $request );
-		$result = $this->services->renderer()->renderDetail( (int) $request['view'], (int) $request['id'], $this->current_user() );
+		$result = ViewLocale::run( $this->services, ViewLocale::for_view( $this->services, (int) $request['view'] ), fn (): RenderResult => $this->services->renderer()->renderDetail( (int) $request['view'], (int) $request['id'], $this->current_user() ) );
 		if ( RenderResult::OK !== $result->status ) {
 			return $this->error( 'swc_not_found', __( 'Event not found.', 'sw-cloudcalendar' ), 404 );
 		}
