@@ -67,6 +67,9 @@ final class SyncAndRenderTest extends SWC_TestCase {
 		$html = do_shortcode( '[sw_calendar id="' . $view . '"]' );
 		$this->assertStringContainsString( 'swc-dynamic', $html );
 		$this->assertStringNotContainsString( 'Gottesdienst', $html );
+		// Invalid attributes are not forwarded to the strict REST endpoint.
+		$html = do_shortcode( '[sw_calendar id="' . $view . '" limit="5000" days="7"]' );
+		$this->assertStringContainsString( '{&quot;days&quot;:&quot;7&quot;}', $html );
 	}
 
 	public function test_template_ast_cache_hit_and_html_cache_hit(): void {

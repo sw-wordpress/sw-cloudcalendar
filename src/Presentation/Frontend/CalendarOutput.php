@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace SW\Calendar\Presentation\Frontend;
 
+use SW\Calendar\Application\Render\FilterSchema;
 use SW\Calendar\Application\Render\RenderResult;
 use SW\Calendar\Infrastructure\WordPress\WpUrlGenerator;
 use SW\Calendar\Services;
@@ -102,6 +103,9 @@ final class CalendarOutput {
 	 */
 	private function placeholder( int $view_id, array $filters, int $event_id ): string {
 		$labels = $this->services->labels();
+		// The REST endpoint validates strictly; invalid shortcode values are dropped here like in inline rendering.
+		$parsed  = ( new FilterSchema() )->normalize( $filters );
+		$filters = array_diff_key( $filters, $parsed->errors, array_flip( $parsed->unknown ) );
 		return sprintf(
 			'<div class="swc-calendar swc-dynamic" data-swc-view="%1$d" data-swc-filters="%2$s" data-swc-event="%3$d" aria-busy="true"><p class="swc-loading">%4$s</p><noscript><p>%5$s</p></noscript></div>',
 			$view_id,

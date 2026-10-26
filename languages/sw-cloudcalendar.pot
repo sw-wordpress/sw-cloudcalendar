@@ -1,0 +1,444 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR SW CloudCalendar contributors
+# This file is distributed under the same license as the sw-cloudcalendar package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: sw-cloudcalendar 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: blocks/calendar/block.json
+msgctxt "block title"
+msgid "Calendar (SW CloudCalendar)"
+msgstr ""
+
+#: blocks/calendar/block.json
+msgctxt "block description"
+msgid "Shows a saved calendar view with optional filters."
+msgstr ""
+
+#: blocks/calendar/block.json
+msgctxt "block keyword"
+msgid "appointments"
+msgstr ""
+
+#: blocks/calendar/block.json
+msgctxt "block keyword"
+msgid "calendar"
+msgstr ""
+
+#: blocks/calendar/block.json
+msgctxt "block keyword"
+msgid "events"
+msgstr ""
+
+#: blocks/calendar/index.js:52
+msgid "— Select a calendar view —"
+msgstr ""
+
+#: blocks/calendar/index.js:54
+msgid "disabled"
+msgstr ""
+
+#: blocks/calendar/index.js:65
+msgid "Calendar view"
+msgstr ""
+
+#: blocks/calendar/index.js:73
+msgid "Layout"
+msgstr ""
+
+#: blocks/calendar/index.js:74
+msgid "Only layouts allowed by the view are used."
+msgstr ""
+
+#: blocks/calendar/index.js:77 blocks/calendar/index.js:103
+msgid "View default"
+msgstr ""
+
+#: blocks/calendar/index.js:78
+msgid "Month"
+msgstr ""
+
+#: blocks/calendar/index.js:79
+msgid "List"
+msgstr ""
+
+#: blocks/calendar/index.js:80
+msgid "Cards"
+msgstr ""
+
+#: blocks/calendar/index.js:89
+msgid "Filter"
+msgstr ""
+
+#: blocks/calendar/index.js:90
+msgid "Filters can only narrow the view; they never grant access to other calendars."
+msgstr ""
+
+#: blocks/calendar/index.js:91
+msgid "Limit (1–100)"
+msgstr ""
+
+#: blocks/calendar/index.js:92
+msgid "Next days (1–1095)"
+msgstr ""
+
+#: blocks/calendar/index.js:93
+msgid "Start date"
+msgstr ""
+
+#: blocks/calendar/index.js:94
+msgid "End date"
+msgstr ""
+
+#: blocks/calendar/index.js:95
+msgid "Include past events"
+msgstr ""
+
+#: blocks/calendar/index.js:96
+msgid "Search text"
+msgstr ""
+
+#: blocks/calendar/index.js:97
+msgid "Location contains"
+msgstr ""
+
+#: blocks/calendar/index.js:98
+msgid "Source IDs (comma separated)"
+msgstr ""
+
+#: blocks/calendar/index.js:100
+msgid "Sort order"
+msgstr ""
+
+#: blocks/calendar/index.js:104
+msgid "Ascending"
+msgstr ""
+
+#: blocks/calendar/index.js:105
+msgid "Descending"
+msgstr ""
+
+#: blocks/calendar/index.js:112
+msgid "Display"
+msgstr ""
+
+#: blocks/calendar/index.js:113
+msgid "Event template ID"
+msgstr ""
+
+#: blocks/calendar/index.js:113
+msgid "Only templates allowed by the view."
+msgstr ""
+
+#: blocks/calendar/index.js:114
+msgid "Show images"
+msgstr ""
+
+#: blocks/calendar/index.js:115
+msgid "Show file list"
+msgstr ""
+
+#: blocks/calendar/index.js:124
+msgid "Calendar views could not be loaded."
+msgstr ""
+
+#: blocks/calendar/index.js:124
+msgid "Select a calendar view in the block settings."
+msgstr ""
+
+#: src/Infrastructure/WordPress/QueueRunner.php:42
+msgid "Every five minutes (SW CloudCalendar)"
+msgstr ""
+
+#: src/Plugin.php:128
+msgid "SW CloudCalendar"
+msgstr ""
+
+#: src/Plugin.php:130
+msgid "This site shows appointments from external calendars (Google Calendar, Microsoft 365, ICS feeds). Appointment data and, if enabled, attachments are copied to this site and kept until they leave the configured synchronisation window, the calendar source is deleted or the plugin data is removed. Visitors are not tracked by the calendar. Attachments are delivered by this site; no files are loaded from the cloud providers in the visitor's browser."
+msgstr ""
+
+#: src/Presentation/Admin/AdminPage.php:29
+#: src/Presentation/Admin/AdminPage.php:30
+msgid "Calendar"
+msgstr ""
+
+#: src/Presentation/Admin/AdminPage.php:39
+msgid "Dashboard"
+msgstr ""
+
+#: src/Presentation/Admin/AdminPage.php:40
+msgid "Connections"
+msgstr ""
+
+#: src/Presentation/Admin/AdminPage.php:41
+msgid "Sources"
+msgstr ""
+
+#: src/Presentation/Admin/AdminPage.php:42
+msgid "Views"
+msgstr ""
+
+#: src/Presentation/Admin/AdminPage.php:43
+msgid "Templates"
+msgstr ""
+
+#: src/Presentation/Admin/AdminPage.php:44
+msgid "Synchronisation"
+msgstr ""
+
+#: src/Presentation/Admin/AdminPage.php:45
+msgid "Settings"
+msgstr ""
+
+#: src/Presentation/Admin/AdminPage.php:46
+msgid "Diagnostics"
+msgstr ""
+
+#: src/Presentation/Admin/AdminPage.php:55
+msgid "You do not have permission to access this page."
+msgstr ""
+
+#: src/Presentation/Admin/AdminPage.php:58
+msgid "The calendar administration has not been built. Install the release package or run \"npm run build\" in apps/admin."
+msgstr ""
+
+#: src/Presentation/Admin/AdminPage.php:61
+msgid "The calendar administration requires JavaScript."
+msgstr ""
+
+#: src/Presentation/Admin/TemplateManager.php:260
+msgid "Container"
+msgstr ""
+
+#: src/Presentation/Admin/TemplateManager.php:261
+msgid "Event"
+msgstr ""
+
+#: src/Presentation/Admin/TemplateManager.php:262
+msgid "Detail"
+msgstr ""
+
+#: src/Presentation/Frontend/CalendarOutput.php:117
+msgid "Back to the calendar"
+msgstr ""
+
+#: src/Presentation/Frontend/CalendarOutput.php:166
+msgid "Close"
+msgstr ""
+
+#: src/Presentation/Frontend/CalendarOutput.php:167 src/Services.php:295
+msgid "Loading calendar…"
+msgstr ""
+
+#: src/Presentation/Frontend/CalendarOutput.php:168
+msgid "The calendar could not be loaded."
+msgstr ""
+
+#: src/Presentation/Frontend/CalendarOutput.php:169
+msgid "Event details"
+msgstr ""
+
+#: src/Presentation/Rest/BaseController.php:75
+#: src/Presentation/Rest/ErrorMessages.php:27
+msgid "The template is invalid."
+msgstr ""
+
+#: src/Presentation/Rest/BaseController.php:103
+msgid "An unexpected error occurred."
+msgstr ""
+
+#: src/Presentation/Rest/BaseController.php:108
+msgid "The requested item was not found."
+msgstr ""
+
+#: src/Presentation/Rest/BaseController.php:109
+msgid "The request was not permitted."
+msgstr ""
+
+#: src/Presentation/Rest/BaseController.php:110
+msgid "The item is in use or in conflict with another item."
+msgstr ""
+
+#: src/Presentation/Rest/BaseController.php:111
+#: src/Presentation/Rest/SystemController.php:134
+msgid "Please check the highlighted fields."
+msgstr ""
+
+#: src/Presentation/Rest/BaseController.php:167
+msgid "Too many requests. Please try again shortly."
+msgstr ""
+
+#: src/Presentation/Rest/ConnectionsController.php:105
+msgid "Connection not found."
+msgstr ""
+
+#: src/Presentation/Rest/ErrorMessages.php:18
+msgid "The connection must be authorized again."
+msgstr ""
+
+#: src/Presentation/Rest/ErrorMessages.php:19
+msgid "The access token has expired."
+msgstr ""
+
+#: src/Presentation/Rest/ErrorMessages.php:20
+msgid "The provider limits requests at the moment. The synchronisation is retried later."
+msgstr ""
+
+#: src/Presentation/Rest/ErrorMessages.php:21
+msgid "The synchronisation state has expired; a full synchronisation is required."
+msgstr ""
+
+#: src/Presentation/Rest/ErrorMessages.php:22
+msgid "The provider could not be reached."
+msgstr ""
+
+#: src/Presentation/Rest/ErrorMessages.php:23
+msgid "This attachment type is not supported."
+msgstr ""
+
+#: src/Presentation/Rest/ErrorMessages.php:24
+msgid "The public availability of the file could not be verified."
+msgstr ""
+
+#: src/Presentation/Rest/ErrorMessages.php:25
+msgid "The file exceeds the size limit."
+msgstr ""
+
+#: src/Presentation/Rest/ErrorMessages.php:26
+msgid "The private file storage is not protected against web access."
+msgstr ""
+
+#: src/Presentation/Rest/ErrorMessages.php:28
+msgid "Access denied."
+msgstr ""
+
+#: src/Presentation/Rest/ErrorMessages.php:29
+msgid "This function is not supported by the provider."
+msgstr ""
+
+#: src/Presentation/Rest/ErrorMessages.php:30
+msgid "Invalid input."
+msgstr ""
+
+#: src/Presentation/Rest/ErrorMessages.php:31
+msgid "Not found."
+msgstr ""
+
+#: src/Presentation/Rest/ErrorMessages.php:32
+msgid "A configured limit was exceeded."
+msgstr ""
+
+#: src/Presentation/Rest/ErrorMessages.php:33
+msgid "Another synchronisation is running."
+msgstr ""
+
+#: src/Presentation/Rest/PublicController.php:111
+#: src/Presentation/Rest/PublicController.php:128
+msgid "Calendar not found."
+msgstr ""
+
+#: src/Presentation/Rest/PublicController.php:114
+#: src/Presentation/Rest/PublicController.php:131
+msgid "Invalid filter parameters."
+msgstr ""
+
+#: src/Presentation/Rest/PublicController.php:152
+msgid "Event not found."
+msgstr ""
+
+#: src/Presentation/Rest/PublicController.php:232
+msgid "File not found."
+msgstr ""
+
+#: src/Presentation/Rest/SourcesController.php:92
+msgid "Source not found."
+msgstr ""
+
+#: src/Presentation/Rest/TemplatesController.php:101
+msgid "Template not found."
+msgstr ""
+
+#: src/Presentation/Rest/TemplatesController.php:135
+msgid "Unknown template kind."
+msgstr ""
+
+#: src/Presentation/Rest/ViewsController.php:72
+msgid "View not found."
+msgstr ""
+
+#: src/Services.php:281
+msgid "No events."
+msgstr ""
+
+#: src/Services.php:282
+msgid "Previous month"
+msgstr ""
+
+#: src/Services.php:283
+msgid "Next month"
+msgstr ""
+
+#: src/Services.php:284
+msgid "Calendar navigation"
+msgstr ""
+
+#: src/Services.php:285
+msgid "Images"
+msgstr ""
+
+#: src/Services.php:286
+msgid "Files"
+msgstr ""
+
+#. translators: %s: file name
+#: src/Services.php:288
+#, php-format
+msgid "Download %s"
+msgstr ""
+
+#: src/Services.php:289
+msgid "All day"
+msgstr ""
+
+#: src/Services.php:290
+msgid "Today"
+msgstr ""
+
+#. translators: %d: number of further events
+#: src/Services.php:292
+#, php-format
+msgid "%d more"
+msgstr ""
+
+#. translators: 1: date, 2: number of events
+#: src/Services.php:294
+#, php-format
+msgid "%1$s, %2$d events"
+msgstr ""
+
+#: src/Services.php:296
+msgid "Please enable JavaScript to see this calendar."
+msgstr ""
+
+#. translators: 1: required PHP version, 2: current PHP version
+#: sw-cloudcalendar.php:35
+#, php-format
+msgid "SW CloudCalendar requires PHP %1$s or newer with the sodium extension. You are running PHP %2$s."
+msgstr ""
+
+#: sw-cloudcalendar.php:58
+msgid "SW CloudCalendar: the vendor directory is missing. Install the release package or run \"composer install\"."
+msgstr ""
