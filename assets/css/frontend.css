@@ -33,7 +33,7 @@
 	.swc-month, .swc-month tbody, .swc-month tr, .swc-month td { display: block; width: 100%; height: auto; }
 	.swc-month thead { display: none; }
 	.swc-month td { border: 0; border-bottom: 1px solid var(--swc-border); padding: .5rem 0; }
-	.swc-month td:not(.has-events) { display: none; }
+	.swc-month td:not(.has-events), .swc-month td.is-other-month { display: none; }
 	.swc-month td.is-other-month { background: none; }
 	.swc-month__date { font-size: 1em; font-weight: 600; }
 	.swc-month__date time::before { content: attr(aria-label); }

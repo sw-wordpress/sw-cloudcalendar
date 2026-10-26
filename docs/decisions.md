@@ -32,7 +32,7 @@ referenziert (`docs/decisions.md D-xx`).
 | D-24 | Multisite | Daten pro Site (`$wpdb->prefix`), Tabellen bei Netzwerkaktivierung je Site beim ersten Laden bzw. bei neuen Sites. |
 | D-25 | Präfixe | Tabellen `{prefix}swc_*` (SPEC); Optionen, Transients, Hooks, AJAX-Actions `sw_calendar_*`; Konstanten `SW_CALENDAR_*`; CSS-Klassen `swc-`. |
 | D-26 | Template-HTML und `unfiltered_html` | Templates werden unabhängig von `unfiltered_html` gegen die Allowlist des Compilers validiert (keine Skripte, Event-Handler, externen CSS-Ressourcen). Strenger als WordPress, damit auch Admin-Templates keine XSS-Verteiler werden. |
-| D-27 | Tests | PHPUnit 11 (Unit/Integration ohne WordPress) und eine eigene WordPress-Testumgebung `tests/wp` (wp-phpunit, private MariaDB über `bin/test-db.sh`). Browser-E2E (Playwright) für Admin und Frontend ist **nicht** umgesetzt; die E2E-Szenarien aus SPEC §18.3 sind als WordPress-Integrationstests abgebildet, soweit ohne Browser möglich (siehe `docs/testing.md`). |
+| D-27 | Tests | PHPUnit 11 (Unit/Integration ohne WordPress) und eine eigene WordPress-Testumgebung `tests/wp` (wp-phpunit, private MariaDB über `bin/test-db.sh`). Browser-E2E (`tests/E2E`, Playwright gegen eine Wegwerf-WordPress-Instanz) prüft Frontend-Verhalten, ACL im Browser und das Laden aller Admin-Seiten; die übrigen E2E-Szenarien aus SPEC §18.3 sind als WordPress-Integrationstests abgebildet (siehe `docs/testing.md`). |
 
 ## Offene Punkte aus SPEC §20 (nicht stillschweigend gelöst)
 

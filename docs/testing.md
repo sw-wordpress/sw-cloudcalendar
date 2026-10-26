@@ -6,6 +6,10 @@
 | Integration | `tests/Integration` | Provider-Fixtures: Google (Pagination ohne `timeMin/timeMax`, Sync-Token, 410, 401-Refresh), Microsoft (`nextLink`/`deltaLink` opak, Fensterbindung, 429 + Retry-After, fremde Links), OAuth (PKCE, `invalid_grant`) |
 | WordPress | `tests/wp/tests` | Schema/Migration, verschlüsselte Secrets, ICS-Sync → Shortcode, 304, Provider-Ausfall, gelöschte Termine, geschützte Views nie im Seiten-HTML, AST- und HTML-Cache-Hits, ACL über REST (Gäste/Rollen, `source` erweitert nichts, Detail-404, Sperre vor Cache-Hit, deaktivierte Quelle), Admin-Rechte, Freigabebestätigungen, Template-Validierung/409/Änderung wirkt sofort, Preview ohne Providerzugriff, OAuth-State (einmalig, benutzergebunden), Anhänge (Speicherung, MIME-Spoofing, `public_only`, ACL vor Download, Widerruf bei Entfernung und ACL-Wechsel, unsicherer Speicher) |
 
+| Browser-E2E | `tests/E2E` | Wegwerf-WordPress (private MariaDB, PHP-Builtin-Server), Daten über den echten Sync-Service mit Fixture-Feed; Playwright/Chromium: Liste, Detail-Dialog, Monatsraster und REST-Navigation, Mobil-Agenda, geschützte View (kein Markup im Seitenquelltext für Gäste, nachgeladen nur mit Rolle), Editor ohne Admin-Zugriff (403), alle Admin-SPA-Seiten ohne Konsolenfehler, View- und Template-Editor mit Sandbox-Vorschau; Screenshots in `<workdir>/shots` |
+
+Aufruf: `CHROME=<chromium> PW_DIR=<node_modules mit playwright-core> tests/E2E/run.sh [workdir]` (nach `bin/test-db.sh start`).
+
 ## E2E-Szenarien (SPEC §18.3)
 
 | ID | Abdeckung |
@@ -25,5 +29,6 @@
 | E2E-14 | `SyncAndRenderTest::test_protected_view_is_never_serialized_into_page_html` |
 | E2E-15 | `SyncServiceTest::testLockPreventsParallelRunAndExpiredLockIsTakenOver`, Job-Idempotenz |
 
-**Nicht automatisiert:** Browser-E2E (Playwright) für Admin-SPA und Frontend-JavaScript, Tests gegen echte Google-/
-Microsoft-Konten, Last-/Performance-Messungen (SPEC §17) und Tests mit realen Page-Cache-Plugins.
+**Nicht automatisiert:** Formular-Workflows der Admin-SPA im Browser (Anlegen/Speichern; abgedeckt durch Vitest und
+die REST-Tests), Tests gegen echte Google-/Microsoft-Konten, Last-/Performance-Messungen (SPEC §17) und Tests mit
+realen Page-Cache-Plugins.

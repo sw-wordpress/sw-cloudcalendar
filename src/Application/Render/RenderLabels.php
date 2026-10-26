@@ -26,6 +26,7 @@ final class RenderLabels
         public readonly string $requiresJavascript = 'Please enable JavaScript to see this calendar.',
         public readonly string $decimalPoint = '.',
         public readonly string $thousandsSeparator = ',',
+        public readonly string $previewTitle = 'Preview',
     ) {
     }
 }

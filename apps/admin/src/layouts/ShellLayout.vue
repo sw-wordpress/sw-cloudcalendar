@@ -117,19 +117,28 @@ const transitionKey = computed(() => String(route.name ?? ''));
 .swc-shell--collapsed {
   --rail-w: 76px;
 }
+/* Visually hidden until focused: an off-canvas offset would show up above the shell next to wp-admin notices. */
 .swc-skip {
   position: absolute;
   left: 12px;
-  top: -60px;
+  top: 10px;
   z-index: 100;
   padding: 8px 14px;
   border-radius: 8px;
   background: var(--swc-primary);
   color: #fff !important;
   font-weight: 600;
+  clip-path: inset(50%);
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  white-space: nowrap;
 }
 .swc-skip:focus {
-  top: 10px;
+  clip-path: none;
+  width: auto;
+  height: auto;
+  overflow: visible;
 }
 .swc-rail {
   position: sticky;

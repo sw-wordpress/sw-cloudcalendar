@@ -1,6 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: sw-cloudcalendar 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -209,35 +211,35 @@ msgstr "Die Kalenderverwaltung wurde nicht gebaut. Installieren Sie das Release-
 msgid "The calendar administration requires JavaScript."
 msgstr "Die Kalenderverwaltung benötigt JavaScript."
 
-#: src/Presentation/Admin/TemplateManager.php:260
+#: src/Presentation/Admin/TemplateManager.php:262
 msgid "Container"
 msgstr "Container"
 
-#: src/Presentation/Admin/TemplateManager.php:261
+#: src/Presentation/Admin/TemplateManager.php:263
 msgid "Event"
 msgstr "Termin"
 
-#: src/Presentation/Admin/TemplateManager.php:262
+#: src/Presentation/Admin/TemplateManager.php:264
 msgid "Detail"
 msgstr "Detail"
 
-#: src/Presentation/Frontend/CalendarOutput.php:117
+#: src/Presentation/Frontend/CalendarOutput.php:132
 msgid "Back to the calendar"
 msgstr "Zurück zum Kalender"
 
-#: src/Presentation/Frontend/CalendarOutput.php:166
+#: src/Presentation/Frontend/CalendarOutput.php:181
 msgid "Close"
 msgstr "Schließen"
 
-#: src/Presentation/Frontend/CalendarOutput.php:167 src/Services.php:295
+#: src/Presentation/Frontend/CalendarOutput.php:182 src/Services.php:295
 msgid "Loading calendar…"
 msgstr "Kalender wird geladen …"
 
-#: src/Presentation/Frontend/CalendarOutput.php:168
+#: src/Presentation/Frontend/CalendarOutput.php:183
 msgid "The calendar could not be loaded."
 msgstr "Der Kalender konnte nicht geladen werden."
 
-#: src/Presentation/Frontend/CalendarOutput.php:169
+#: src/Presentation/Frontend/CalendarOutput.php:184
 msgid "Event details"
 msgstr "Termindetails"
 
@@ -263,7 +265,7 @@ msgid "The item is in use or in conflict with another item."
 msgstr "Das Element wird verwendet oder steht im Konflikt mit einem anderen Element."
 
 #: src/Presentation/Rest/BaseController.php:111
-#: src/Presentation/Rest/SystemController.php:134
+#: src/Presentation/Rest/SystemController.php:139
 msgid "Please check the highlighted fields."
 msgstr "Bitte prüfen Sie die markierten Felder."
 
@@ -335,21 +337,22 @@ msgstr "Eine konfigurierte Grenze wurde überschritten."
 msgid "Another synchronisation is running."
 msgstr "Es läuft bereits eine andere Synchronisierung."
 
-#: src/Presentation/Rest/PublicController.php:111
-#: src/Presentation/Rest/PublicController.php:128
+#: src/Presentation/Rest/PublicController.php:112
+#: src/Presentation/Rest/PublicController.php:129
 msgid "Calendar not found."
 msgstr "Kalender nicht gefunden."
 
-#: src/Presentation/Rest/PublicController.php:114
-#: src/Presentation/Rest/PublicController.php:131
+#: src/Presentation/Rest/PublicController.php:115
+#: src/Presentation/Rest/PublicController.php:132
+#: src/Presentation/Rest/ViewsController.php:82
 msgid "Invalid filter parameters."
 msgstr "Ungültige Filterparameter."
 
-#: src/Presentation/Rest/PublicController.php:152
+#: src/Presentation/Rest/PublicController.php:153
 msgid "Event not found."
 msgstr "Termin nicht gefunden."
 
-#: src/Presentation/Rest/PublicController.php:232
+#: src/Presentation/Rest/PublicController.php:233
 msgid "File not found."
 msgstr "Datei nicht gefunden."
 
@@ -365,7 +368,7 @@ msgstr "Vorlage nicht gefunden."
 msgid "Unknown template kind."
 msgstr "Unbekannte Vorlagenart."
 
-#: src/Presentation/Rest/ViewsController.php:72
+#: src/Presentation/Rest/ViewsController.php:110
 msgid "View not found."
 msgstr "Ansicht nicht gefunden."
 
@@ -423,6 +426,10 @@ msgstr "%1$s, %2$d Termine"
 msgid "Please enable JavaScript to see this calendar."
 msgstr "Bitte aktivieren Sie JavaScript, um diesen Kalender zu sehen."
 
+#: src/Services.php:299
+msgid "Preview"
+msgstr "Vorschau"
+
 #. translators: 1: required PHP version, 2: current PHP version
 #: sw-cloudcalendar.php:35
 #, php-format
@@ -432,4 +439,3 @@ msgstr "SW CloudCalendar benötigt PHP %1$s oder neuer mit der Erweiterung sodiu
 #: sw-cloudcalendar.php:58
 msgid "SW CloudCalendar: the vendor directory is missing. Install the release package or run \"composer install\"."
 msgstr "SW CloudCalendar: Das Verzeichnis vendor fehlt. Installieren Sie das Release-Paket oder führen Sie \"composer install\" aus."
-

@@ -219,35 +219,35 @@ msgstr ""
 msgid "The calendar administration requires JavaScript."
 msgstr ""
 
-#: src/Presentation/Admin/TemplateManager.php:260
+#: src/Presentation/Admin/TemplateManager.php:262
 msgid "Container"
 msgstr ""
 
-#: src/Presentation/Admin/TemplateManager.php:261
+#: src/Presentation/Admin/TemplateManager.php:263
 msgid "Event"
 msgstr ""
 
-#: src/Presentation/Admin/TemplateManager.php:262
+#: src/Presentation/Admin/TemplateManager.php:264
 msgid "Detail"
 msgstr ""
 
-#: src/Presentation/Frontend/CalendarOutput.php:117
+#: src/Presentation/Frontend/CalendarOutput.php:132
 msgid "Back to the calendar"
 msgstr ""
 
-#: src/Presentation/Frontend/CalendarOutput.php:166
+#: src/Presentation/Frontend/CalendarOutput.php:181
 msgid "Close"
 msgstr ""
 
-#: src/Presentation/Frontend/CalendarOutput.php:167 src/Services.php:295
+#: src/Presentation/Frontend/CalendarOutput.php:182 src/Services.php:295
 msgid "Loading calendar…"
 msgstr ""
 
-#: src/Presentation/Frontend/CalendarOutput.php:168
+#: src/Presentation/Frontend/CalendarOutput.php:183
 msgid "The calendar could not be loaded."
 msgstr ""
 
-#: src/Presentation/Frontend/CalendarOutput.php:169
+#: src/Presentation/Frontend/CalendarOutput.php:184
 msgid "Event details"
 msgstr ""
 
@@ -273,7 +273,7 @@ msgid "The item is in use or in conflict with another item."
 msgstr ""
 
 #: src/Presentation/Rest/BaseController.php:111
-#: src/Presentation/Rest/SystemController.php:134
+#: src/Presentation/Rest/SystemController.php:139
 msgid "Please check the highlighted fields."
 msgstr ""
 
@@ -345,21 +345,22 @@ msgstr ""
 msgid "Another synchronisation is running."
 msgstr ""
 
-#: src/Presentation/Rest/PublicController.php:111
-#: src/Presentation/Rest/PublicController.php:128
+#: src/Presentation/Rest/PublicController.php:112
+#: src/Presentation/Rest/PublicController.php:129
 msgid "Calendar not found."
 msgstr ""
 
-#: src/Presentation/Rest/PublicController.php:114
-#: src/Presentation/Rest/PublicController.php:131
+#: src/Presentation/Rest/PublicController.php:115
+#: src/Presentation/Rest/PublicController.php:132
+#: src/Presentation/Rest/ViewsController.php:82
 msgid "Invalid filter parameters."
 msgstr ""
 
-#: src/Presentation/Rest/PublicController.php:152
+#: src/Presentation/Rest/PublicController.php:153
 msgid "Event not found."
 msgstr ""
 
-#: src/Presentation/Rest/PublicController.php:232
+#: src/Presentation/Rest/PublicController.php:233
 msgid "File not found."
 msgstr ""
 
@@ -375,7 +376,7 @@ msgstr ""
 msgid "Unknown template kind."
 msgstr ""
 
-#: src/Presentation/Rest/ViewsController.php:72
+#: src/Presentation/Rest/ViewsController.php:110
 msgid "View not found."
 msgstr ""
 
@@ -431,6 +432,10 @@ msgstr ""
 
 #: src/Services.php:296
 msgid "Please enable JavaScript to see this calendar."
+msgstr ""
+
+#: src/Services.php:299
+msgid "Preview"
 msgstr ""
 
 #. translators: 1: required PHP version, 2: current PHP version

@@ -40,7 +40,7 @@ final class PreviewRenderer
         $data = PreviewData::build($now, $tz);
         $values = new EventValues($this->dates, $this->urls, $this->sanitizer, new AttachmentRenderer($this->urls, $this->labels));
         $calendar = [
-            'calendar.title' => 'Vorschau',
+            'calendar.title' => $this->labels->previewTitle,
             'calendar.timezone' => $tz->getName(),
             'calendar.range_label' => $this->dates->format($now, $tz, 'F Y'),
             'calendar.count' => (string) count($data['items']),
