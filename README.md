@@ -16,6 +16,13 @@ oder ausgewählte Rollen.
 WordPress 6.5+, PHP 8.2+ mit `sodium` (Pflicht), `fileinfo` (für Anhänge dringend empfohlen), GD oder Imagick
 (Vorschaubilder), MySQL 8 / MariaDB 10.6 mit InnoDB.
 
+## Admin-Oberfläche bauen
+
+Im Plugin-Verzeichnis `make build` ausführen (benötigt Make, Node.js >=18.18 und npm).
+Beim ersten Build und nach Änderungen an `apps/admin/package.json` oder der zugehörigen
+Lockdatei werden die Abhängigkeiten automatisch mit `npm ci --include=dev` installiert.
+Der bestehende Build prüft TypeScript und schreibt die Admin-Assets nach `assets/admin/`.
+
 ## Empfohlene Konfiguration (`wp-config.php`)
 
 ```php
