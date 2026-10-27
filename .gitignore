@@ -13,3 +13,7 @@
 *.log
 .env
 /tests/wp/vendor/
+
+# Local analysis output
+/coverage/
+/.scannerwork/
