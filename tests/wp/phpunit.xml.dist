@@ -9,6 +9,7 @@
         <include>
             <directory suffix=".php">../../src</directory>
             <directory suffix=".php">../../templates</directory>
+            <directory suffix=".php">../../blocks</directory>
             <file>../../sw-cloudcalendar.php</file>
             <file>../../uninstall.php</file>
         </include>

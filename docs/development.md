@@ -22,6 +22,15 @@ bin/i18n.sh check                    # Übersetzungen vollständig und aktuell
 (cd apps/admin && npm run typecheck && npm run lint && npm test)
 ```
 
+Coverage-Gates (Zeilen **> 80 %**, genau 80 % schlägt fehl; Details in `docs/testing.md`):
+
+```bash
+(cd apps/admin && npm run test:coverage)   # Vitest V8 + scripts/check-coverage.mjs
+vendor/bin/phpunit --testsuite unit,integration --coverage-clover coverage/unit.xml        # Xdebug/PCOV nötig
+(cd tests/wp && vendor/bin/phpunit -c phpunit.xml.dist --coverage-clover ../../coverage/wordpress.xml)
+php tests/coverage/merge.php coverage/unit.xml coverage/wordpress.xml && php tests/coverage/check.php
+```
+
 Zeilenlängen-Warnungen über 200 Zeichen schlagen nicht fehl (wie sw-backupit).
 
 ## Build

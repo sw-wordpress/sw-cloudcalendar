@@ -44,6 +44,8 @@ jobs:
         path: coverage/clover.xml
         if-no-files-found: error
         retention-days: 14
+    - name: Strict PHP line coverage gate (> 80 %)
+      run: php tests/coverage/check.php coverage/clover.xml
     services:
       mariadb:
         image: mariadb:11.4
@@ -67,11 +69,10 @@ jobs:
         cache: npm
         cache-dependency-path: apps/admin/package-lock.json
     - run: npm ci
-    - run: npm run lint && npm run typecheck && npm test
-    - name: Install matching Vitest V8 coverage provider
-      run: npm install --no-save --package-lock=false @vitest/coverage-v8@3.2.7
-    - name: Run frontend coverage and build
-      run: npm run test:coverage && npm run build
+    - run: npm run lint && npm run typecheck
+    - name: Tests with strict JS/TS line coverage gate (> 80 %)
+      run: npm run test:coverage
+    - run: npm run build
     - name: Upload frontend LCOV coverage
       uses: actions/upload-artifact@v4
       with:
