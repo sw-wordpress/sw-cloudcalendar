@@ -66,9 +66,21 @@ export default defineConfig(() => ({
     css: false,
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'lcov'],
+      reporter: ['text', 'text-summary', 'lcov'],
       reportsDirectory: 'coverage',
-      include: ['src/**/*.{ts,js,vue}'],
+      // All hand-written production JS/TS of the plugin: admin SPA, its build plugin and the
+      // unbundled frontend/block scripts. These live outside this package (allowExternal), which
+      // makes test-exclude match absolute paths, so the globs are absolute as well.
+      allowExternal: true,
+      include: [
+        'src/**/*.{ts,js,vue}',
+        'tools/**/*.ts',
+        '../../assets/js/**/*.js',
+        '../../blocks/**/*.js',
+      ].map((glob) => resolve(__dirname, glob)),
+      // Type-only declarations contain no executable statements.
+      exclude: ['**/*.d.ts', resolve(__dirname, 'src/types/**')],
+      // Vitest compares with >=; scripts/check-coverage.mjs additionally enforces lines > 80 % exactly.
       thresholds: {
         lines: 80.01,
       },
