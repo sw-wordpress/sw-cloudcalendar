@@ -67,7 +67,18 @@ jobs:
         cache: npm
         cache-dependency-path: apps/admin/package-lock.json
     - run: npm ci
-    - run: npm run lint && npm run typecheck && npm test && npm run build
+    - run: npm run lint && npm run typecheck && npm test
+    - name: Install matching Vitest V8 coverage provider
+      run: npm install --no-save --package-lock=false @vitest/coverage-v8@3.2.7
+    - name: Run frontend coverage and build
+      run: npm run test:coverage && npm run build
+    - name: Upload frontend LCOV coverage
+      uses: actions/upload-artifact@v4
+      with:
+        name: frontend-coverage
+        path: apps/admin/coverage/lcov.info
+        if-no-files-found: error
+        retention-days: 14
   sonarqube:
     name: SonarQube Cloud
     needs:
@@ -87,6 +98,10 @@ jobs:
       with:
         name: php-coverage
         path: coverage
+    - uses: actions/download-artifact@v4
+      with:
+        name: frontend-coverage
+        path: coverage/frontend
     - name: Check SonarQube configuration
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -101,6 +116,7 @@ jobs:
           exit 1
         fi
         test -s coverage/clover.xml
+        test -s coverage/frontend/lcov.info
     - name: Analyze code and import coverage
       uses: SonarSource/sonarqube-scan-action@d209202bc7d53ff1cc128f7f907dac145c9d6ae9
       with:
