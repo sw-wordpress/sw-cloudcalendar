@@ -64,6 +64,15 @@ export default defineConfig(() => ({
     environment: 'jsdom',
     include: ['tests/**/*.test.ts'],
     css: false,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov'],
+      reportsDirectory: 'coverage',
+      include: ['src/**/*.{ts,js,vue}'],
+      thresholds: {
+        lines: 80.01,
+      },
+    },
     server: { deps: { inline: ['quasar'] } },
   },
 }));
