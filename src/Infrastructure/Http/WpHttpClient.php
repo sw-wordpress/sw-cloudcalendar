@@ -37,7 +37,9 @@ final class WpHttpClient implements HttpClientInterface {
 			$response = $this->request( $request, $url, $method, $headers, $body, $ips[0] );
 			$status   = (int) wp_remote_retrieve_response_code( $response );
 			if ( $status >= 300 && $status < 400 && in_array( $status, array( 301, 302, 303, 307, 308 ), true ) ) {
-				$location = (string) wp_remote_retrieve_header( $response, 'location' );
+				$location = wp_remote_retrieve_header( $response, 'location' );
+				// Repeated Location headers arrive as a list; the first one wins.
+				$location = (string) ( is_array( $location ) ? ( $location[0] ?? '' ) : $location );
 				if ( '' === $location ) {
 					break;
 				}

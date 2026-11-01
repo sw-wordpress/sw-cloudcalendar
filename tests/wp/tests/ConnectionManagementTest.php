@@ -5,6 +5,9 @@ use SW\Calendar\Domain\Connection\AuthMode;
 use SW\Calendar\Domain\Connection\ConnectionStatus;
 use SW\Calendar\Domain\Connection\Provider;
 use SW\Calendar\Domain\ErrorCode;
+use SW\Calendar\Domain\Provider\CalendarDefinition;
+use SW\Calendar\Domain\Provider\CalendarProviderInterface;
+use SW\Calendar\Infrastructure\Provider\ProviderRegistry;
 use SW\Calendar\Presentation\Admin\ConnectionManager;
 
 /**
@@ -249,6 +252,22 @@ final class ConnectionManagementTest extends SWC_TestCase {
 		$this->assertSame( 200, $response->get_status() );
 		$this->assertSame( 'feed', $response->get_data()['items'][0]['external_id'] );
 		$this->assertSame( 404, $this->rest( 'GET', '/admin/connections/999999/calendars' )->get_status() );
+	}
+
+	public function test_calendar_list_is_a_json_list_even_when_the_provider_returns_non_list_keys(): void {
+		$id       = $this->ics_connection();
+		$provider = $this->createMock( CalendarProviderInterface::class );
+		$provider->method( 'listCalendars' )->willReturn(
+			array(
+				'b' => new CalendarDefinition( 'two', 'Two' ),
+				7   => new CalendarDefinition( 'one', 'One' ),
+			)
+		);
+		$this->services->set( 'providers', new ProviderRegistry( array( Provider::Ics->value => static fn () => $provider ) ) );
+		$items = $this->rest( 'GET', '/admin/connections/' . $id . '/calendars' )->get_data()['items'];
+		$this->assertSame( array( 0, 1 ), array_keys( $items ) );
+		$this->assertSame( array( 'two', 'one' ), array_column( $items, 'external_id' ) );
+		$this->assertStringStartsWith( '[', (string) wp_json_encode( $items ) );
 	}
 
 	public function test_disconnect_revokes_and_removes_tokens_even_when_revocation_fails(): void {

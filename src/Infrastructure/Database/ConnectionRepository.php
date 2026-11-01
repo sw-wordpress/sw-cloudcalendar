@@ -29,7 +29,7 @@ final class ConnectionRepository implements ConnectionRepositoryInterface {
 	public function all(): array {
 		$table = Schema::table( 'connections' );
 		$rows  = Db::wpdb()->get_results( "SELECT * FROM {$table} ORDER BY name ASC, id ASC", ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		return array_map( array( $this, 'map' ), is_array( $rows ) ? $rows : array() );
+		return array_map( array( $this, 'map' ), $rows );
 	}
 
 	/**

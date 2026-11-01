@@ -33,6 +33,6 @@ final class ViewLocale {
 	}
 
 	public static function for_view( Services $services, int $view_id ): string {
-		return $services->views()->find( $view_id )?->language ?? '';
+		return $services->views()->find( $view_id )->language ?? '';
 	}
 }

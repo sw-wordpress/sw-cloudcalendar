@@ -76,24 +76,24 @@ final class SourceManager {
 			throw new ValidationException( array( 'id' => 'not_found' ), 'Source not found.', 404 );
 		}
 		$errors        = array();
-		$connection_id = $existing?->connectionId ?? (int) ( $data['connection_id'] ?? 0 );
+		$connection_id = $existing->connectionId ?? (int) ( $data['connection_id'] ?? 0 );
 		$connection    = $this->services->connections()->find( $connection_id );
 		if ( null === $connection ) {
 			throw new ValidationException( array( 'connection_id' => 'not_found' ) );
 		}
-		$external_id = $existing?->externalId ?? trim( (string) ( $data['external_id'] ?? '' ) );
+		$external_id = $existing->externalId ?? trim( (string) ( $data['external_id'] ?? '' ) );
 		if ( '' === $external_id || strlen( $external_id ) > 512 || 1 === preg_match( '/[\x00-\x1F]/', $external_id ) ) {
 			$errors['external_id'] = 'invalid';
 		}
-		$name = trim( sanitize_text_field( (string) ( $data['name'] ?? $existing?->name ?? '' ) ) );
+		$name = trim( sanitize_text_field( (string) ( $data['name'] ?? $existing->name ?? '' ) ) );
 		if ( '' === $name || mb_strlen( $name ) > 190 ) {
 			$errors['name'] = 'invalid';
 		}
-		$color = strtolower( (string) ( $data['color'] ?? $existing?->color ?? '#3366cc' ) );
+		$color = strtolower( (string) ( $data['color'] ?? $existing->color ?? '#3366cc' ) );
 		if ( 1 !== preg_match( '/^#[0-9a-f]{6}$/', $color ) ) {
 			$errors['color'] = 'invalid';
 		}
-		$timezone = (string) ( $data['timezone'] ?? $existing?->timezone ?? 'UTC' );
+		$timezone = (string) ( $data['timezone'] ?? $existing->timezone ?? 'UTC' );
 		if ( ! in_array( $timezone, timezone_identifiers_list(), true ) && 'UTC' !== $timezone ) {
 			$errors['timezone'] = 'invalid';
 		}
@@ -102,7 +102,7 @@ final class SourceManager {
 			$errors['visibility'] = 'invalid';
 			$visibility           = Visibility::Roles;
 		}
-		$roles = array_values( array_unique( array_map( 'strval', (array) ( $data['roles'] ?? $existing?->roles ?? array() ) ) ) );
+		$roles = array_values( array_unique( array_map( 'strval', (array) ( $data['roles'] ?? $existing->roles ?? array() ) ) ) );
 		$known = array_keys( wp_roles()->get_names() );
 		foreach ( $roles as $role ) {
 			if ( ! in_array( $role, $known, true ) ) {
@@ -116,10 +116,10 @@ final class SourceManager {
 			$roles = array();
 		}
 		$status = SourceStatus::tryFrom( (string) ( $data['status'] ?? $existing?->status->value ?? SourceStatus::Draft->value ) );
-		if ( null === $status || ( null === $existing && SourceStatus::Draft !== $status ) || ( SourceStatus::Error === $status && SourceStatus::Error !== $existing?->status ) ) {
+		if ( null === $status || ( null === $existing && SourceStatus::Draft !== $status ) || ( SourceStatus::Error === $status && SourceStatus::Error !== $existing->status ) ) {
 			// New sources are drafts; "error" is set by the sync engine only.
 			$errors['status'] = 'invalid';
-			$status           = $existing?->status ?? SourceStatus::Draft;
+			$status           = $existing->status ?? SourceStatus::Draft;
 		}
 
 		$settings_errors = array();
@@ -132,13 +132,13 @@ final class SourceManager {
 		}
 
 		$now        = $this->services->clock()->now();
-		$revision   = ( $existing?->revision ?? 0 ) + 1;
+		$revision   = ( $existing->revision ?? 0 ) + 1;
 		$user       = get_current_user_id();
 		$was_public = Visibility::Public === $existing?->visibility;
 		$audit      = array();
 
 		// Publication of a provider-private calendar.
-		$publication = Visibility::Public === $visibility ? ( $was_public ? $existing?->settings->publicationConfirmation : null ) : null;
+		$publication = Visibility::Public === $visibility ? ( $was_public ? $existing->settings->publicationConfirmation : null ) : null;
 		if ( Visibility::Public === $visibility && $this->provider_private( $connection ) && null === $publication ) {
 			if ( true === ( $data['confirm_publication'] ?? false ) ) {
 				$publication = new Confirmation( $user, $now, $revision );
@@ -149,7 +149,7 @@ final class SourceManager {
 		}
 
 		// Publication of private attachments on a public source.
-		$file_confirmation = Visibility::Public === $visibility && $was_public ? $existing?->settings->attachments->privateAttachmentsConfirmation : null;
+		$file_confirmation = Visibility::Public === $visibility && $was_public ? $existing->settings->attachments->privateAttachmentsConfirmation : null;
 		if ( $settings->attachments->requiresPrivateConfirmation( $visibility ) && null === $file_confirmation ) {
 			if ( true === ( $data['confirm_private_attachments'] ?? false ) ) {
 				$file_confirmation = new Confirmation( $user, $now, $revision );
@@ -196,7 +196,7 @@ final class SourceManager {
 			$id = $repo->create( $connection->id, $external_id, $name, $color, $timezone, $visibility, $roles, $settings );
 			$this->services->audit()->record( 'source_created', 'source', $id, array( 'visibility' => $visibility->value ) );
 			$this->record_confirmations( $audit, $id, $revision );
-			return $repo->find( $id );
+			return $this->require( $id );
 		}
 
 		$repo->update( (int) $id, $name, $color, $timezone, $visibility, $roles, $settings, $status );
@@ -225,7 +225,7 @@ final class SourceManager {
 			$this->request_sync( (int) $id, $window_changed );
 		}
 		$this->services->invalidator()->sourceChanged( (int) $id );
-		return $repo->find( (int) $id );
+		return $this->require( (int) $id );
 	}
 
 	/**
@@ -258,10 +258,16 @@ final class SourceManager {
 	/**
 	 * Removes the source and its data. Delivery stops immediately; files are removed by the storage cleanup.
 	 */
-	public function delete( int $id ): void {
-		if ( null === $this->services->sources()->find( $id ) ) {
+	private function require( int $id ): Source {
+		$source = $this->services->sources()->find( $id );
+		if ( null === $source ) {
 			throw new ValidationException( array( 'id' => 'not_found' ), 'Source not found.', 404 );
 		}
+		return $source;
+	}
+
+	public function delete( int $id ): void {
+		$this->require( $id );
 		$this->services->sources()->setStatus( $id, SourceStatus::Disabled );
 		$this->services->attachments()->deleteSource( $id );
 		$this->services->occurrences()->deleteSource( $id );

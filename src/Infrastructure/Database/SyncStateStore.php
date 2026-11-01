@@ -132,7 +132,7 @@ final class SyncStateStore implements SyncStateStoreInterface {
 				$limit
 			)
 		);
-		return array_map( 'intval', is_array( $ids ) ? $ids : array() );
+		return array_map( 'intval', $ids );
 	}
 
 	public function delete( int $source_id ): void {

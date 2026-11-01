@@ -50,7 +50,7 @@ final class WpHttpClientTest extends SWC_TestCase {
 	}
 
 	/**
-	 * @param array<string, string> $headers
+	 * @param array<string, string|list<string>> $headers
 	 * @return array<string, mixed>
 	 */
 	private static function response( int $status, string $body = '', array $headers = array() ): array {
@@ -107,6 +107,17 @@ final class WpHttpClientTest extends SWC_TestCase {
 		$this->assertSame( 'Bearer x', $args['headers']['Authorization'] );
 		$this->assertNull( $args['body'] );
 		$this->assertFalse( has_action( 'http_api_curl' ), 'DNS pin hook must be removed after the request' );
+	}
+
+	public function test_repeated_location_headers_follow_the_first_one(): void {
+		// wp_remote_retrieve_header() returns a list when the server sends Location twice; (string) of it was "Array".
+		$this->responses[] = self::response( 302, '', array( 'location' => array( 'https://cdn.example.net/first', 'https://cdn.example.net/second' ) ) );
+		$this->responses[] = self::response( 200, 'done' );
+
+		$response = $this->client()->send( new HttpRequest( 'GET', 'https://api.example.org/start' ) );
+
+		$this->assertSame( 'done', $response->body );
+		$this->assertSame( 'https://cdn.example.net/first', $this->requests[1]['url'] );
 	}
 
 	public function test_redirect_to_other_host_drops_credentials_and_post_becomes_get(): void {

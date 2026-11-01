@@ -20,6 +20,8 @@
     <exclude-pattern>*/tests/wp/*</exclude-pattern>
     <!-- Browser E2E setup scripts bootstrap a throw-away WordPress (WordPress style, not part of the plugin). -->
     <exclude-pattern>*/tests/E2E/*</exclude-pattern>
+    <!-- PHPStan-only stubs mirror foreign APIs (WP_CLI, wpdb) with their original naming. -->
+    <exclude-pattern>*/tests/phpstan/*</exclude-pattern>
 
     <rule ref="PSR12"/>
     <rule ref="Generic.Files.LineLength">

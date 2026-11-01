@@ -80,12 +80,12 @@ final class Services {
 	}
 
 	/**
-	 * @template T of object
-	 * @param class-string<T>|string $id
-	 * @param callable(): T          $factory
-	 * @return T
+	 * Returns the shared instance. A service replaced via set() may have any type, so the result is untyped here;
+	 * the native return type of each accessor enforces the contract at runtime.
+	 *
+	 * @param callable(): object $factory
 	 */
-	private function share( string $id, callable $factory ): object {
+	private function share( string $id, callable $factory ): mixed {
 		return $this->services[ $id ] ??= $factory();
 	}
 

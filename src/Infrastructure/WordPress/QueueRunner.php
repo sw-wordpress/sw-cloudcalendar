@@ -146,7 +146,7 @@ final class QueueRunner {
 			return true;
 		} catch ( CalendarException $e ) {
 			$retry = $e->isRetryable() && $job->attempts < self::MAX_ATTEMPTS
-				? $this->services->clock()->now()->modify( '+' . max( (int) $e->retryAfterSeconds, 60 * ( 2 ** min( 6, $job->attempts ) ) + random_int( 0, 30 ) ) . ' seconds' )
+				? $this->services->clock()->now()->add( new \DateInterval( 'PT' . max( (int) $e->retryAfterSeconds, 60 * ( 2 ** min( 6, $job->attempts ) ) + random_int( 0, 30 ) ) . 'S' ) )
 				: null;
 			$jobs->fail( $job->id, $e->errorCode->value . ': ' . $e->getMessage(), $retry );
 		} catch ( \Throwable $e ) {
