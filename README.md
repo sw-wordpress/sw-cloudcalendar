@@ -1,8 +1,13 @@
 # SW CloudCalendar
 
 [![Release](https://img.shields.io/github/v/release/sw-wordpress/sw-cloudcalendar?sort=semver)](https://github.com/sw-wordpress/sw-cloudcalendar/releases)
+[![CI](https://github.com/sw-wordpress/sw-cloudcalendar/actions/workflows/tests.yml/badge.svg)](https://github.com/sw-wordpress/sw-cloudcalendar/actions/workflows/tests.yml)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=sw-wordpress_sw-cloudcalendar&metric=coverage)](https://sonarcloud.io/summary/overall?id=sw-wordpress_sw-cloudcalendar)
 [![SonarQube Issues](https://sonarcloud.io/api/project_badges/measure?project=sw-wordpress_sw-cloudcalendar&metric=vulnerabilities)](https://sonarcloud.io/project/issues?id=sw-wordpress_sw-cloudcalendar&impactSoftwareQualities=SECURITY&resolved=false)
+![PHPStan level 8](https://img.shields.io/badge/phpstan%20level-8%20of%209-brightgreen?style=flat-square&logo=php)
+![PHP 8.2+](https://img.shields.io/badge/PHP-8.2%2B-777bb4?style=flat-square&logo=php&logoColor=white)
+![WordPress 6.5+](https://img.shields.io/badge/WordPress-6.5%2B-21759b?style=flat-square&logo=wordpress&logoColor=white)
+[![License GPL-2.0-or-later](https://img.shields.io/badge/License-GPL--2.0--or--later-blue?style=flat-square)](https://www.gnu.org/licenses/gpl-2.0.html)
 
 Shows appointments from Google Calendar, Microsoft 365 and [ICS](https://en.wikipedia.org/wiki/ICalendar) feeds
 on your WordPress site, read-only. Events are copied to your site in the background and displayed as a list,
