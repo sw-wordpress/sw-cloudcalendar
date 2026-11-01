@@ -30,9 +30,7 @@ final class WpImagePreview implements ImagePreviewInterface {
 		if ( is_wp_error( $editor ) ) {
 			return false;
 		}
-		if ( method_exists( $editor, 'maybe_exif_rotate' ) ) {
-			$editor->maybe_exif_rotate();
-		}
+		$editor->maybe_exif_rotate(); // WordPress >= 5.3.
 		$size = $editor->get_size();
 		if ( (int) $size['width'] > self::SIZE || (int) $size['height'] > self::SIZE ) {
 			$resized = $editor->resize( self::SIZE, self::SIZE, false );
@@ -42,7 +40,7 @@ final class WpImagePreview implements ImagePreviewInterface {
 		}
 		$editor->set_quality( 82 );
 		$saved = $editor->save( $target . '.img', $mime );
-		if ( is_wp_error( $saved ) || ! isset( $saved['path'] ) || ! is_file( $saved['path'] ) ) {
+		if ( is_wp_error( $saved ) || ! is_file( $saved['path'] ) ) {
 			return false;
 		}
 		// The editor may add an extension; the caller expects exactly $target.

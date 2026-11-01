@@ -36,6 +36,9 @@ final class CalendarCommand {
 	 * ---
 	 *
 	 * @subcommand sources
+	 *
+	 * @param array<int, string>   $args       Positional arguments.
+	 * @param array<string, mixed> $assoc_args Associative arguments.
 	 */
 	public function sources( array $args, array $assoc_args ): void {
 		if ( 'list' !== ( $args[0] ?? 'list' ) ) {
@@ -68,6 +71,9 @@ final class CalendarCommand {
 	 *
 	 * --id=<id>
 	 * : Connection id.
+	 *
+	 * @param array<int, string>   $args       Positional arguments.
+	 * @param array<string, mixed> $assoc_args Associative arguments.
 	 */
 	public function connections( array $args, array $assoc_args ): void {
 		if ( 'test' !== ( $args[0] ?? '' ) ) {
@@ -100,6 +106,9 @@ final class CalendarCommand {
 	 *
 	 * [--full]
 	 * : Ignore stored cursors and rebuild completely.
+	 *
+	 * @param array<int, string>   $args       Positional arguments.
+	 * @param array<string, mixed> $assoc_args Associative arguments.
 	 */
 	public function sync( array $args, array $assoc_args ): void {
 		$services = $this->services();
@@ -142,6 +151,9 @@ final class CalendarCommand {
 	 *
 	 * [--dry-run]
 	 * : "prune" only lists the files that would be deleted.
+	 *
+	 * @param array<int, string>   $args       Positional arguments.
+	 * @param array<string, mixed> $assoc_args Associative arguments.
 	 */
 	public function attachments( array $args, array $assoc_args ): void {
 		$services = $this->services();
@@ -193,6 +205,9 @@ final class CalendarCommand {
 	 * ---
 	 * default: all
 	 * ---
+	 *
+	 * @param array<int, string>   $args       Positional arguments.
+	 * @param array<string, mixed> $assoc_args Associative arguments.
 	 */
 	public function cache( array $args, array $assoc_args ): void {
 		if ( 'clear' !== ( $args[0] ?? '' ) ) {
@@ -212,6 +227,9 @@ final class CalendarCommand {
 	 * ---
 	 * default: summary
 	 * ---
+	 *
+	 * @param array<int, string>   $args       Positional arguments.
+	 * @param array<string, mixed> $assoc_args Associative arguments.
 	 */
 	public function diagnostics( array $args, array $assoc_args ): void {
 		$data = ( new Diagnostics( $this->services() ) )->collect();
@@ -244,6 +262,9 @@ final class CalendarCommand {
 	 * ---
 	 * default: 50
 	 * ---
+	 *
+	 * @param array<int, string>   $args       Positional arguments.
+	 * @param array<string, mixed> $assoc_args Associative arguments.
 	 */
 	public function queue( array $args, array $assoc_args ): void {
 		if ( 'run' !== ( $args[0] ?? '' ) ) {
