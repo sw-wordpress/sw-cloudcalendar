@@ -52,7 +52,7 @@ final class JobQueue implements JobQueueInterface {
 				Db::format( $now )
 			)
 		);
-		foreach ( is_array( $ids ) ? $ids : array() as $id ) {
+		foreach ( $ids as $id ) {
 			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- fixed table name from the schema allowlist.
 			$claimed = $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 				$wpdb->prepare(
@@ -119,7 +119,7 @@ final class JobQueue implements JobQueueInterface {
 		$table  = Schema::table( 'jobs' );
 		$rows   = Db::wpdb()->get_results( "SELECT status, COUNT(*) AS n FROM {$table} GROUP BY status", ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$counts = array();
-		foreach ( is_array( $rows ) ? $rows : array() as $row ) {
+		foreach ( $rows as $row ) {
 			$counts[ (string) $row['status'] ] = (int) $row['n'];
 		}
 		return $counts;

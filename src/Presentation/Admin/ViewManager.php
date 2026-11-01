@@ -61,7 +61,7 @@ final class ViewManager {
 		[ $name, $enabled, $config ] = $this->validated( $existing, $data );
 		$id                          = $this->services->views()->save( $id, $name, $enabled, $config );
 		$this->services->audit()->record( null === $existing ? 'view_created' : 'view_updated', 'view', $id );
-		return $this->services->views()->find( $id );
+		return $this->require( $id );
 	}
 
 	/**
@@ -96,7 +96,7 @@ final class ViewManager {
 		if ( '' === $name || mb_strlen( $name ) > 190 ) {
 			$errors['name'] = 'invalid';
 		}
-		$known_sources = array_keys( $this->services->sources()->findMany( array_map( 'intval', (array) ( $data['source_ids'] ?? array() ) ) ) );
+		$known_sources = array_keys( $this->services->sources()->findMany( array_values( array_map( 'intval', (array) ( $data['source_ids'] ?? array() ) ) ) ) );
 		$source_ids    = array_values( array_unique( array_map( 'intval', (array) ( $data['source_ids'] ?? array() ) ) ) );
 		if ( array_diff( $source_ids, $known_sources ) !== array() ) {
 			$errors['source_ids'] = 'unknown_source';
@@ -104,6 +104,7 @@ final class ViewManager {
 		$mode = DisplayMode::tryFrom( (string) ( $data['display_mode'] ?? 'list' ) );
 		if ( null === $mode ) {
 			$errors['display_mode'] = 'invalid';
+			$mode                   = DisplayMode::List; // Reported below; keeps the type non-null.
 		}
 		$allowed_modes = array();
 		foreach ( (array) ( $data['allowed_modes'] ?? array() ) as $value ) {
@@ -119,7 +120,11 @@ final class ViewManager {
 			'event_template_id'     => TemplateKind::Event,
 			'detail_template_id'    => TemplateKind::Detail,
 		);
-		$template_ids = array();
+		$template_ids = array(
+			'container_template_id' => null,
+			'event_template_id'     => null,
+			'detail_template_id'    => null,
+		);
 		foreach ( $templates as $field => $kind ) {
 			$value = $data[ $field ] ?? null;
 			if ( null === $value || '' === $value || 0 === (int) $value ) {
@@ -197,10 +202,16 @@ final class ViewManager {
 		return array( $name, (bool) ( $data['enabled'] ?? true ), $config );
 	}
 
-	public function delete( int $id ): void {
-		if ( null === $this->services->views()->find( $id ) ) {
+	private function require( int $id ): CalendarView {
+		$view = $this->services->views()->find( $id );
+		if ( null === $view ) {
 			throw new ValidationException( array( 'id' => 'not_found' ), 'View not found.', 404 );
 		}
+		return $view;
+	}
+
+	public function delete( int $id ): void {
+		$this->require( $id );
 		$this->services->views()->delete( $id );
 		$this->services->audit()->record( 'view_deleted', 'view', $id );
 	}

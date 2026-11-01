@@ -9,3 +9,5 @@
 - Vor Abschluss relevante Tests und Coverage-Prüfungen ausführen und Ergebnisse nennen. Fehlende Coverage-Infrastruktur ergänzen; fehlende Messwerte gelten nicht als erfüllte Vorgabe. Keine produktiven Dateien ausschließen oder Grenzen senken, um die Vorgabe zu umgehen.
 
 Vorhanden: PHPUnit-/WordPress-Coverage und SonarQube; siehe `docs/sonarqube.md` und `sonar-project.properties`.
+
+- PHPStan Level 8 deckt den gesamten produktiven PHP-Code ab (`src`, `blocks`, `bin`, Hauptdatei, `uninstall.php`), ohne Baseline und ohne Ignores; Stubs und Konstanten in `tests/phpstan/`.

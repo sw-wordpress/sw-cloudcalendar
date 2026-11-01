@@ -20,6 +20,7 @@ final class Db {
 		return gmdate( 'Y-m-d H:i:s' );
 	}
 
+	/** @phpstan-return ($time is null ? null : string) */
 	public static function format( ?\DateTimeInterface $time ): ?string {
 		return null === $time ? null : \DateTimeImmutable::createFromInterface( $time )->setTimezone( new \DateTimeZone( 'UTC' ) )->format( 'Y-m-d H:i:s' );
 	}

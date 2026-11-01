@@ -62,9 +62,8 @@ final class Schema {
 		if ( $installed >= self::CURRENT ) {
 			return true;
 		}
-		if ( $installed < 1 ) {
-			self::migrate_to_1();
-		}
+		// Version 1 is the only schema so far; a later version guards its migration with `$installed < N`.
+		self::migrate_to_1();
 		if ( array() !== self::missing_tables() ) {
 			return false;
 		}

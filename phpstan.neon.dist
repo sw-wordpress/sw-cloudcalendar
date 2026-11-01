@@ -1,11 +1,23 @@
 parameters:
     level: 8
     paths:
-        - src/Domain
-        - src/Application
-        - src/Support
-        - src/Infrastructure/Provider
-        - src/Infrastructure/Storage
-        - src/Infrastructure/Crypto
-        - src/Infrastructure/OAuth
+        - src
+        - blocks
+        - bin
+        - sw-cloudcalendar.php
+        - uninstall.php
+    bootstrapFiles:
+        - tests/phpstan/bootstrap.php
+    stubFiles:
+        - tests/phpstan/WP_REST_Request.stub
+        - tests/phpstan/wpdb.stub
+    scanFiles:
+        - tests/phpstan/stubs.php
+        - tests/phpstan/wp-cli-utils.php
+    dynamicConstantNames:
+        - SW_CALENDAR_VERSION
+        - SW_CALENDAR_FILE
+        - SW_CALENDAR_DIR
+        - SW_CALENDAR_URL
+        - SW_CALENDAR_MIN_PHP
     tmpDir: .phpstan.cache

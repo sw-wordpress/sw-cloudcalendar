@@ -45,7 +45,7 @@ final class SourceRepository implements SourceRepositoryInterface {
 	public function all(): array {
 		$table = Schema::table( 'sources' );
 		$rows  = Db::wpdb()->get_results( "SELECT * FROM {$table} ORDER BY name ASC, id ASC", ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		return array_map( array( $this, 'map' ), is_array( $rows ) ? $rows : array() );
+		return array_map( array( $this, 'map' ), $rows );
 	}
 
 	/**
@@ -122,7 +122,7 @@ final class SourceRepository implements SourceRepositoryInterface {
 	public function ids_for_connection( int $connection_id ): array {
 		$table = Schema::table( 'sources' );
 		$ids   = Db::wpdb()->get_col( Db::wpdb()->prepare( "SELECT id FROM {$table} WHERE connection_id = %d", $connection_id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		return array_map( 'intval', is_array( $ids ) ? $ids : array() );
+		return array_map( 'intval', $ids );
 	}
 
 	/**
