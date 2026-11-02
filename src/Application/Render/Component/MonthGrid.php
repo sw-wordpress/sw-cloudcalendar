@@ -121,7 +121,7 @@ final class MonthGrid
      * Earlier/further events of lists and cards. Unavailable directions are rendered as disabled text so the layout
      * does not jump; links work without JavaScript and are enhanced by the frontend script.
      */
-    public function listNavigation(int $viewId, int $page, bool $hasPrevious, bool $hasNext): TrustedHtml
+    public function listNavigation(int $viewId, int $page, bool $hasPrevious, bool $hasNext, ?string $month = null): TrustedHtml
     {
         if (!$hasPrevious && !$hasNext) {
             return new TrustedHtml('');
@@ -129,13 +129,13 @@ final class MonthGrid
         $previous = $page === 1 ? -1 : $page - 1;
         $next = $page === -1 ? 1 : $page + 1;
         $html = '<nav class="swc-nav swc-nav--list" aria-label="' . $this->e($this->labels->eventNavigation) . '">'
-            . $this->pageLink($viewId, $previous, $hasPrevious, 'swc-nav__prev', $this->labels->previousEvents, '‹', true)
-            . $this->pageLink($viewId, $next, $hasNext, 'swc-nav__next', $this->labels->nextEvents, '›', false)
+            . $this->pageLink($viewId, $previous, $hasPrevious, 'swc-nav__prev', $this->labels->previousEvents, '‹', true, $month)
+            . $this->pageLink($viewId, $next, $hasNext, 'swc-nav__next', $this->labels->nextEvents, '›', false, $month)
             . '</nav>';
         return new TrustedHtml($html);
     }
 
-    private function pageLink(int $viewId, int $page, bool $enabled, string $class, string $label, string $arrow, bool $arrowFirst): string
+    private function pageLink(int $viewId, int $page, bool $enabled, string $class, string $label, string $arrow, bool $arrowFirst, ?string $month): string
     {
         $content = $arrowFirst
             ? '<span aria-hidden="true">' . $arrow . '</span> <span class="swc-nav__text">' . $this->e($label) . '</span>'
@@ -143,7 +143,7 @@ final class MonthGrid
         if (!$enabled) {
             return '<span class="' . $class . ' is-disabled" aria-disabled="true">' . $content . '</span>';
         }
-        return '<a class="' . $class . '" href="' . $this->e($this->urls->page($viewId, $page)) . '" data-swc-page="' . $page . '" rel="nofollow">' . $content . '</a>';
+        return '<a class="' . $class . '" href="' . $this->e($this->urls->page($viewId, $page, $month)) . '" data-swc-page="' . $page . '" rel="nofollow">' . $content . '</a>';
     }
 
     private function link(int $viewId, \DateTimeImmutable $month, \DateTimeZone $tz, string $class, string $label, string $arrow): string

@@ -32,7 +32,7 @@ final class PreviewUrlGenerator implements UrlGeneratorInterface {
 		return '#month-' . $month;
 	}
 
-	public function page( int $viewId, int $page ): string {
+	public function page( int $viewId, int $page, ?string $month = null ): string {
 		return '#page-' . $page;
 	}
 }

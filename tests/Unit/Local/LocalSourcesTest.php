@@ -230,4 +230,12 @@ final class LocalSourcesTest extends TestCase
         $this->expectException(CalendarException::class);
         $query->find([1, 2], $range, null, null, [], false, 100, 10000, 0);
     }
+    public function testLocalEventRetainsAValidatedTimeZone(): void
+    {
+        $event = new LocalEvent('id', 'calendar', 'Title', new \DateTimeImmutable('2026-11-01'), new \DateTimeImmutable('2026-11-02'), timezone: 'Europe/Berlin');
+        self::assertSame('Europe/Berlin', $event->timezone);
+        self::assertSame('Europe/Berlin', $event->occurrence(1)->timezone);
+        $this->expectException(\Exception::class);
+        new LocalEvent('id', 'calendar', 'Title', new \DateTimeImmutable('2026-11-01'), new \DateTimeImmutable('2026-11-02'), timezone: 'Invalid/TimeZone');
+    }
 }

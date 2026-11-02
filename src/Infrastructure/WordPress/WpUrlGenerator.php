@@ -52,16 +52,20 @@ final class WpUrlGenerator implements UrlGeneratorInterface {
 				self::VIEW_PARAM  => $viewId,
 				self::MONTH_PARAM => $month,
 			),
-			remove_query_arg( self::EVENT_PARAM, $this->base() )
+			remove_query_arg( array( self::EVENT_PARAM, self::PAGE_PARAM ), $this->base() )
 		);
 	}
 
-	public function page( int $viewId, int $page ): string {
+	public function page( int $viewId, int $page, ?string $month = null ): string {
+		$arguments = array(
+			self::VIEW_PARAM => $viewId,
+			self::PAGE_PARAM => $page,
+		);
+		if ( null !== $month ) {
+			$arguments[ self::MONTH_PARAM ] = $month;
+		}
 		return add_query_arg(
-			array(
-				self::VIEW_PARAM => $viewId,
-				self::PAGE_PARAM => $page,
-			),
+			$arguments,
 			remove_query_arg( array( self::EVENT_PARAM, self::MONTH_PARAM ), $this->base() )
 		);
 	}
