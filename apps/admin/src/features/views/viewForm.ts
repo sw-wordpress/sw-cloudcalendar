@@ -4,6 +4,8 @@ export type TriState = 'default' | 'yes' | 'no';
 
 /** Editable representation of `default_filters` (empty string / 'default' = not set). */
 export interface FilterForm {
+  mode_switcher: TriState;
+  show_search: TriState;
   color_titles: TriState;
   legend: TriState;
   columns: string;
@@ -34,6 +36,8 @@ function text(value: unknown): string {
 export function toFilterForm(raw: ViewDefaultFilters | unknown[] | null | undefined): FilterForm {
   const f: ViewDefaultFilters = raw && !Array.isArray(raw) ? raw : {};
   return {
+    mode_switcher: tri(f.mode_switcher),
+    show_search: tri(f.show_search),
     color_titles: tri(f.color_titles),
     legend: tri(f.legend),
     columns: text(f.columns),
@@ -60,6 +64,8 @@ export function fromFilterForm(form: FilterForm): ViewDefaultFilters {
     const n = Number(v.trim());
     return v.trim() !== '' && Number.isFinite(n) ? n : null;
   };
+  if (form.mode_switcher !== 'default') out.mode_switcher = form.mode_switcher === 'yes';
+  if (form.show_search !== 'default') out.show_search = form.show_search === 'yes';
   if (form.color_titles !== 'default') out.color_titles = form.color_titles === 'yes';
   if (form.legend !== 'default') out.legend = form.legend === 'yes';
   if (form.columns.trim() !== '') out.columns = Number(form.columns);

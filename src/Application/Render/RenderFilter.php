@@ -40,6 +40,8 @@ final class RenderFilter
         public readonly ?int $columns = null,
         public readonly ?int $dayLimit = null,
         public readonly ?string $navigationGroup = null,
+        public readonly ?bool $modeSwitcher = null,
+        public readonly ?bool $showSearch = null,
     ) {
     }
 
@@ -78,6 +80,8 @@ final class RenderFilter
             $this->columns ?? $defaults->columns,
             $this->dayLimit ?? $defaults->dayLimit,
             $this->navigationGroup ?? $defaults->navigationGroup,
+            $this->modeSwitcher ?? $defaults->modeSwitcher,
+            $this->showSearch ?? $defaults->showSearch,
         );
     }
 
@@ -118,6 +122,8 @@ final class RenderFilter
             'columns' => $this->columns,
             'day_limit' => $this->dayLimit,
             'navigation_group' => $this->navigationGroup,
+            'mode_switcher' => $this->modeSwitcher,
+            'show_search' => $this->showSearch,
         ];
     }
 

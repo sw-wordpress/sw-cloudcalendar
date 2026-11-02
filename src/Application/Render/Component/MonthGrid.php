@@ -19,10 +19,12 @@ use SW\Calendar\Domain\Event\Occurrence;
  */
 final class MonthGrid
 {
+    /** @param array<string, mixed> $navigationFilters Current search and mode for non-JavaScript navigation. */
     public function __construct(
         private readonly DateFormatterInterface $dates,
         private readonly UrlGeneratorInterface $urls,
         private readonly RenderLabels $labels,
+        private readonly array $navigationFilters = [],
     ) {
     }
 
@@ -85,13 +87,7 @@ final class MonthGrid
                         $html .= '<li class="swc-month__more"><details><summary>' . $this->e(sprintf($this->labels->moreEvents, count($items) - $dayLimit)) . '</summary><ul class="swc-month__events">';
                     }
                     $color = \SW\Calendar\Application\Render\ViewRenderer::color($item['color'] ?? '');
-                    $rgb = array_map('hexdec', str_split(substr($color, 1), 2));
-                    $luminance = [];
-                    foreach ($rgb as $channel) {
-                        $value = $channel / 255;
-                        $luminance[] = $value <= 0.04045 ? $value / 12.92 : (($value + 0.055) / 1.055) ** 2.4;
-                    }
-                    $text = $luminance[0] * 0.2126 + $luminance[1] * 0.7152 + $luminance[2] * 0.0722 > 0.179 ? '#000000' : '#ffffff';
+                    $text = \SW\Calendar\Application\Render\ViewRenderer::textColor($color);
                     $html .= '<li class="swc-month__event" style="--swc-event-color:' . $color . ';--swc-event-text:' . $text . '" data-swc-event="' . $this->e((string) $item['occurrence']->id) . '">' . $item['html'] . '</li>';
                 }
                 if (count($items) > $dayLimit) {
@@ -143,13 +139,13 @@ final class MonthGrid
         if (!$enabled) {
             return '<span class="' . $class . ' is-disabled" aria-disabled="true">' . $content . '</span>';
         }
-        return '<a class="' . $class . '" href="' . $this->e($this->urls->page($viewId, $page, $month)) . '" data-swc-page="' . $page . '" rel="nofollow">' . $content . '</a>';
+        return '<a class="' . $class . '" href="' . $this->e($this->urls->calendar($viewId, array_replace($this->navigationFilters, ['page' => $page, 'month' => $month]))) . '" data-swc-page="' . $page . '" rel="nofollow">' . $content . '</a>';
     }
 
     private function link(int $viewId, \DateTimeImmutable $month, \DateTimeZone $tz, string $class, string $label, string $arrow): string
     {
         $value = $month->format('Y-m');
-        return '<a class="' . $class . '" href="' . $this->e($this->urls->month($viewId, $value)) . '" data-swc-month="' . $value . '" rel="nofollow">'
+        return '<a class="' . $class . '" href="' . $this->e($this->urls->calendar($viewId, array_replace($this->navigationFilters, ['month' => $value]))) . '" data-swc-month="' . $value . '" rel="nofollow">'
             . '<span aria-hidden="true">' . $arrow . '</span> <span class="swc-nav__text">' . $this->e($label)
             . '<span class="swc-screen-reader-text">: ' . $this->e($this->dates->format($month, $tz, 'F Y')) . '</span></span></a>';
     }

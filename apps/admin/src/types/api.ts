@@ -231,6 +231,8 @@ export type DisplayMode = 'list' | 'cards' | 'month';
 
 /** Default filters of a view (same keys as the shortcode/REST filter parameters). */
 export interface ViewDefaultFilters {
+  mode_switcher?: boolean | string;
+  show_search?: boolean | string;
   color_titles?: boolean | string;
   legend?: boolean | string;
   columns?: number | string;

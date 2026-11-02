@@ -54,6 +54,13 @@ final class CalendarOutput {
 				$month = sprintf( '%04d-%02d', $legacy_year, $legacy_month );
 			}
 		}
+		if ( $targeted && isset( $_GET[ WpUrlGenerator::MODE_PARAM ] ) && is_string( $_GET[ WpUrlGenerator::MODE_PARAM ] ) ) {
+			$filters['view'] = sanitize_text_field( wp_unslash( $_GET[ WpUrlGenerator::MODE_PARAM ] ) );
+		}
+		if ( $targeted && isset( $_GET[ WpUrlGenerator::SEARCH_PARAM ] ) && is_string( $_GET[ WpUrlGenerator::SEARCH_PARAM ] ) ) {
+			$filters['search'] = sanitize_text_field( wp_unslash( $_GET[ WpUrlGenerator::SEARCH_PARAM ] ) );
+		}
+
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 		if ( '' !== $month && 1 === preg_match( '/^\d{4}-(0[1-9]|1[0-2])$/', $month ) ) {
 			$filters['month'] = $month;

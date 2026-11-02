@@ -30,7 +30,7 @@ final class FilterSchema
         $values = [];
         foreach ($raw as $key => $value) {
             $key = strtolower((string) $key);
-            if (in_array($key, self::PASSTHROUGH, true) || $value === null || $value === '') {
+            if (in_array($key, self::PASSTHROUGH, true) || $value === null || ($value === '' && $key !== 'search')) {
                 continue;
             }
             switch ($key) {
@@ -71,6 +71,8 @@ final class FilterSchema
                     $group = is_string($value) && preg_match('/^[a-zA-Z0-9_-]{1,64}$/D', $value) === 1 ? $value : null;
                     $this->accept($values, $errors, $key, $group, 'invalid_group');
                     break;
+                case 'mode_switcher':
+                case 'show_search':
                 case 'color_titles':
                 case 'legend':
                 case 'past':
@@ -82,7 +84,7 @@ final class FilterSchema
                     break;
                 case 'search':
                 case 'location':
-                    $text = $this->text($value);
+                    $text = $key === 'search' && is_scalar($value) && trim((string) $value) === '' ? '' : $this->text($value);
                     $this->accept($values, $errors, $key, $text, 'too_long');
                     break;
                 case 'sort':
@@ -144,6 +146,8 @@ final class FilterSchema
                 $values['columns'] ?? null,
                 $values['day_limit'] ?? null,
                 $values['navigation_group'] ?? null,
+                $values['mode_switcher'] ?? null,
+                $values['show_search'] ?? null,
             ),
             $errors,
             $unknown,

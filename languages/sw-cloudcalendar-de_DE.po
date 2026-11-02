@@ -228,35 +228,35 @@ msgstr "Die Kalenderverwaltung wurde nicht gebaut. Installieren Sie das Release-
 msgid "The calendar administration requires JavaScript."
 msgstr "Die Kalenderverwaltung benötigt JavaScript."
 
-#: src/Presentation/Admin/TemplateManager.php:262
+#: src/Presentation/Admin/TemplateManager.php:269
 msgid "Container"
 msgstr "Container"
 
-#: src/Presentation/Admin/TemplateManager.php:263
+#: src/Presentation/Admin/TemplateManager.php:270
 msgid "Event"
 msgstr "Termin"
 
-#: src/Presentation/Admin/TemplateManager.php:264
+#: src/Presentation/Admin/TemplateManager.php:271
 msgid "Detail"
 msgstr "Detail"
 
-#: src/Presentation/Frontend/CalendarOutput.php:136
+#: src/Presentation/Frontend/CalendarOutput.php:150
 msgid "Back to the calendar"
 msgstr "Zurück zum Kalender"
 
-#: src/Presentation/Frontend/CalendarOutput.php:185
+#: src/Presentation/Frontend/CalendarOutput.php:199
 msgid "Close"
 msgstr "Schließen"
 
-#: src/Presentation/Frontend/CalendarOutput.php:186 src/Services.php:295
+#: src/Presentation/Frontend/CalendarOutput.php:200 src/Services.php:314
 msgid "Loading calendar…"
 msgstr "Kalender wird geladen …"
 
-#: src/Presentation/Frontend/CalendarOutput.php:187
+#: src/Presentation/Frontend/CalendarOutput.php:201
 msgid "The calendar could not be loaded."
 msgstr "Der Kalender konnte nicht geladen werden."
 
-#: src/Presentation/Frontend/CalendarOutput.php:188
+#: src/Presentation/Frontend/CalendarOutput.php:202 src/Services.php:331
 msgid "Event details"
 msgstr "Termindetails"
 
@@ -274,6 +274,7 @@ msgid "The requested item was not found."
 msgstr "Das angeforderte Element wurde nicht gefunden."
 
 #: src/Presentation/Rest/BaseController.php:109
+#: src/Presentation/Rest/SourcesController.php:191
 msgid "The request was not permitted."
 msgstr "Die Anfrage war nicht erlaubt."
 
@@ -354,28 +355,37 @@ msgstr "Eine konfigurierte Grenze wurde überschritten."
 msgid "Another synchronisation is running."
 msgstr "Es läuft bereits eine andere Synchronisierung."
 
-#: src/Presentation/Rest/PublicController.php:112
-#: src/Presentation/Rest/PublicController.php:129
+#: src/Presentation/Rest/PublicController.php:116
+#: src/Presentation/Rest/PublicController.php:133
 msgid "Calendar not found."
 msgstr "Kalender nicht gefunden."
 
-#: src/Presentation/Rest/PublicController.php:115
-#: src/Presentation/Rest/PublicController.php:132
+#: src/Presentation/Rest/PublicController.php:119
+#: src/Presentation/Rest/PublicController.php:136
 #: src/Presentation/Rest/ViewsController.php:82
 msgid "Invalid filter parameters."
 msgstr "Ungültige Filterparameter."
 
-#: src/Presentation/Rest/PublicController.php:153
+#: src/Presentation/Rest/PublicController.php:157
 msgid "Event not found."
 msgstr "Termin nicht gefunden."
 
-#: src/Presentation/Rest/PublicController.php:233
+#: src/Presentation/Rest/PublicController.php:237
 msgid "File not found."
 msgstr "Datei nicht gefunden."
 
-#: src/Presentation/Rest/SourcesController.php:92
+#: src/Presentation/Rest/SourcesController.php:119
+#: src/Presentation/Rest/SourcesController.php:177
 msgid "Source not found."
 msgstr "Quelle nicht gefunden."
+
+#: src/Presentation/Rest/SourcesController.php:164
+msgid "Synchronization did not complete. Check the sync history for details."
+msgstr "Die Synchronisation wurde nicht abgeschlossen. Details stehen im Synchronisierungsverlauf."
+
+#: src/Presentation/Rest/SourcesController.php:188
+msgid "Local source unavailable."
+msgstr "Die lokale Quelle ist nicht verfügbar."
 
 #: src/Presentation/Rest/TemplatesController.php:101
 msgid "Template not found."
@@ -389,75 +399,131 @@ msgstr "Unbekannte Vorlagenart."
 msgid "View not found."
 msgstr "Ansicht nicht gefunden."
 
-#: src/Services.php:281
+#: src/Services.php:300
 msgid "No events."
 msgstr "Keine Termine."
 
-#: src/Services.php:282
+#: src/Services.php:301
 msgid "Previous month"
 msgstr "Vorheriger Monat"
 
-#: src/Services.php:283
+#: src/Services.php:302
 msgid "Next month"
 msgstr "Nächster Monat"
 
-#: src/Services.php:284
+#: src/Services.php:303
 msgid "Calendar navigation"
 msgstr "Kalendernavigation"
 
-#: src/Services.php:285
+#: src/Services.php:304
 msgid "Images"
 msgstr "Bilder"
 
-#: src/Services.php:286
+#: src/Services.php:305
 msgid "Files"
 msgstr "Dateien"
 
 #. translators: %s: file name
-#: src/Services.php:288
+#: src/Services.php:307
 #, php-format
 msgid "Download %s"
 msgstr "%s herunterladen"
 
-#: src/Services.php:289
+#: src/Services.php:308
 msgid "All day"
 msgstr "Ganztägig"
 
-#: src/Services.php:290
+#: src/Services.php:309
 msgid "Today"
 msgstr "Heute"
 
 #. translators: %d: number of further events
-#: src/Services.php:292
+#: src/Services.php:311
 #, php-format
 msgid "%d more"
 msgstr "%d weitere"
 
 #. translators: 1: date, 2: number of events
-#: src/Services.php:294
+#: src/Services.php:313
 #, php-format
 msgid "%1$s, %2$d events"
 msgstr "%1$s, %2$d Termine"
 
-#: src/Services.php:296
+#: src/Services.php:315
 msgid "Please enable JavaScript to see this calendar."
 msgstr "Bitte aktivieren Sie JavaScript, um diesen Kalender zu sehen."
 
-#: src/Services.php:299
+#: src/Services.php:318
 msgid "Preview"
 msgstr "Vorschau"
 
-#: src/Services.php:300
+#: src/Services.php:319
 msgid "Earlier events"
 msgstr "Frühere Termine"
 
-#: src/Services.php:301
+#: src/Services.php:320
 msgid "More events"
 msgstr "Weitere Termine"
 
-#: src/Services.php:302
+#: src/Services.php:321
 msgid "Event navigation"
 msgstr "Terminnavigation"
+
+#: src/Services.php:322
+msgid "Choose display"
+msgstr "Darstellung wählen"
+
+#: src/Services.php:323
+msgctxt "calendar display mode"
+msgid "List"
+msgstr "Liste"
+
+#: src/Services.php:324
+msgctxt "calendar display mode"
+msgid "Cards"
+msgstr "Karten"
+
+#: src/Services.php:325
+msgctxt "calendar display mode"
+msgid "Month"
+msgstr "Monat"
+
+#: src/Services.php:326
+msgid "Search events"
+msgstr "Suche nach Veranstaltungen"
+
+#: src/Services.php:327
+msgid "Search"
+msgstr "Suchen"
+
+#: src/Services.php:328
+msgid "Searches titles, descriptions and locations within the selected date range."
+msgstr "Durchsucht Titel, Beschreibung und Ort im gewählten Zeitraum."
+
+#. translators: %d: number of matching events
+#: src/Services.php:330
+#, php-format
+msgid "%d events found"
+msgstr "%d Termine gefunden"
+
+#: src/Services.php:332
+msgctxt "event details"
+msgid "Date"
+msgstr "Datum"
+
+#: src/Services.php:333
+msgctxt "event details"
+msgid "Time"
+msgstr "Uhrzeit"
+
+#: src/Services.php:334
+msgctxt "event details"
+msgid "Location"
+msgstr "Ort"
+
+#: src/Services.php:335
+msgid "View image"
+msgstr "Bild anzeigen"
 
 #. translators: 1: required PHP version, 2: current PHP version
 #: sw-cloudcalendar.php:35

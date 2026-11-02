@@ -62,6 +62,17 @@ final class Plugin {
 
 	public function load_textdomain(): void {
 		load_plugin_textdomain( 'sw-cloudcalendar', false, dirname( plugin_basename( SW_CALENDAR_FILE ) ) . '/languages' );
+		// Reuse the bundled German catalog for the formal variant unless a dedicated translation exists.
+		if ( 'de_DE_formal' === determine_locale() ) {
+			foreach ( array( WP_LANG_DIR . '/plugins/', SW_CALENDAR_DIR . 'languages/' ) as $directory ) {
+				foreach ( array( '.mo', '.l10n.php' ) as $extension ) {
+					if ( is_readable( $directory . 'sw-cloudcalendar-de_DE_formal' . $extension ) ) {
+						return;
+					}
+				}
+			}
+			load_textdomain( 'sw-cloudcalendar', SW_CALENDAR_DIR . 'languages/sw-cloudcalendar-de_DE.mo', 'de_DE_formal' );
+		}
 	}
 
 	/** Cheap version comparison; migrations are idempotent. Also covers sites created after a network activation. */

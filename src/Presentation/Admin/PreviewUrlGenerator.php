@@ -28,6 +28,10 @@ final class PreviewUrlGenerator implements UrlGeneratorInterface {
 		return '#event-' . $occurrenceId;
 	}
 
+	public function calendar( int $viewId, array $filters ): string {
+		return '#calendar';
+	}
+
 	public function month( int $viewId, string $month ): string {
 		return '#month-' . $month;
 	}

@@ -21,7 +21,7 @@ use SW\Calendar\Presentation\Frontend\ViewLocale;
  */
 final class PublicController extends BaseController {
 
-	private const FILTER_PARAMS = array( 'source', 'view', 'limit', 'days', 'start', 'end', 'past', 'search', 'location', 'category', 'exclude', 'sort', 'template', 'show_images', 'show_attachments', 'month', 'page', 'per_page', 'navigation', 'color_titles', 'legend', 'columns', 'day_limit', 'navigation_group' );
+	private const FILTER_PARAMS = array( 'source', 'view', 'limit', 'days', 'start', 'end', 'past', 'search', 'location', 'category', 'exclude', 'sort', 'template', 'show_images', 'show_attachments', 'month', 'page', 'per_page', 'navigation', 'color_titles', 'legend', 'columns', 'day_limit', 'navigation_group', 'mode_switcher', 'show_search' );
 
 	public function register_routes(): void {
 		register_rest_route(

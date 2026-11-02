@@ -20,11 +20,21 @@ final class PlaceholderRegistry
     ];
 
     private const CONTAINER_ONLY = [
+        'calendar.events_by_month' => [PlaceholderType::Html, 'Rendered events grouped by start month, with localized month and year headings'],
         'calendar.events' => [PlaceholderType::Html, 'Rendered events (list, cards or month grid)'],
         'calendar.navigation' => [PlaceholderType::Html, 'Previous/next navigation of the month view'],
     ];
 
     private const EVENT = [
+        'event.labels.images' => [PlaceholderType::Text, 'Localized images label'],
+        'event.has_multiple_images' => [PlaceholderType::Flag, 'Event has more than one displayable image'],
+        'event.labels.details' => [PlaceholderType::Text, 'Localized event details heading'],
+        'event.labels.date' => [PlaceholderType::Text, 'Localized date label'],
+        'event.labels.time' => [PlaceholderType::Text, 'Localized time label'],
+        'event.labels.location' => [PlaceholderType::Text, 'Localized location label'],
+        'event.labels.all_day' => [PlaceholderType::Text, 'Localized all-day label'],
+        'event.labels.show_image' => [PlaceholderType::Text, 'Localized view image label'],
+        'event.color_text' => [PlaceholderType::Color, 'Contrasting text color for the source color'],
         'event.id' => [PlaceholderType::Text, 'Internal occurrence id'],
         'event.title' => [PlaceholderType::Text, 'Title'],
         'event.description' => [PlaceholderType::Text, 'Description as plain text'],
@@ -42,6 +52,7 @@ final class PlaceholderRegistry
         'event.end_iso' => [PlaceholderType::Text, 'End as ISO 8601'],
         'event.day' => [PlaceholderType::Text, 'Day of month of the start'],
         'event.month_short' => [PlaceholderType::Text, 'Abbreviated month name of the start'],
+        'event.weekday_short' => [PlaceholderType::Text, 'Abbreviated weekday name of the start'],
         'event.weekday' => [PlaceholderType::Text, 'Weekday name of the start'],
         'event.all_day' => [PlaceholderType::Flag, 'All-day event'],
         'event.multi_day' => [PlaceholderType::Flag, 'Event spans several days'],

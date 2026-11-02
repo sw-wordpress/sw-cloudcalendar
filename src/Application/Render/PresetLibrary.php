@@ -17,6 +17,8 @@ final class PresetLibrary
     public const EVENT_CARDS = 'event-cards';
     public const MONTH_GRID = 'month-grid';
     public const TIMELINE_LIST = 'timeline-list';
+    public const MONTHLY_LIST = 'monthly-list';
+    public const IMAGE_RIGHT_LIST = 'image-right-list';
 
     public function __construct(private readonly string $directory)
     {
@@ -27,7 +29,7 @@ final class PresetLibrary
      */
     public function keys(): array
     {
-        return [self::CLASSIC_LIST, self::EVENT_CARDS, self::MONTH_GRID, self::TIMELINE_LIST];
+        return [self::CLASSIC_LIST, self::EVENT_CARDS, self::MONTH_GRID, self::TIMELINE_LIST, self::MONTHLY_LIST, self::IMAGE_RIGHT_LIST];
     }
 
     public static function defaultFor(DisplayMode $mode): string
