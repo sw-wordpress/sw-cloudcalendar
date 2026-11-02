@@ -1,6 +1,6 @@
 // Strict JS/TS line-coverage gate (AGENTS.md: > 80 %, exactly 80 % fails) on coverage/lcov.info.
 // Also rewrites LCOV paths relative to the plugin root (for SonarQube) and fails when a hand-written
-// script outside this package (assets/js, blocks) is missing from the report, i.e. never loaded by a test.
+// production source is missing from the report, including the admin app and external scripts.
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -10,12 +10,13 @@ const app = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const plugin = resolve(app, '../..');
 const report = resolve(app, process.argv[2] ?? 'coverage/lcov.info');
 
-function walk(dir, out = []) {
+function walk(dir, pattern = /\.js$/, out = []) {
     if (!existsSync(dir)) return out;
     for (const name of readdirSync(dir)) {
         const path = join(dir, name);
-        if (statSync(path).isDirectory()) walk(path, out);
-        else if (name.endsWith('.js')) out.push(relative(plugin, path));
+        if (path === join(app, 'src/types') || name.endsWith('.d.ts')) continue;
+        if (statSync(path).isDirectory()) walk(path, pattern, out);
+        else if (pattern.test(name)) out.push(relative(plugin, path));
     }
     return out;
 }
@@ -48,12 +49,15 @@ const lines = readFileSync(report, 'utf8')
     });
 writeFileSync(report, lines.join('\n'));
 
-const missing = [...walk(join(plugin, 'assets/js')), ...walk(join(plugin, 'blocks'))].filter(
-    (file) => !files.has(file),
-);
+const missing = [
+    ...walk(join(app, 'src'), /\.(ts|js|vue)$/),
+    ...walk(join(app, 'tools'), /\.ts$/),
+    ...walk(join(plugin, 'assets/js')),
+    ...walk(join(plugin, 'blocks')),
+].filter((file) => !files.has(file));
 if (missing.length > 0) {
     console.error(
-        `Production scripts without coverage data (no test loads them): ${missing.join(', ')}`,
+        `Production sources without coverage data: ${missing.join(', ')}`,
     );
     process.exit(1);
 }

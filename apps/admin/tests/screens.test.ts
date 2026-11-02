@@ -1,10 +1,14 @@
 import { flushPromises, mount } from '@vue/test-utils';
+import type { VueWrapper } from '@vue/test-utils';
 import { createPinia } from 'pinia';
-import { Notify, Quasar } from 'quasar';
+import { Notify, QBtn, QForm, QInput, Quasar } from 'quasar';
+import ConfirmDialog from '../src/components/ui/ConfirmDialog.vue';
+import FormSheet from '../src/components/ui/FormSheet.vue';
+import ConnectionSheet from '../src/features/connections/ConnectionSheet.vue';
 import iconSet from 'quasar/icon-set/material-icons-round';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { defineComponent, h } from 'vue';
-import { RouterView } from 'vue-router';
+import App from '../src/App.vue';
+import { resetConfigForTests } from '../src/config';
 import { createAppI18n } from '../src/i18n';
 import { createAppRouter } from '../src/router';
 
@@ -238,6 +242,7 @@ const routes: Record<string, unknown> = {
   'admin/diagnostics': diagnostics,
   'admin/meta': meta,
   'admin/connections': page([connection]),
+  'admin/connections/1': connection,
   'admin/sources': page([source]),
   'admin/sources/3': source,
   'admin/sources/3/runs': page([run]),
@@ -272,9 +277,19 @@ const routes: Record<string, unknown> = {
 };
 
 const PREFIX = 'https://x.test/wp-json/sw-cloudcalendar/v1/';
-const fetchMock = vi.fn(async (input: string) => {
+const fetchMock = vi.fn(async (input: string, init?: RequestInit) => {
   const path = input.slice(PREFIX.length).split('?')[0] ?? '';
-  const body = routes[path];
+  const method = init?.method ?? 'GET';
+  let body = routes[path];
+  if (method === 'DELETE') body = { deleted: true };
+  if (method === 'POST' && path === 'admin/connections') body = connection;
+  if (method === 'POST' && path === 'admin/templates') body = template;
+  if (method === 'PUT' && path === 'admin/settings') body = settings;
+  if (path === 'admin/connections/1/test')
+    body = { ok: true, message: 'Connection works', error_code: null };
+  if (path === 'admin/connections/1/disconnect') body = { ...connection, status: 'disconnected' };
+  if (path === 'admin/sources/3/sync' || path === 'admin/sync/queue') body = { queued: true };
+  if (path === 'admin/cache/clear') body = { cleared: true };
   return new Response(
     JSON.stringify(body ?? { code: 'swc_not_found', message: path, data: { status: 404 } }),
     {
@@ -313,15 +328,19 @@ beforeAll(() => {
   })) as never;
 });
 afterEach(() => {
+  fetchMock.mockClear();
   document.body.innerHTML = '';
+  localStorage.clear();
 });
 
-const Host = defineComponent({ render: () => h(RouterView) });
-
-async function render(path: string): Promise<string> {
+async function render(
+  path: string,
+  interact?: (wrapper: VueWrapper) => Promise<void>,
+): Promise<string> {
+  resetConfigForTests();
   const errors: unknown[] = [];
   const router = createAppRouter();
-  const wrapper = mount(Host, {
+  const wrapper = mount(App, {
     attachTo: document.body,
     global: {
       plugins: [
@@ -340,9 +359,10 @@ async function render(path: string): Promise<string> {
   await router.push(path);
   await router.isReady();
   for (let i = 0; i < 6; i += 1) {
-    await flushPromises();
+    await settle();
     await new Promise((r) => setTimeout(r, 20));
   }
+  if (interact) await interact(wrapper);
   const text = wrapper.text();
   wrapper.unmount();
   expect(errors).toEqual([]);
@@ -379,5 +399,192 @@ describe('screens render against the contract fixtures', () => {
     expect(s).toContain('wp sw-cloudcalendar queue run');
     expect(s).toContain('Quelle angelegt');
     expect(await render('/diagnostics')).toContain('WordPress-Salts');
+  });
+});
+
+async function settle() {
+  for (let i = 0; i < 3; i += 1) {
+    await flushPromises();
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+}
+async function clickIcon(wrapper: VueWrapper, icon: string) {
+  const button = wrapper
+    .findAllComponents(QBtn)
+    .find((candidate) => candidate.props('icon') === icon);
+  expect(button, `button ${icon}`).toBeDefined();
+  await button!.trigger('click');
+  await settle();
+}
+function written(path: string, method: string) {
+  const request = fetchMock.mock.calls.find(
+    ([url, init]) => url.endsWith(path) && init?.method === method,
+  );
+  expect(request, `${method} ${path}`).toBeDefined();
+  return JSON.parse(String(request![1]!.body ?? '{}'));
+}
+
+describe('admin actions against REST contracts', () => {
+  it('saves view filters and refreshes its preview', async () => {
+    await render('/views/5', async (wrapper) => {
+      wrapper.getComponent(QForm).vm.$emit('submit');
+      await settle();
+      expect(written('admin/views/5', 'PUT')).toMatchObject({
+        name: 'Startseite',
+        source_ids: [3],
+        default_filters: { limit: 10 },
+      });
+    });
+  });
+  it('saves a source without resubmitting server confirmation records', async () => {
+    await render('/sources/3', async (wrapper) => {
+      wrapper.getComponent(QForm).vm.$emit('submit');
+      await settle();
+      const body = written('admin/sources/3', 'PUT');
+      expect(body).toMatchObject({ name: 'Vereinskalender', visibility: 'public' });
+      expect(body.settings).not.toHaveProperty('publication_confirmation');
+      expect(body.settings.attachments).not.toHaveProperty(
+        'publish_private_attachments_confirmation',
+      );
+      await clickIcon(wrapper, 'r_sync');
+      expect(written('admin/sources/3/sync', 'POST')).toEqual({});
+    });
+  });
+  it('requires explicit consent when saving public provider data', async () => {
+    await render('/sources/3', async (wrapper) => {
+      fetchMock.mockImplementationOnce(
+        async () =>
+          new Response(
+            JSON.stringify({
+              code: 'invalid',
+              message: 'Consent required',
+              data: { status: 400, params: { confirm_publication: 'required' } },
+            }),
+            { status: 400 },
+          ),
+      );
+      wrapper.getComponent(QForm).vm.$emit('submit');
+      await settle();
+      const dialog = wrapper
+        .findAllComponents(ConfirmDialog)
+        .find((item) => item.props('modelValue'))!;
+      expect(dialog).toBeDefined();
+      expect(
+        fetchMock.mock.calls.filter(
+          ([url, init]) => url.endsWith('admin/sources/3') && init?.method === 'PUT',
+        ),
+      ).toHaveLength(1);
+      dialog.vm.$emit('confirm');
+      await settle();
+      const requests = fetchMock.mock.calls.filter(
+        ([url, init]) => url.endsWith('admin/sources/3') && init?.method === 'PUT',
+      );
+      expect(JSON.parse(String(requests.at(-1)![1]!.body))).toMatchObject({
+        confirm_publication: true,
+      });
+    });
+  });
+  it('saves settings and explicitly clears the cache', async () => {
+    await render('/settings', async (wrapper) => {
+      wrapper.getComponent(QForm).vm.$emit('submit');
+      await settle();
+      expect(written('admin/settings', 'PUT')).toHaveProperty('cron_mode');
+      await clickIcon(wrapper, 'r_cleaning_services');
+      expect(written('admin/cache/clear', 'POST')).toEqual({ scope: 'all' });
+    });
+  });
+  it('saves the template body and styling', async () => {
+    await render('/templates/7', async (wrapper) => {
+      await clickIcon(wrapper, 'r_save');
+      expect(written('admin/templates/7', 'PUT')).toMatchObject({ body: template.body, css: '' });
+    });
+  });
+  it('tests and disconnects a connection after confirmation', async () => {
+    await render('/connections', async (wrapper) => {
+      await clickIcon(wrapper, 'r_network_check');
+      expect(wrapper.text()).toContain('Connection works');
+      await clickIcon(wrapper, 'r_link_off');
+      const dialog = wrapper
+        .findAllComponents(ConfirmDialog)
+        .find((item) => item.props('modelValue'))!;
+      dialog.vm.$emit('confirm');
+      await settle();
+      written('admin/connections/1/disconnect', 'POST');
+    });
+  });
+  it('edits a connection and keeps unchanged secrets write-only', async () => {
+    await render('/connections', async (wrapper) => {
+      await clickIcon(wrapper, 'r_edit');
+      const sheet = wrapper.getComponent(ConnectionSheet);
+      sheet.getComponent(FormSheet).vm.$emit('submit');
+      await settle();
+      expect(written('admin/connections/1', 'PUT')).toMatchObject({
+        name: 'Team Google',
+        secrets: {},
+        settings: { client_id: 'cid' },
+      });
+      expect(sheet.props('modelValue')).toBe(false);
+    });
+  });
+  it('creates an ICS connection with trimmed settings and no unrelated secrets', async () => {
+    await render('/connections', async (wrapper) => {
+      await clickIcon(wrapper, 'r_add');
+      const sheet = wrapper.getComponent(ConnectionSheet);
+      const inputs = sheet.findAllComponents(QInput);
+      inputs
+        .find((input) => input.props('label') === 'Name')!
+        .vm.$emit('update:modelValue', '  New feed  ');
+      inputs
+        .find((input) => input.props('label') === 'Feed-URL')!
+        .vm.$emit('update:modelValue', '  https://site.test/feed.ics  ');
+      await settle();
+      sheet.getComponent(FormSheet).vm.$emit('submit');
+      await settle();
+      expect(written('admin/connections', 'POST')).toMatchObject({
+        name: 'New feed',
+        provider: 'ics',
+        auth_mode: 'none',
+        secrets: {},
+        settings: { url: 'https://site.test/feed.ics' },
+      });
+    });
+  });
+  it.each(['/views', '/templates', '/sources', '/connections'])(
+    'deletes from %s only after confirmation',
+    async (path) => {
+      await render(path, async (wrapper) => {
+        const before = fetchMock.mock.calls.filter(([, init]) => init?.method === 'DELETE').length;
+        await clickIcon(wrapper, 'r_delete');
+        expect(fetchMock.mock.calls.filter(([, init]) => init?.method === 'DELETE')).toHaveLength(
+          before,
+        );
+        const dialog = wrapper
+          .findAllComponents(ConfirmDialog)
+          .find((item) => item.props('modelValue'))!;
+        dialog.vm.$emit('confirm');
+        await settle();
+        expect(fetchMock.mock.calls.filter(([, init]) => init?.method === 'DELETE')).toHaveLength(
+          before + 1,
+        );
+      });
+    },
+  );
+  it('allows theme switching and keyboard navigation through the shell', async () => {
+    await render('/views', async (wrapper) => {
+      await clickIcon(wrapper, 'r_dark_mode');
+      expect(localStorage.getItem('swc-theme')).toBe('dark');
+      await clickIcon(wrapper, 'r_keyboard_double_arrow_left');
+      expect(wrapper.get('.swc-shell').classes()).toContain('swc-shell--collapsed');
+      await wrapper.get('.swc-skip').trigger('click');
+      expect(document.activeElement?.id).toBe('swc-main');
+    });
+  });
+  it('renders an access error without mounting admin data for a user without capabilities', async () => {
+    window.swcloudcalendarConfig!.capabilities = [];
+    try {
+      expect(await render('/')).toContain('Zugriff');
+    } finally {
+      window.swcloudcalendarConfig!.capabilities = ['manage_sw_calendar'];
+    }
   });
 });

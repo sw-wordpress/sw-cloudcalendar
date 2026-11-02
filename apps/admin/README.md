@@ -6,7 +6,7 @@ REST contract: [`docs/rest-api.md`](../../docs/rest-api.md). The TypeScript type
 
 ## Dev workflow
 
-Node 18.18+ is enough (versions are pinned accordingly, see below).
+Use Node 22.22.2+ on the Node 22 line (`.nvmrc`), Node 24.15+, or Node 26+.
 
 ```bash
 cd apps/admin
@@ -125,7 +125,9 @@ All user-visible strings live in `src/i18n/{de,en}.ts` (only these two). `de.ts`
 - **Views.** Template selects are filtered by kind with "Preset (default)" = `null`; colour overrides are limited to selected sources; default filters only send set values. The live preview renders the **saved** view via `GET /views/{id}/render` (nonce sent).
 - **Dates.** Sync runs, logs and audit rows arrive as `YYYY-MM-DD HH:MM:SS` (UTC, no zone); `parseServerDate()` reads them as UTC.
 
-## Versions (Node 18 compatible)
+## Toolchain
 
-Same pins as sw-backupit: vue 3.5, quasar 2.18, @quasar/vite-plugin 1.9.0 (1.10+ requires Node 20), vite 6, vitest 3.2, vue-i18n 10.0, pinia 3, vue-router 4, eslint 9.39, typescript 5.9, vue-tsc 3, prettier 3. Additionally CodeMirror 6 (`@codemirror/state|view|language|commands|autocomplete|lang-html|lang-css|lint`, `@lezer/highlight`), which has no Node engine restriction.
-`npm audit` reports advisories in dev tooling (vitest/vite transitive dependencies, never shipped); the fixed versions need Node 20+.
+Vite 8, @vitejs/plugin-vue 6, @quasar/vite-plugin 2, Vitest/coverage-v8 5 and ESLint 10.
+TypeScript stays on 5.9: TypeScript 7 has no JavaScript API for typescript-eslint and vue-tsc yet.
+The package manifest and lockfile define the remaining versions. `npm run test:coverage` enforces > 80 %
+line coverage; Vitest 5 counts executable lines.
