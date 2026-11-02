@@ -35,6 +35,7 @@ import {
   requiredConfirmations,
   writableSettings,
 } from './sourceForm';
+import SourceEvents from './SourceEvents.vue';
 import type { ConfirmationFlag } from './sourceForm';
 
 const props = defineProps<{ id?: string }>();
@@ -50,6 +51,8 @@ const isEdit = computed(() => sourceId.value !== null);
 
 /* ---------- loading ---------- */
 const source = ref<Source | null>(null);
+const eventsOpen = ref(false);
+watch(sourceId, () => (eventsOpen.value = false));
 const loader = useAsyncData(
   async () => {
     const [meta, connections] = await Promise.all([
@@ -351,7 +354,26 @@ function onConfirm(): void {
 }
 
 /* ---------- actions (edit) ---------- */
-const actionBusy = ref<'sync' | 'full' | null>(null);
+const actionBusy = ref<'sync' | 'full' | 'manual' | null>(null);
+async function synchronizeNow(): Promise<void> {
+  if (!source.value || actionBusy.value) return;
+  actionBusy.value = 'manual';
+  try {
+    source.value = await api.sources.syncNow(source.value.id);
+    lookups.invalidate();
+    notify.success(t('sources.manualSyncCompleted'));
+  } catch (e) {
+    notify.error(e);
+  } finally {
+    try {
+      source.value = await api.sources.get(source.value!.id);
+      await runs.load();
+    } catch (e) {
+      notify.error(e);
+    }
+    actionBusy.value = null;
+  }
+}
 async function sync(full: boolean): Promise<void> {
   if (!source.value) return;
   actionBusy.value = full ? 'full' : 'sync';
@@ -406,6 +428,25 @@ watch(
 );
 watch(runsPage, () => void runs.load());
 
+const localEventCount = useAsyncData(
+  async () => {
+    const current = source.value;
+    if (!current?.local) return null;
+    const result = await api.sources.events(current.id, { per_page: 1 });
+    return { sourceId: current.id, total: result.total };
+  },
+  { immediate: false },
+);
+watch(source, (current) => {
+  if (current?.local) void localEventCount.load();
+});
+const eventCountLabel = computed(() => {
+  if (!source.value?.local)
+    return `${t('sources.events')}: ${fmt.number(source.value?.occurrence_count ?? 0)}`;
+  const count = localEventCount.data.value;
+  return `${t('sources.eventsThisMonth')}: ${count?.sourceId === source.value.id && !localEventCount.error.value ? fmt.number(count.total) : '–'}`;
+});
+
 const totals = computed(() => attachmentTotals(source.value?.attachments));
 const confirmation = computed(() => source.value?.settings.publication_confirmation ?? null);
 const fileConfirmation = computed(
@@ -423,12 +464,37 @@ const fileConfirmation = computed(
     >
       <template v-if="source">
         <q-btn
+          flat
+          no-caps
+          icon="r_event"
+          :label="t('sources.events')"
+          :aria-expanded="eventsOpen"
+          aria-controls="source-events"
+          @click="eventsOpen = !eventsOpen"
+        />
+        <q-btn
+          v-if="!source.local"
+          flat
+          no-caps
+          icon="r_play_arrow"
+          :label="t('sources.manualSync')"
+          :loading="actionBusy === 'manual'"
+          :disable="
+            actionBusy !== null ||
+            source.syncing ||
+            !['active', 'error'].includes(source.status) ||
+            !source.settings.sync_enabled
+          "
+          @click="synchronizeNow"
+        />
+        <q-btn
           v-if="!source.local"
           flat
           no-caps
           icon="r_sync"
           :label="t('sources.syncNow')"
           :loading="actionBusy === 'sync'"
+          :disable="actionBusy !== null"
           @click="sync(false)"
         />
         <q-btn
@@ -438,6 +504,7 @@ const fileConfirmation = computed(
           icon="r_restart_alt"
           :label="t('sources.fullResync')"
           :loading="actionBusy === 'full'"
+          :disable="actionBusy !== null"
           @click="fullOpen = true"
         />
         <q-btn
@@ -477,6 +544,13 @@ const fileConfirmation = computed(
         </SwcCard>
       </template>
       <div v-else class="swc-se">
+        <SourceEvents
+          v-if="source && eventsOpen"
+          id="source-events"
+          :key="source.id"
+          :source-id="source.id"
+        />
+
         <q-form class="swc-stack" greedy @submit="bulk ? createDrafts() : save()">
           <!-- status strip (edit) -->
           <SwcCard v-if="source" :padding="true">
@@ -490,19 +564,27 @@ const fileConfirmation = computed(
                 icon="r_sync"
                 :label="source.syncing ? t('sources.syncing') : t('sources.queued')"
               />
-              <span class="swc-muted">
+              <span v-if="!source.local" class="swc-muted">
                 {{ t('sources.lastSync') }}:
                 {{
                   source.last_success_at ? fmt.relative(source.last_success_at) : t('common.never')
                 }}
               </span>
-              <span class="swc-muted">
+              <span v-if="!source.local" class="swc-muted">
                 {{ t('sources.nextRun') }}:
                 {{ source.next_attempt_at ? fmt.relative(source.next_attempt_at) : '–' }}
               </span>
-              <span class="swc-muted">
-                {{ t('sources.events') }}: {{ fmt.number(source.occurrence_count) }}
-              </span>
+              <q-btn
+                flat
+                dense
+                no-caps
+                :label="eventCountLabel"
+                :loading="localEventCount.loading.value"
+                :title="localEventCount.error.value?.message"
+                :aria-expanded="eventsOpen"
+                aria-controls="source-events"
+                @click="eventsOpen = !eventsOpen"
+              />
               <code v-if="source.last_error_code" class="swc-se__err">
                 {{ source.last_error_code }}
                 <template v-if="source.failures"
@@ -1070,7 +1152,12 @@ const fileConfirmation = computed(
           </template>
         </q-form>
 
-        <SwcCard v-if="source" :title="t('sources.runHistory')" icon="r_history" :padding="false">
+        <SwcCard
+          v-if="source && !source.local"
+          :title="t('sources.runHistory')"
+          icon="r_history"
+          :padding="false"
+        >
           <template #actions>
             <q-btn
               flat

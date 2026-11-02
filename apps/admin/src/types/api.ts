@@ -514,3 +514,11 @@ export interface Meta {
 export interface DeletedResult {
   deleted: boolean;
 }
+
+export interface SourceEvent {
+  title: string;
+  start: string;
+  end: string;
+  all_day: boolean;
+  location: string;
+}

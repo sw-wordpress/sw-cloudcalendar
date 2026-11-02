@@ -14,6 +14,8 @@ Kalenderauswahl, Farbe und Sichtbarkeit. Termine, Bilder und ID-Zuordnungen werd
    Farbregeln der Ansicht überschreiben die gespeicherte Quellenfarbe. In den Anzeigeoptionen lassen sich farbige
    Betreffzeilen, Legende, Spalten, Tageslimit und gemeinsame Monatsnavigation einstellen.
 
+In der Detailansicht jeder Quelle öffnet **Termine** in der Kopfzeile eine Liste mit Monatsauswahl und Seitennavigation, auch für Entwürfe. Lokale Termine werden live gelesen, synchronisierte aus dem gespeicherten Bestand. Nur Kalenderadministratoren (bei lokalen Quellen zusätzlich mit Adapterfreigabe) können sie abrufen; die Ausgabe wird nicht gecacht. Der Terminzähler lokaler Quellen zeigt die live ermittelte Anzahl im aktuellen Monat.
+
 Beispiel entsprechend einer Seite mit Veranstaltungsliste und Monatsraster (12/13 sind anzulegende Ansichten):
 
 ```text

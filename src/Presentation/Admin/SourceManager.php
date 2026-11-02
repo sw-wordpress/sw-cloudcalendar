@@ -275,6 +275,36 @@ final class SourceManager {
 		}
 	}
 
+	/** Runs one source's queued sync under a job lease and the existing source lock. */
+	public function synchronize_now( int $id ): \SW\Calendar\Application\Sync\SyncReport {
+		$source = $this->services->sources()->find( $id );
+		if ( null === $source ) {
+			throw new ValidationException( array( 'id' => 'not_found' ), 'Source not found.', 404 );
+		}
+		if ( $this->services->event_queries()->isLocal( $id ) || ! $source->status->isSyncable() || ! $source->settings->syncEnabled ) {
+			throw new ValidationException( array( 'source' => 'not_syncable' ), 'Source cannot be synchronized.', 409 );
+		}
+		$now  = $this->services->clock()->now();
+		$jobs = $this->services->jobs();
+		$jobs->enqueue( JobType::SyncSource, $id, array( 'full' => false ), hash( 'sha256', 'sync_source|' . $id ), $now );
+		$job = $jobs->claim( $now, $now->modify( '+600 seconds' ), $id );
+		if ( null === $job ) {
+			throw new ValidationException( array( 'source' => 'locked' ), 'Synchronization already running.', 409 );
+		}
+		try {
+			$report = $this->services->sync()->sync( $id, (bool) ( $job->payload['full'] ?? false ) );
+			if ( \SW\Calendar\Application\Sync\SyncReport::LOCKED === $report->status ) {
+				$jobs->fail( $job->id, 'LOCKED', $now->modify( '+60 seconds' ) );
+			} else {
+				$jobs->complete( $job->id );
+			}
+			return $report;
+		} catch ( \Throwable $e ) {
+			$jobs->fail( $job->id, 'Manual synchronization interrupted.', $now->modify( '+60 seconds' ) );
+			throw $e;
+		}
+	}
+
 	/**
 	 * Removes the source and its data. Delivery stops immediately; files are removed by the storage cleanup.
 	 */

@@ -380,6 +380,75 @@ describe('screens render against the contract fixtures', () => {
   it('connections', async () => {
     expect(await render('/connections')).toContain('Team Google');
   });
+  it.each([true, false])(
+    'opens events on demand in the source editor (local: %s)',
+    async (local) => {
+      const original = routes['admin/sources/3'];
+      routes['admin/sources/3'] = { ...source, provider: local ? 'local' : 'google', local };
+      routes['admin/sources/3/events'] = page([
+        {
+          title: 'Local meeting',
+          start: '2026-11-03T09:00:00Z',
+          end: '2026-11-03T10:00:00Z',
+          all_day: false,
+          location: 'Office',
+        },
+      ]);
+      try {
+        await render('/sources/3', async (wrapper) => {
+          expect(wrapper.text()).not.toContain('Verfügbare Termine');
+          if (local) {
+            expect(wrapper.text()).not.toContain('Letzte Synchronisierung:');
+            expect(wrapper.text()).not.toContain('Nächster Lauf:');
+            expect(wrapper.text()).not.toContain('Synchronisation manuell durchführen');
+          } else {
+            expect(wrapper.text()).toContain('Letzte Synchronisierung:');
+            expect(wrapper.text()).toContain('Nächster Lauf:');
+          }
+          const initialRequests = fetchMock.mock.calls.filter(([url]) =>
+            url.includes('admin/sources/3/events'),
+          );
+          expect(initialRequests).toHaveLength(local ? 1 : 0);
+          if (local) {
+            expect(initialRequests[0]![0]).toContain('per_page=1');
+            expect(wrapper.text()).toContain('Termine im aktuellen Monat: 1');
+          } else expect(wrapper.text()).toContain(`Termine: ${source.occurrence_count}`);
+          const toggle = () =>
+            wrapper.findAllComponents(QBtn).find((c) => c.props('label') === 'Termine')!;
+          const counter = wrapper
+            .findAllComponents(QBtn)
+            .find((c) =>
+              String(c.props('label')).startsWith(
+                local ? 'Termine im aktuellen Monat:' : 'Termine:',
+              ),
+            )!;
+          await counter.trigger('click');
+          await settle();
+          expect(wrapper.text()).toContain('Verfügbare Termine');
+          expect(wrapper.text()).toContain('Local meeting');
+          expect(toggle().attributes('aria-expanded')).toBe('true');
+          await toggle().trigger('click');
+          await settle();
+          expect(wrapper.text()).not.toContain('Verfügbare Termine');
+        });
+      } finally {
+        routes['admin/sources/3'] = original;
+        delete routes['admin/sources/3/events'];
+      }
+    },
+  );
+  it('does not report zero when the local count is unavailable', async () => {
+    const original = routes['admin/sources/3'];
+    routes['admin/sources/3'] = { ...source, provider: 'local', local: true };
+    try {
+      await render('/sources/3', async (wrapper) => {
+        expect(wrapper.text()).toContain('Termine im aktuellen Monat: –');
+        expect(wrapper.text()).not.toContain('Termine im aktuellen Monat: 0');
+      });
+    } finally {
+      routes['admin/sources/3'] = original;
+    }
+  });
   it('sources list and editor', async () => {
     expect(await render('/sources')).toContain('Vereinskalender');
     const editor = await render('/sources/3');
@@ -652,6 +721,62 @@ describe('admin actions against REST contracts', () => {
       routes['admin/sources'] = original;
       fetchMock.mockImplementation(implementation);
     }
+  });
+  it('runs a manual sync directly and refreshes the source and history', async () => {
+    routes['admin/sources/3/sync-now'] = source;
+    try {
+      await render('/sources/3', async (wrapper) => {
+        const button = wrapper
+          .findAllComponents(QBtn)
+          .find((c) => c.props('label') === 'Synchronisation manuell durchführen')!;
+        expect(button.props('disable')).toBe(false);
+        await button.trigger('click');
+        await settle();
+        expect(written('admin/sources/3/sync-now', 'POST')).toEqual({});
+        expect(
+          fetchMock.mock.calls.some(
+            ([url, init]) => url.endsWith('admin/sources/3/sync') && init?.method === 'POST',
+          ),
+        ).toBe(false);
+        expect(
+          fetchMock.mock.calls.filter(([url]) => url.endsWith('admin/sources/3')).length,
+        ).toBeGreaterThan(1);
+      });
+    } finally {
+      delete routes['admin/sources/3/sync-now'];
+    }
+  });
+
+  it('reports manual sync errors and releases the button for another attempt', async () => {
+    await render('/sources/3', async (wrapper) => {
+      const notify = vi.spyOn(Notify, 'create').mockImplementation(() => () => undefined);
+      try {
+        fetchMock.mockImplementationOnce(
+          async () =>
+            new Response(
+              JSON.stringify({
+                code: 'swc_sync_failed',
+                message: 'Synchronization failed',
+                data: { status: 502 },
+              }),
+              { status: 502 },
+            ),
+        );
+        const button = () =>
+          wrapper
+            .findAllComponents(QBtn)
+            .find((c) => c.props('label') === 'Synchronisation manuell durchführen')!;
+        await button().trigger('click');
+        await settle();
+        expect(notify).toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'negative', message: 'Synchronization failed' }),
+        );
+        expect(notify).not.toHaveBeenCalledWith(expect.objectContaining({ type: 'positive' }));
+        expect(button().props('loading')).toBe(false);
+      } finally {
+        notify.mockRestore();
+      }
+    });
   });
   it('saves a source without resubmitting server confirmation records', async () => {
     await render('/sources/3', async (wrapper) => {
