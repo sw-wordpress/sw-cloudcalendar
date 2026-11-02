@@ -27,6 +27,10 @@ final class RangeResolver
         $localNow = $now->setTimezone($tz);
         $today = $localNow->setTime(0, 0);
 
+        if ($mode !== DisplayMode::Month && $filter->month !== null) {
+            $first = new \DateTimeImmutable($filter->month . '-01 00:00:00', $tz);
+            return QueryRange::fromLocal($first, $first->modify('+1 month'), $first);
+        }
         if ($mode === DisplayMode::Month) {
             $anchor = $filter->month !== null
                 ? new \DateTimeImmutable($filter->month . '-01 00:00:00', $tz)

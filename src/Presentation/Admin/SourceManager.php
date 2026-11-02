@@ -11,6 +11,7 @@ namespace SW\Calendar\Presentation\Admin;
 
 use SW\Calendar\Domain\Connection\AuthMode;
 use SW\Calendar\Domain\Connection\Connection;
+use SW\Calendar\Domain\Connection\Provider;
 use SW\Calendar\Domain\Job\JobType;
 use SW\Calendar\Domain\Source\AttachmentPolicy;
 use SW\Calendar\Domain\Source\Confirmation;
@@ -45,6 +46,7 @@ final class SourceManager {
 			'id'                    => $source->id,
 			'connection_id'         => $source->connectionId,
 			'provider'              => $connection?->provider->value,
+			'local'                 => Provider::Local === $connection?->provider,
 			'external_id'           => $source->externalId,
 			'name'                  => $source->name,
 			'color'                 => $source->color,
@@ -122,6 +124,21 @@ final class SourceManager {
 			$status           = $existing->status ?? SourceStatus::Draft;
 		}
 
+		if ( Provider::Local === $connection->provider ) {
+			if ( null === $existing ) {
+				$calendars = $this->services->providers()->get( $connection->provider )->listCalendars( $connection );
+				if ( ! in_array( $external_id, array_map( static fn ( $calendar ): string => $calendar->externalId, $calendars ), true ) ) {
+					$errors['external_id'] = 'not_found';
+				}
+			}
+			$data['settings'] = array_replace_recursive(
+				(array) ( $data['settings'] ?? array() ),
+				array(
+					'sync_enabled' => false,
+					'attachments'  => array( 'sync_attachments' => false ),
+				)
+			);
+		}
 		$settings_errors = array();
 		$raw_settings    = array_replace_recursive( $existing?->settings->toArray() ?? array(), is_array( $data['settings'] ?? null ) ? $data['settings'] : array() );
 		// Confirmations can only be granted through the explicit flags below, never by posting the stored structure.
@@ -221,7 +238,7 @@ final class SourceManager {
 		if ( $window_changed ) {
 			$this->services->sync_state()->resetCursor( (int) $id );
 		}
-		if ( $window_changed || $filters_changed || $acl_changed || $policy_changed || $existing->timezone !== $timezone ) {
+		if ( ! $this->services->event_queries()->isLocal( (int) $id ) && ( $window_changed || $filters_changed || $acl_changed || $policy_changed || $existing->timezone !== $timezone ) ) {
 			$this->request_sync( (int) $id, $window_changed );
 		}
 		$this->services->invalidator()->sourceChanged( (int) $id );
@@ -245,6 +262,9 @@ final class SourceManager {
 		if ( null === $source ) {
 			throw new ValidationException( array( 'id' => 'not_found' ), 'Source not found.', 404 );
 		}
+		if ( $this->services->event_queries()->isLocal( $id ) ) {
+			throw new ValidationException( array( 'source' => 'local_read_only' ), 'Local sources do not need synchronization.' );
+		}
 		if ( $full ) {
 			$this->services->sync_state()->resetCursor( $id );
 		}
@@ -252,6 +272,36 @@ final class SourceManager {
 		$this->services->jobs()->enqueue( JobType::SyncSource, $id, array( 'full' => $full ), hash( 'sha256', 'sync_source|' . $id ), $this->services->clock()->now() );
 		if ( function_exists( 'spawn_cron' ) && 'wp' === \SW\Calendar\Infrastructure\WordPress\Settings::get( 'cron_mode' ) ) {
 			spawn_cron();
+		}
+	}
+
+	/** Runs one source's queued sync under a job lease and the existing source lock. */
+	public function synchronize_now( int $id ): \SW\Calendar\Application\Sync\SyncReport {
+		$source = $this->services->sources()->find( $id );
+		if ( null === $source ) {
+			throw new ValidationException( array( 'id' => 'not_found' ), 'Source not found.', 404 );
+		}
+		if ( $this->services->event_queries()->isLocal( $id ) || ! $source->status->isSyncable() || ! $source->settings->syncEnabled ) {
+			throw new ValidationException( array( 'source' => 'not_syncable' ), 'Source cannot be synchronized.', 409 );
+		}
+		$now  = $this->services->clock()->now();
+		$jobs = $this->services->jobs();
+		$jobs->enqueue( JobType::SyncSource, $id, array( 'full' => false ), hash( 'sha256', 'sync_source|' . $id ), $now );
+		$job = $jobs->claim( $now, $now->modify( '+600 seconds' ), $id );
+		if ( null === $job ) {
+			throw new ValidationException( array( 'source' => 'locked' ), 'Synchronization already running.', 409 );
+		}
+		try {
+			$report = $this->services->sync()->sync( $id, (bool) ( $job->payload['full'] ?? false ) );
+			if ( \SW\Calendar\Application\Sync\SyncReport::LOCKED === $report->status ) {
+				$jobs->fail( $job->id, 'LOCKED', $now->modify( '+60 seconds' ) );
+			} else {
+				$jobs->complete( $job->id );
+			}
+			return $report;
+		} catch ( \Throwable $e ) {
+			$jobs->fail( $job->id, 'Manual synchronization interrupted.', $now->modify( '+60 seconds' ) );
+			throw $e;
 		}
 	}
 
@@ -284,6 +334,6 @@ final class SourceManager {
 	 * for calendars that Google already publishes).
 	 */
 	private function provider_private( Connection $connection ): bool {
-		return in_array( $connection->authMode, array( AuthMode::OAuth, AuthMode::HttpHeader ), true );
+		return Provider::Local === $connection->provider || in_array( $connection->authMode, array( AuthMode::OAuth, AuthMode::HttpHeader ), true );
 	}
 }

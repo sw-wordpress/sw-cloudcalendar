@@ -14,6 +14,8 @@ const meta = computed(() => {
       return { letter: 'G', cls: 'is-google' };
     case 'microsoft':
       return { letter: 'M', cls: 'is-microsoft' };
+    case 'local':
+      return { letter: 'WP', cls: 'is-local' };
     case 'ics':
       return { letter: 'ICS', cls: 'is-ics' };
     default:

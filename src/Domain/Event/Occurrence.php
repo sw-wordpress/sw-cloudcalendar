@@ -34,7 +34,9 @@ final class Occurrence
         public readonly bool $allDay,
         public readonly OccurrenceStatus $status,
         public readonly array $attachments = [],
-        public readonly int $id = 0,
+        public readonly int|string $id = 0,
+        public readonly string $imageUrl = '',
+        public readonly string $imageAlt = '',
     ) {
     }
 

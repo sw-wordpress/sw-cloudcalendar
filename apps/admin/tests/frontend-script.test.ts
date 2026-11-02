@@ -356,3 +356,61 @@ describe('frontend.js navigation and details', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });
+
+it('synchronizes only explicitly grouped month views and resets pagination', async () => {
+  document.body.innerHTML = `
+    <div class="swc-calendar" data-swc-view="1" data-swc-mode="month" data-swc-group="mgwh" data-swc-state='{}'><a href="/?swc_month=2026-11" data-swc-month="2026-11">Next</a></div>
+    <div class="swc-calendar" data-swc-view="2" data-swc-mode="list" data-swc-group="mgwh" data-swc-state='{"page":4,"source":[7]}'></div>
+    <div class="swc-calendar" data-swc-view="3" data-swc-mode="list" data-swc-group="other"></div>`;
+  routeFetch({
+    'admin-ajax.php': { body: { nonce: '' } },
+    '/render': { body: { html: '<div class="swc-calendar"></div>', css: {} } },
+  });
+  await loadScript(CONFIG);
+  click(document.querySelector('a')!);
+  await flush();
+  await flush();
+  expect(
+    calls().some(
+      (u) =>
+        u.includes('views/2/render') &&
+        u.includes('month=2026-11') &&
+        u.includes('page=1') &&
+        u.includes('view=list'),
+    ),
+  ).toBe(true);
+  expect(calls().some((u) => u.includes('views/1/render'))).toBe(true);
+  expect(calls().some((u) => u.includes('views/3/render'))).toBe(false);
+});
+
+it('loads opaque external event references in dynamic detail placeholders', async () => {
+  document.body.innerHTML =
+    '<div class="swc-calendar swc-dynamic" data-swc-view="1" data-swc-event="local.2.NDI"></div>';
+  routeFetch({
+    'admin-ajax.php': { body: { nonce: '' } },
+    'events/local.2.NDI': { body: { html: '<div>External detail</div>', css: {} } },
+  });
+  await loadScript(CONFIG);
+  document.dispatchEvent(new Event('DOMContentLoaded'));
+  await flush();
+  await flush();
+  expect(calls().some((u) => u.includes('events/local.2.NDI'))).toBe(true);
+  expect(document.body.textContent).toContain('External detail');
+});
+
+it('keeps the selected month when paging a month-filtered list', async () => {
+  document.body.innerHTML = `<div class="swc-calendar" data-swc-view="4" data-swc-mode="list" data-swc-state='{"limit":50,"month":"2026-11","page":1}'><a id="more" href="?swc_month=2026-11&swc_page=2" data-swc-page="2">more</a></div>`;
+  routeFetch({
+    sw_calendar_rest_nonce: { body: {} },
+    'views/4/render': {
+      body: { html: '<section class="swc-calendar" id="month-page-two"></section>' },
+    },
+  });
+  await loadScript(CONFIG);
+  click(document.getElementById('more')!);
+  await flush();
+  const url = new URL(calls()[1]!);
+  expect(url.searchParams.get('page')).toBe('2');
+  expect(url.searchParams.get('month')).toBe('2026-11');
+  expect(document.getElementById('month-page-two')).not.toBeNull();
+});

@@ -11,7 +11,7 @@ export interface SetupValue {
 
 /** Scopes requested by the plugin (mirror of OAuthEndpoints.php; least privilege). */
 export function oauthScopes(
-  provider: Exclude<Provider, 'ics'>,
+  provider: Exclude<Provider, 'ics' | 'local'>,
   attachmentAccess: boolean,
 ): string[] {
   if (provider === 'google') {
@@ -41,7 +41,7 @@ function hostOf(url: string): string {
 }
 
 export function setupValues(
-  provider: Exclude<Provider, 'ics'>,
+  provider: Exclude<Provider, 'ics' | 'local'>,
   redirectUri: string,
   siteUrl: string,
   attachmentAccess: boolean,
@@ -81,7 +81,7 @@ export interface SetupLink {
 }
 
 export function setupLinks(
-  provider: Exclude<Provider, 'ics'>,
+  provider: Exclude<Provider, 'ics' | 'local'>,
   attachmentAccess: boolean,
 ): SetupLink[] {
   if (provider === 'google') {

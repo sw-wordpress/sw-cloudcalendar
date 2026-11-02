@@ -24,7 +24,7 @@ final class PreviewUrlGenerator implements UrlGeneratorInterface {
 		return $this->image_url;
 	}
 
-	public function eventDetail( int $viewId, int $occurrenceId ): string {
+	public function eventDetail( int $viewId, int|string $occurrenceId ): string {
 		return '#event-' . $occurrenceId;
 	}
 
@@ -32,7 +32,7 @@ final class PreviewUrlGenerator implements UrlGeneratorInterface {
 		return '#month-' . $month;
 	}
 
-	public function page( int $viewId, int $page ): string {
+	public function page( int $viewId, int $page, ?string $month = null ): string {
 		return '#page-' . $page;
 	}
 }

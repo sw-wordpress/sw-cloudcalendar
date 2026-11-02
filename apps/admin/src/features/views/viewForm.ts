@@ -4,6 +4,12 @@ export type TriState = 'default' | 'yes' | 'no';
 
 /** Editable representation of `default_filters` (empty string / 'default' = not set). */
 export interface FilterForm {
+  color_titles: TriState;
+  legend: TriState;
+  columns: string;
+  day_limit: string;
+  navigation_group: string;
+  month: string;
   limit: string;
   days: string;
   start: string;
@@ -28,6 +34,12 @@ function text(value: unknown): string {
 export function toFilterForm(raw: ViewDefaultFilters | unknown[] | null | undefined): FilterForm {
   const f: ViewDefaultFilters = raw && !Array.isArray(raw) ? raw : {};
   return {
+    color_titles: tri(f.color_titles),
+    legend: tri(f.legend),
+    columns: text(f.columns),
+    day_limit: text(f.day_limit),
+    navigation_group: text(f.navigation_group),
+    month: text(f.month),
     limit: text(f.limit),
     days: text(f.days),
     start: text(f.start),
@@ -48,6 +60,12 @@ export function fromFilterForm(form: FilterForm): ViewDefaultFilters {
     const n = Number(v.trim());
     return v.trim() !== '' && Number.isFinite(n) ? n : null;
   };
+  if (form.color_titles !== 'default') out.color_titles = form.color_titles === 'yes';
+  if (form.legend !== 'default') out.legend = form.legend === 'yes';
+  if (form.columns.trim() !== '') out.columns = Number(form.columns);
+  if (form.day_limit.trim() !== '') out.day_limit = Number(form.day_limit);
+  if (form.navigation_group.trim() !== '') out.navigation_group = form.navigation_group.trim();
+  if (form.month.trim() !== '') out.month = form.month.trim();
   const limit = int(form.limit);
   if (limit !== null) out.limit = limit;
   const days = int(form.days);

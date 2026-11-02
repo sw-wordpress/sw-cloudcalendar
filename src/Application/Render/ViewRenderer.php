@@ -38,6 +38,7 @@ final class ViewRenderer
     private const MIN_TTL = 30;
     private const MAX_TTL = 900;
 
+    /** @param null|\Closure(int): bool $liveSource */
     public function __construct(
         private readonly ViewRepositoryInterface $views,
         private readonly SourceRepositoryInterface $sources,
@@ -54,6 +55,7 @@ final class ViewRenderer
         private readonly FilterSchema $schema = new FilterSchema(),
         private readonly RangeResolver $ranges = new RangeResolver(),
         private readonly TemplateRenderer $renderer = new TemplateRenderer(),
+        private readonly ?\Closure $liveSource = null,
     ) {
     }
 
@@ -70,7 +72,7 @@ final class ViewRenderer
     private function containsRestricted(CalendarView $view): bool
     {
         foreach ($this->sources->findMany($view->sourceIds) as $source) {
-            if ($source->isReadable() && $source->visibility !== Visibility::Public) {
+            if ($source->isReadable() && ($source->visibility !== Visibility::Public || $this->isLive($source->id))) {
                 return true;
             }
         }
@@ -117,7 +119,7 @@ final class ViewRenderer
         // "Public" is a property of the whole view: if it contains any restricted source the output depends on the
         // user and must never be shared through HTTP caches, even if this user only sees the public part.
         $public = $allowed !== [] && $this->allPublic($sources) && !$this->containsRestricted($view);
-        $cacheable = $view->id > 0 && $allowed !== [] && $this->allPublic($sources) && $view->htmlCache && $this->settings->htmlCacheEnabled;
+        $cacheable = $view->id > 0 && $allowed !== [] && $this->allPublic($sources) && $view->htmlCache && $this->settings->htmlCacheEnabled && !$this->containsLive($view);
         $cacheKey = $cacheable ? $this->cacheKey($view, $sources, $filter, $mode, [$container, $event], $tz) : '';
         if ($cacheable) {
             $hit = $this->cache->get($cacheKey);
@@ -155,19 +157,22 @@ final class ViewRenderer
                 $showFiles,
                 $view->colorRules[$occurrence->sourceId] ?? null,
             );
-            $rendered[] = ['occurrence' => $occurrence, 'html' => $this->renderer->render($event->compiled, $calendar + $values)];
+            $rendered[] = ['occurrence' => $occurrence, 'html' => $this->renderer->render($event->compiled, $calendar + $values), 'color' => (string) $values['event.color']];
         }
 
         $grid = new MonthGrid($this->dates, $this->urls, $this->settings->labels);
         $showNavigation = $filter->navigation ?? $view->showNavigation;
         if ($mode === DisplayMode::Month) {
-            $eventsHtml = $grid->render($range, $rendered, $tz, $now);
+            $eventsHtml = $grid->render($range, $rendered, $tz, $now, $filter->dayLimit ?? 3);
             $navigation = $showNavigation ? $grid->navigation($view->id, $range->month ?? $now, $tz) : new TrustedHtml('');
         } else {
             $eventsHtml = $this->listHtml($rendered, $mode);
             $navigation = $showNavigation
-                ? $grid->listNavigation($view->id, $filter->page, $found['hasPrevious'], $found['hasNext'])
+                ? $grid->listNavigation($view->id, $filter->page, $found['hasPrevious'], $found['hasNext'], $filter->month)
                 : new TrustedHtml('');
+            if ($showNavigation && $range->month !== null) {
+                $navigation = new TrustedHtml($grid->navigation($view->id, $range->month, $tz) . $navigation);
+            }
         }
         $html = $this->renderer->render($container->compiled, $calendar + [
             'calendar.events' => $eventsHtml,
@@ -177,6 +182,9 @@ final class ViewRenderer
         // above the month grid, below lists and cards.
         if (!$navigation->isEmpty() && !self::uses($container->compiled->nodes, 'calendar.navigation')) {
             $html = $mode === DisplayMode::Month ? $navigation . $html : $html . $navigation;
+        }
+        if ($filter->legend === true) {
+            $html = $this->legend($sources, $view) . $html;
         }
         $wrapped = $this->wrap($view, $mode, [$container, $event], $html, $filter, $range);
         $result = new RenderResult(
@@ -197,11 +205,18 @@ final class ViewRenderer
     /**
      * Detail view of one occurrence; only if it belongs to an authorized source of the (enabled) view.
      */
-    public function renderDetail(int $viewId, int $occurrenceId, ?int $userId): RenderResult
+    public function renderDetail(int $viewId, int|string $occurrenceId, ?int $userId): RenderResult
     {
         $view = $this->views->find($viewId);
+        if ($view === null || !$view->enabled) {
+            return RenderResult::notFound();
+        }
+        $reference = is_string($occurrenceId) ? \SW\Calendar\Application\Local\EventReference::parse($occurrenceId) : null;
+        if ($reference !== null && (!in_array($reference['source'], $view->sourceIds, true) || !$this->access->canReadSource($reference['source'], $userId))) {
+            return RenderResult::notFound();
+        }
         $occurrence = $this->occurrences->findById($occurrenceId);
-        if ($view === null || !$view->enabled || $occurrence === null || !$this->isVisible($occurrence)) {
+        if ($occurrence === null || !$this->isVisible($occurrence)) {
             return RenderResult::notFound();
         }
         if (!in_array($occurrence->sourceId, $view->sourceIds, true) || !$this->access->canReadSource($occurrence->sourceId, $userId)) {
@@ -238,7 +253,7 @@ final class ViewRenderer
             $wrapped,
             $this->collectCss([$detail]),
             false,
-            $source !== null && $source->visibility === Visibility::Public,
+            $source !== null && $source->visibility === Visibility::Public && !$this->isLive($source->id),
         );
     }
 
@@ -284,6 +299,7 @@ final class ViewRenderer
                 'color' => $view->colorRules[$occurrence->sourceId] ?? ($sources[$occurrence->sourceId]->color ?? null),
                 'url' => $this->urls->eventDetail($view->id, $occurrence->id),
                 'external_url' => $occurrence->externalUrl !== '' ? $occurrence->externalUrl : null,
+                'image' => ($filter->showImages ?? true) && ($sources[$occurrence->sourceId]->settings->attachments->showImages ?? true) && $occurrence->imageUrl !== '' ? ['url' => $occurrence->imageUrl, 'alt' => $occurrence->imageAlt] : null,
                 'attachments' => array_map(fn (Attachment $a): array => [
                     'id' => $a->id,
                     'name' => $a->filename,
@@ -352,7 +368,7 @@ final class ViewRenderer
         );
         if ($page >= 1) {
             $found = $query($range, $descending, $limit, ($page - 1) * $limit, false);
-            $hasPrevious = $page > 1 || $query($before, true, 1, 0, true)['total'] > 0;
+            $hasPrevious = $page > 1 || ($filter->month === null && $query($before, true, 1, 0, true)['total'] > 0);
             return ['items' => $found['items'], 'total' => $found['total'], 'hasPrevious' => $hasPrevious, 'hasNext' => $found['total'] > $page * $limit];
         }
         $back = abs($page);
@@ -417,7 +433,13 @@ final class ViewRenderer
         if (!$needed || $items === []) {
             return [];
         }
-        $byOccurrence = $this->attachments->deliverableFor(array_map(static fn (Occurrence $o): int => $o->id, $items));
+        $storedIds = [];
+        foreach ($items as $item) {
+            if (is_int($item->id)) {
+                $storedIds[] = $item->id;
+            }
+        }
+        $byOccurrence = $storedIds === [] ? [] : $this->attachments->deliverableFor($storedIds);
         // Defense in depth: attachments always inherit the ACL of their own source.
         foreach ($byOccurrence as $occurrenceId => $list) {
             $byOccurrence[$occurrenceId] = array_values(array_filter(
@@ -426,6 +448,36 @@ final class ViewRenderer
             ));
         }
         return $byOccurrence;
+    }
+
+    private function isLive(int $sourceId): bool
+    {
+        return $this->liveSource !== null && ($this->liveSource)($sourceId);
+    }
+
+    private function containsLive(CalendarView $view): bool
+    {
+        foreach ($view->sourceIds as $id) {
+            if ($this->isLive($id)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static function color(string $color): string
+    {
+        return preg_match('/^#[0-9a-f]{6}$/iD', $color) === 1 ? $color : '#3366cc';
+    }
+
+    /** @param array<int, Source> $sources */
+    private function legend(array $sources, CalendarView $view): string
+    {
+        $html = '<ul class="swc-legend">';
+        foreach ($sources as $source) {
+            $html .= '<li><span class="swc-legend__color" style="background-color:' . self::color($view->colorRules[$source->id] ?? $source->color) . '" aria-hidden="true"></span>' . TemplateCompiler::escape($source->name) . '</li>';
+        }
+        return $html . '</ul>';
     }
 
     /**
@@ -441,7 +493,7 @@ final class ViewRenderer
     }
 
     /**
-     * @param list<array{occurrence: Occurrence, html: string}> $rendered
+     * @param list<array{occurrence: Occurrence, html: string, color?: string}> $rendered
      */
     private function listHtml(array $rendered, DisplayMode $mode): TrustedHtml
     {
@@ -453,7 +505,7 @@ final class ViewRenderer
         foreach ($rendered as $item) {
             $occurrence = $item['occurrence'];
             $html .= '<li class="swc-events__item' . ($occurrence->status === OccurrenceStatus::Tentative ? ' is-tentative' : '') . '"'
-                . ' data-swc-event="' . $occurrence->id . '" data-swc-source="' . $occurrence->sourceId . '">' . $item['html'] . '</li>';
+                . ' style="--swc-event-color:' . self::color($item['color'] ?? '') . '" data-swc-event="' . TemplateCompiler::escape((string) $occurrence->id) . '" data-swc-source="' . $occurrence->sourceId . '">' . $item['html'] . '</li>';
         }
         return new TrustedHtml($html . '</' . $tag . '>');
     }
@@ -472,8 +524,12 @@ final class ViewRenderer
             $state['month'] = $range->month->format('Y-m');
         }
         $state = array_filter($state, static fn ($value): bool => $value !== null && $value !== []);
+        $classes[] = 'swc-columns-' . ($filter->columns ?? 1);
+        if ($filter->colorTitles === true) {
+            $classes[] = 'swc-color-titles';
+        }
         return '<div class="' . implode(' ', array_unique($classes)) . '" data-swc-view="' . $view->id . '" data-swc-mode="' . $mode->value . '"'
-            . ' data-swc-state="' . TemplateCompiler::escape((string) json_encode($state)) . '">' . $html . '</div>';
+            . ' data-swc-group="' . TemplateCompiler::escape($filter->navigationGroup ?? '') . '" data-swc-state="' . TemplateCompiler::escape((string) json_encode($state)) . '">' . $html . '</div>';
     }
 
     /**

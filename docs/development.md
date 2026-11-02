@@ -68,3 +68,5 @@ Quellcode-Checkouts nutzen `vendor/autoload.php`; Releases nur `vendor-prefixed/
 - `wpdb::prepare()` macht aus `NULL` einen Leerstring: optionale Spalten werden separat oder über `wpdb::update()` gesetzt.
 - sabre/vobject `EventIterator` ignoriert RRULE bei vorhandenem RDATE (deshalb eigener `RecurrenceExpander`).
 - Mozart schreibt nur die Pakete um, nicht `src/` (deshalb `bin/prefix-sources.php`).
+
+Bei System-Cron muss `wp sw-cloudcalendar queue run` regelmäßig ausgeführt werden. Der Quellen-Button **Synchronisation manuell durchführen** führt gezielt einen Sync ohne Cron aus; bestehende Job- und Quellensperren bleiben wirksam.

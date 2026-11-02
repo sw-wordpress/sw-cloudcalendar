@@ -176,7 +176,15 @@
 		const viewId = calendar.getAttribute( 'data-swc-view' );
 		if ( link.hasAttribute( 'data-swc-month' ) ) {
 			event.preventDefault();
-			const filters = Object.assign( stateOf( calendar ), { month: link.getAttribute( 'data-swc-month' ), view: calendar.getAttribute( 'data-swc-mode' ) } );
+            const group = calendar.getAttribute( 'data-swc-group' );
+            if ( group ) {
+                document.querySelectorAll( '.swc-calendar[data-swc-view]' ).forEach( function ( sibling ) {
+                    if ( sibling !== calendar && sibling.getAttribute( 'data-swc-group' ) === group ) {
+                        renderInto( sibling, sibling.getAttribute( 'data-swc-view' ), Object.assign( stateOf( sibling ), { month: link.getAttribute( 'data-swc-month' ), page: 1, view: sibling.getAttribute( 'data-swc-mode' ) } ) );
+                    }
+                } );
+            }
+			const filters = Object.assign( stateOf( calendar ), { page: 1, month: link.getAttribute( 'data-swc-month' ), view: calendar.getAttribute( 'data-swc-mode' ) } );
 			renderInto( calendar, viewId, filters ).then( function ( root ) {
 				if ( root ) {
 					const label = root.querySelector( '.swc-nav__label' );
@@ -220,8 +228,8 @@
 				filters = {};
 			}
 			const viewId = placeholder.getAttribute( 'data-swc-view' );
-			const eventId = parseInt( placeholder.getAttribute( 'data-swc-event' ) || '0', 10 );
-			if ( eventId > 0 ) {
+			const eventId = placeholder.getAttribute( 'data-swc-event' ) || '0';
+			if ( /^[1-9][0-9]*$|^local\.[1-9][0-9]*\.[A-Za-z0-9_-]{1,254}$/.test( eventId ) ) {
 				api( 'events/' + eventId, { view: viewId, page_url: pageUrl() } )
 					.then( function ( data ) {
 						addCss( data.css );
