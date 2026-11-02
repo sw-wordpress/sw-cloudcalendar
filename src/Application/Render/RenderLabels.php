@@ -30,6 +30,19 @@ final class RenderLabels
         public readonly string $previousEvents = 'Earlier events',
         public readonly string $nextEvents = 'More events',
         public readonly string $eventNavigation = 'Event navigation',
+        public readonly string $displayModes = 'Choose display',
+        public readonly string $listMode = 'List',
+        public readonly string $cardsMode = 'Cards',
+        public readonly string $monthMode = 'Month',
+        public readonly string $searchEvents = 'Search events',
+        public readonly string $searchSubmit = 'Search',
+        public readonly string $searchHint = 'Searches titles, descriptions and locations within the selected date range.',
+        public readonly string $searchResults = '%d events found',
+        public readonly string $eventDetails = 'Event details',
+        public readonly string $dateLabel = 'Date',
+        public readonly string $timeLabel = 'Time',
+        public readonly string $locationLabel = 'Location',
+        public readonly string $showImage = 'View image',
     ) {
     }
 }

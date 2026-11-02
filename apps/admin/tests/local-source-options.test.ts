@@ -9,6 +9,8 @@ describe('local source presentation settings', () => {
   });
   it('preserves both calendar selections and shared presentation options', () => {
     const options = {
+      mode_switcher: true,
+      show_search: false,
       color_titles: true,
       legend: true,
       columns: 2,
@@ -17,7 +19,18 @@ describe('local source presentation settings', () => {
       month: '2026-11',
     };
     expect(fromFilterForm(toFilterForm(options))).toEqual(options);
-    expect(fromFilterForm(toFilterForm({ color_titles: false, legend: false }))).toEqual({
+    expect(
+      fromFilterForm(
+        toFilterForm({
+          mode_switcher: false,
+          show_search: true,
+          color_titles: false,
+          legend: false,
+        }),
+      ),
+    ).toEqual({
+      mode_switcher: false,
+      show_search: true,
       color_titles: false,
       legend: false,
     });

@@ -25,6 +25,10 @@ New sources are drafts; only **Status → Active** synchronises and displays the
 whole source (public, logged-in users or selected roles). Showing a calendar that is private at the provider
 publicly requires an explicit confirmation, which is logged in the audit log.
 
+In **Views → Display & templates**, enable **Display tabs on the website** to let visitors choose among the allowed modes (off by default). **Show event search** is on by default for all display modes and searches titles, descriptions and locations within the selected date range across all result pages. Public controls also work without JavaScript; protected/local views retain their existing JavaScript requirement.
+
+Event details use a centered, scrollable dialog. **Preset (default)** provides a two-column layout with description, image and date/time facts; mobile uses one column. Existing custom detail templates remain unchanged.
+
 ## Shortcode
 
 ```text
@@ -34,10 +38,11 @@ publicly requires an explicit confirmation, which is logged in the audit log.
 [sw_calendar id="12" start="2026-11-01" end="2026-12-31" location="Kirche"]
 [sw_calendar id="12" template="7" show_images="true" show_attachments="false"]
 [sw_calendar id="12" navigation="false"]
+[sw_calendar id="12" mode_switcher="true" show_search="true"]
 ```
 
 All filter parameters: `source`, `view`, `limit`, `days`, `start`, `end`, `past`, `search`, `location`,
-`exclude`, `sort`, `template`, `show_images`, `show_attachments`, `month`, `page`, `per_page`, `navigation`
+`exclude`, `sort`, `template`, `show_images`, `show_attachments`, `month`, `page`, `per_page`, `navigation`, `mode_switcher`, `show_search`
 (`category` is rejected as not supported, D-12). Full schema: [rest-api.md](rest-api.md).
 
 - Filters can only narrow a view, never extend it.

@@ -14,10 +14,12 @@ use SW\Calendar\Application\Port\UrlGeneratorInterface;
 
 final class WpUrlGenerator implements UrlGeneratorInterface {
 
-	public const EVENT_PARAM = 'swc_event';
-	public const VIEW_PARAM  = 'swc_view';
-	public const MONTH_PARAM = 'swc_month';
-	public const PAGE_PARAM  = 'swc_page';
+	public const EVENT_PARAM  = 'swc_event';
+	public const VIEW_PARAM   = 'swc_view';
+	public const MONTH_PARAM  = 'swc_month';
+	public const PAGE_PARAM   = 'swc_page';
+	public const MODE_PARAM   = 'swc_mode';
+	public const SEARCH_PARAM = 'swc_search';
 
 	private ?string $base_url = null;
 
@@ -44,6 +46,21 @@ final class WpUrlGenerator implements UrlGeneratorInterface {
 			),
 			$this->base()
 		);
+	}
+
+	public function calendar( int $viewId, array $filters ): string {
+		$arguments = array( self::VIEW_PARAM => $viewId );
+		foreach ( array(
+			'view'   => self::MODE_PARAM,
+			'search' => self::SEARCH_PARAM,
+			'month'  => self::MONTH_PARAM,
+			'page'   => self::PAGE_PARAM,
+		) as $key => $parameter ) {
+			if ( isset( $filters[ $key ] ) && is_scalar( $filters[ $key ] ) ) {
+				$arguments[ $parameter ] = rawurlencode( (string) $filters[ $key ] );
+			}
+		}
+		return add_query_arg( $arguments, remove_query_arg( array( self::EVENT_PARAM, self::VIEW_PARAM, self::PAGE_PARAM, self::MONTH_PARAM, self::MODE_PARAM, self::SEARCH_PARAM ), $this->base() ) );
 	}
 
 	public function month( int $viewId, string $month ): string {

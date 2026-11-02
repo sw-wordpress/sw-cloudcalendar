@@ -27,6 +27,20 @@ final class FilterAndRangeTest extends TestCase
         self::assertSame(['unknown'], $result->unknown);
     }
 
+    public function testControlsUseDefaultsAndEmptySearchCanClearTheViewDefault(): void
+    {
+        $filter = (new FilterSchema())->normalize(['mode_switcher' => 'true', 'show_search' => 'false', 'search' => '  ']);
+        self::assertTrue($filter->isValid());
+        $merged = $filter->filter->withDefaults(new RenderFilter(search: 'Chor', modeSwitcher: false, showSearch: true));
+        self::assertTrue($merged->modeSwitcher);
+        self::assertFalse($merged->showSearch);
+        self::assertSame('', $merged->search);
+        self::assertSame(true, $merged->toArray()['mode_switcher']);
+        self::assertSame(false, $merged->toArray()['show_search']);
+        $invalid = (new FilterSchema())->normalize(['mode_switcher' => 'wrong', 'show_search' => 'wrong']);
+        self::assertFalse($invalid->isValid());
+    }
+
     public function testRejectsOutOfRangeAndInjection(): void
     {
         $result = (new FilterSchema())->normalize([

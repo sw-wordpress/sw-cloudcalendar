@@ -13,6 +13,8 @@ use SW\Calendar\Application\Port\SourceRepositoryInterface;
 use SW\Calendar\Application\Port\UrlGeneratorInterface;
 use SW\Calendar\Application\Port\ViewRepositoryInterface;
 use SW\Calendar\Application\Render\Component\MonthGrid;
+use SW\Calendar\Application\Render\Component\CalendarControls;
+use SW\Calendar\Application\Render\Component\EventList;
 use SW\Calendar\Application\Render\Template\TemplateCompiler;
 use SW\Calendar\Application\Render\Template\TemplateRenderer;
 use SW\Calendar\Application\Render\Template\TrustedHtml;
@@ -160,13 +162,13 @@ final class ViewRenderer
             $rendered[] = ['occurrence' => $occurrence, 'html' => $this->renderer->render($event->compiled, $calendar + $values), 'color' => (string) $values['event.color']];
         }
 
-        $grid = new MonthGrid($this->dates, $this->urls, $this->settings->labels);
+        $grid = new MonthGrid($this->dates, $this->urls, $this->settings->labels, ['view' => $mode->value, 'search' => $filter->search]);
         $showNavigation = $filter->navigation ?? $view->showNavigation;
         if ($mode === DisplayMode::Month) {
             $eventsHtml = $grid->render($range, $rendered, $tz, $now, $filter->dayLimit ?? 3);
             $navigation = $showNavigation ? $grid->navigation($view->id, $range->month ?? $now, $tz) : new TrustedHtml('');
         } else {
-            $eventsHtml = $this->listHtml($rendered, $mode);
+            $eventsHtml = (new EventList($this->dates, $this->settings->labels))->render($rendered, $mode);
             $navigation = $showNavigation
                 ? $grid->listNavigation($view->id, $filter->page, $found['hasPrevious'], $found['hasNext'], $filter->month)
                 : new TrustedHtml('');
@@ -176,6 +178,9 @@ final class ViewRenderer
         }
         $html = $this->renderer->render($container->compiled, $calendar + [
             'calendar.events' => $eventsHtml,
+            'calendar.events_by_month' => $mode !== DisplayMode::Month && self::uses($container->compiled->nodes, 'calendar.events_by_month')
+                ? (new EventList($this->dates, $this->settings->labels))->render($rendered, $mode, $tz)
+                : $eventsHtml,
             'calendar.navigation' => $navigation,
         ]);
         // Container templates without {{calendar.navigation}} (custom or older copies) still get the navigation:
@@ -186,6 +191,7 @@ final class ViewRenderer
         if ($filter->legend === true) {
             $html = $this->legend($sources, $view) . $html;
         }
+        $html = (new CalendarControls($this->urls, $this->settings->labels))->render($view, $mode, $filter, $found['total'], $range->month?->format('Y-m')) . $html;
         $wrapped = $this->wrap($view, $mode, [$container, $event], $html, $filter, $range);
         $result = new RenderResult(
             RenderResult::OK,
@@ -470,6 +476,19 @@ final class ViewRenderer
         return preg_match('/^#[0-9a-f]{6}$/iD', $color) === 1 ? $color : '#3366cc';
     }
 
+    /** WCAG contrast choice, shared by month blocks and source badges. */
+    public static function textColor(string $color): string
+    {
+        $color = self::color($color);
+        $rgb = array_map('hexdec', str_split(substr($color, 1), 2));
+        $luminance = [];
+        foreach ($rgb as $channel) {
+            $value = $channel / 255;
+            $luminance[] = $value <= 0.04045 ? $value / 12.92 : (($value + 0.055) / 1.055) ** 2.4;
+        }
+        return $luminance[0] * 0.2126 + $luminance[1] * 0.7152 + $luminance[2] * 0.0722 > 0.179 ? '#000000' : '#ffffff';
+    }
+
     /** @param array<int, Source> $sources */
     private function legend(array $sources, CalendarView $view): string
     {
@@ -490,24 +509,6 @@ final class ViewRenderer
             $attachments,
             static fn (Attachment $a): bool => $a->isImage ? ($filter->showImages ?? true) : ($filter->showAttachments ?? true)
         ));
-    }
-
-    /**
-     * @param list<array{occurrence: Occurrence, html: string, color?: string}> $rendered
-     */
-    private function listHtml(array $rendered, DisplayMode $mode): TrustedHtml
-    {
-        if ($rendered === []) {
-            return new TrustedHtml('<p class="swc-empty">' . TemplateCompiler::escape($this->settings->labels->noEvents) . '</p>');
-        }
-        $tag = $mode === DisplayMode::Cards ? 'ul' : 'ol';
-        $html = '<' . $tag . ' class="swc-events swc-events--' . $mode->value . '">';
-        foreach ($rendered as $item) {
-            $occurrence = $item['occurrence'];
-            $html .= '<li class="swc-events__item' . ($occurrence->status === OccurrenceStatus::Tentative ? ' is-tentative' : '') . '"'
-                . ' style="--swc-event-color:' . self::color($item['color'] ?? '') . '" data-swc-event="' . TemplateCompiler::escape((string) $occurrence->id) . '" data-swc-source="' . $occurrence->sourceId . '">' . $item['html'] . '</li>';
-        }
-        return new TrustedHtml($html . '</' . $tag . '>');
     }
 
     /**
@@ -561,6 +562,7 @@ final class ViewRenderer
         $parts = [
             'view' => $view->id,
             'view_revision' => $view->revision,
+            'page_url' => $this->urls->calendar($view->id, []),
             'sources' => $revisions,
             'filter' => $filter->hash(),
             'mode' => $mode->value,

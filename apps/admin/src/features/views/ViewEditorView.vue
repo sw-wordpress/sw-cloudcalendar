@@ -26,6 +26,7 @@ import {
   toFilterForm,
   toViewInput,
 } from './viewForm';
+import ViewDisplayHelp from './ViewDisplayHelp.vue';
 import type { FilterForm, TriState } from './viewForm';
 
 const props = defineProps<{ id?: string }>();
@@ -367,13 +368,21 @@ watch(previewMode, () => void renderPreview());
           </SwcCard>
 
           <SwcCard :title="t('views.sectionDisplay')" icon="r_view_quilt">
+            <template #actions><ViewDisplayHelp :view-id="viewId" /></template>
+            <div class="swc-row">
+              <span>{{ t('views.defaultDisplayMode') }}</span>
+              <ViewDisplayHelp topic="mode" :view-id="viewId" />
+            </div>
             <SegmentedControl
               v-model="form.display_mode"
               :options="modeOptions"
-              :legend="t('views.displayMode')"
+              :legend="t('views.defaultDisplayMode')"
             />
             <fieldset class="swc-ve__fs">
-              <legend>{{ t('views.allowedModes') }}</legend>
+              <legend>
+                {{ t('views.allowedModes') }}
+                <ViewDisplayHelp topic="allowedModes" :view-id="viewId" />
+              </legend>
               <q-checkbox
                 v-for="m in DISPLAY_MODES"
                 :key="m"
@@ -384,6 +393,28 @@ watch(previewMode, () => void renderPreview());
               />
               <p class="swc-hint">{{ t('views.allowedModesHint') }}</p>
             </fieldset>
+            <div class="swc-form-grid">
+              <q-select
+                v-model="filters.mode_switcher"
+                outlined
+                dense
+                emit-value
+                map-options
+                :options="triOptions"
+                :label="t('views.modeSwitcher')"
+                :hint="t('views.modeSwitcherHint')"
+              />
+              <q-select
+                v-model="filters.show_search"
+                outlined
+                dense
+                emit-value
+                map-options
+                :options="triOptions"
+                :label="t('views.showSearch')"
+                :hint="t('views.showSearchHint')"
+              />
+            </div>
             <div class="swc-form-grid">
               <q-select
                 v-model="form.container_template_id"
@@ -432,7 +463,9 @@ watch(previewMode, () => void renderPreview());
               :hint="t('views.allowedTemplatesHint')"
               :error="!!fields.field('allowed_template_ids')"
               :error-message="fields.field('allowed_template_ids')"
-            />
+            >
+              <template #after><ViewDisplayHelp topic="templates" :view-id="viewId" /></template>
+            </q-select>
           </SwcCard>
 
           <SwcCard :title="t('views.sectionFormat')" icon="r_schedule">

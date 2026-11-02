@@ -496,6 +496,41 @@ function written(path: string, method: string) {
 }
 
 describe('admin actions against REST contracts', () => {
+  it('offers inline explanations for all three display settings and an overview', async () => {
+    await render('/views/5', async (wrapper) => {
+      const labels = [
+        'Hilfe zum Aufbau der Kalenderansicht',
+        'Hilfe zur Standarddarstellung',
+        'Hilfe zu erlaubten Darstellungen',
+        'Hilfe zu alternativen Termin-Templates',
+      ];
+      for (const label of labels)
+        expect(
+          wrapper.findAllComponents(QBtn).some((c) => c.attributes('aria-label') === label),
+        ).toBe(true);
+      const help = wrapper
+        .findAllComponents(QBtn)
+        .find((c) => c.attributes('aria-label') === labels[0])!;
+      await help.trigger('click');
+      await settle();
+      expect(document.body.textContent).toContain('So entsteht die Kalenderansicht');
+      expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'PUT')).toBe(false);
+    });
+  });
+  it('saves visitor tabs and the search visibility setting', async () => {
+    await render('/views/5', async (wrapper) => {
+      const select = (label: string) =>
+        wrapper.findAllComponents(QSelect).find((c) => c.props('label') === label)!;
+      select('Darstellungs-Tabs auf der Website').vm.$emit('update:modelValue', 'yes');
+      select('Terminsuche anzeigen').vm.$emit('update:modelValue', 'no');
+      await settle();
+      wrapper.getComponent(QForm).vm.$emit('submit');
+      await settle();
+      expect(written('admin/views/5', 'PUT')).toMatchObject({
+        default_filters: { mode_switcher: true, show_search: false },
+      });
+    });
+  });
   it('saves view filters and refreshes its preview', async () => {
     await render('/views/5', async (wrapper) => {
       wrapper.getComponent(QForm).vm.$emit('submit');

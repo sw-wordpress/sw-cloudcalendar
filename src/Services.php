@@ -318,7 +318,21 @@ final class Services {
 					__( 'Preview', 'sw-cloudcalendar' ),
 					__( 'Earlier events', 'sw-cloudcalendar' ),
 					__( 'More events', 'sw-cloudcalendar' ),
-					__( 'Event navigation', 'sw-cloudcalendar' )
+					__( 'Event navigation', 'sw-cloudcalendar' ),
+					__( 'Choose display', 'sw-cloudcalendar' ),
+					_x( 'List', 'calendar display mode', 'sw-cloudcalendar' ),
+					_x( 'Cards', 'calendar display mode', 'sw-cloudcalendar' ),
+					_x( 'Month', 'calendar display mode', 'sw-cloudcalendar' ),
+					__( 'Search events', 'sw-cloudcalendar' ),
+					__( 'Search', 'sw-cloudcalendar' ),
+					__( 'Searches titles, descriptions and locations within the selected date range.', 'sw-cloudcalendar' ),
+					/* translators: %d: number of matching events */
+					__( '%d events found', 'sw-cloudcalendar' ),
+					__( 'Event details', 'sw-cloudcalendar' ),
+					_x( 'Date', 'event details', 'sw-cloudcalendar' ),
+					_x( 'Time', 'event details', 'sw-cloudcalendar' ),
+					_x( 'Location', 'event details', 'sw-cloudcalendar' ),
+					__( 'View image', 'sw-cloudcalendar' )
 				);
 			}
 		);
@@ -339,7 +353,7 @@ final class Services {
 				$this->event_queries(),
 				$this->attachments(),
 				$this->template_provider(),
-				new EventValues( $this->dates(), $this->urls(), $this->sanitizer(), new AttachmentRenderer( $this->urls(), $this->labels() ) ),
+				new EventValues( $this->dates(), $this->urls(), $this->sanitizer(), new AttachmentRenderer( $this->urls(), $this->labels() ), $this->labels() ),
 				$this->dates(),
 				$this->urls(),
 				$this->cache(),

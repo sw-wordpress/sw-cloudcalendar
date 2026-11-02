@@ -554,6 +554,59 @@ const de = {
     editorSubtitle: 'Quellen, Darstellung, Formate und Standardfilter.',
     emptyTitle: 'Noch keine Ansichten',
     emptyText: 'Eine Ansicht legt fest, welche Quellen wie angezeigt werden.',
+    modeSwitcher: 'Darstellungs-Tabs auf der Website',
+    modeSwitcherHint:
+      'Standard: aus. Zeigt nur die oben erlaubten Darstellungen als sichtbare Tabs.',
+    showSearch: 'Terminsuche anzeigen',
+    showSearchHint: 'Standard: an für alle Darstellungen. Durchsucht den gewählten Zeitraum.',
+    defaultDisplayMode: 'Standarddarstellung',
+    displayHelp: {
+      open: 'Aufbau verstehen',
+      title: 'So entsteht die Kalenderansicht',
+      intro:
+        'Die Quellen liefern die Termine. Die Darstellung bestimmt die Grundstruktur, Templates gestalten deren Inhalt.',
+      labels: {
+        overview: 'Hilfe zum Aufbau der Kalenderansicht',
+        mode: 'Hilfe zur Standarddarstellung',
+        allowedModes: 'Hilfe zu erlaubten Darstellungen',
+        templates: 'Hilfe zu alternativen Termin-Templates',
+      },
+      tips: {
+        overview:
+          'Darstellungen, Templates und erlaubte Alternativen erklärt. Klicken für die vollständige Hilfe.',
+        mode: 'Grundstruktur der Ausgabe: Liste, Karten oder Monatsraster. Templates bestimmen die Gestaltung. Klicken für Details.',
+        allowedModes:
+          'Erlaubt abweichende Darstellungen per Shortcode oder Block. Sichtbare Tabs lassen sich mit „Darstellungs-Tabs auf der Website“ einschalten. Klicken für Details.',
+        templates:
+          'Freigegebene Alternativen für einzelne Termine. Ändert weder die Standarddarstellung noch das Standard-Template. Klicken für Details.',
+      },
+      modes: {
+        list: 'Fortlaufende Terminliste, bei Bedarf mit mehreren Spalten.',
+        cards: 'Termine als Karten in einem Raster.',
+        month:
+          'Kalenderraster mit Wochentagen und Tagesfeldern; die Termine stehen im jeweiligen Tag.',
+      },
+      templatesTitle: 'Was gestalten die Templates?',
+      templates: {
+        container: 'Der äußere Rahmen: etwa Überschrift, Monatsgruppen, Termine und Navigation.',
+        event:
+          'Die Gestaltung eines einzelnen Termins: etwa Datum, Titel, Beschreibung und Bild. Im Monatsraster wird es innerhalb eines Tages verwendet.',
+        detail: 'Die ausführliche Anzeige, die sich beim Öffnen eines Termins zeigt.',
+      },
+      fixedTemplates:
+        'Ein fest gewähltes Template bleibt beim Wechsel zwischen Liste, Karten und Monat erhalten. Nur „Preset (Standard)“ wählt automatisch das passende Standard-Template. Ein Darstellungswechsel allein gestaltet daher ein eigenes Termin-Template nicht neu.',
+      allowedModes:
+        'Legt fest, welche Darstellungen eine Einbettung abweichend vom Standard anfordern darf, z. B. mit view="cards". Die Standarddarstellung ist immer erlaubt.',
+      allowedTemplates:
+        'Gibt zusätzliche Termin-Templates für den Parameter template frei. Ohne diesen Parameter bleibt das oben gewählte Termin-Template aktiv; dieses ist immer erlaubt. Container und Detail werden dadurch nicht gewechselt.',
+      exampleTitle: 'Beispiel',
+      example:
+        'Standard ist „Liste“. Du erlaubst zusätzlich „Karten“ und gibst das Termin-Template mit ID 7 frei. Diese Einbettung verwendet dann Karten mit Template 7:',
+      noSwitcher:
+        'Die Freigaben allein erzeugen keine sichtbare Auswahl. Mit „Darstellungs-Tabs auf der Website“ können Besucher zwischen den erlaubten Darstellungen wechseln. Alternative Termin-Templates werden weiterhin beim Einbinden gewählt.',
+      presets:
+        'Für ein vollständiges Design aus der Preset-Galerie wählst du die zugehörigen Container- und Termin-Templates, bei Bedarf auch das Detail-Template.',
+    },
     displayMode: 'Darstellung',
     modes: { list: 'Liste', cards: 'Karten', month: 'Monat' },
     sources: 'Quellen',
@@ -573,14 +626,16 @@ const de = {
     colorFor: 'Farbe für „{name}“',
     useSourceColor: 'Quellfarbe verwenden',
     sectionDisplay: 'Darstellung & Templates',
-    allowedModes: 'Erlaubte Darstellungen (umschaltbar per Filter)',
-    allowedModesHint: 'Die Standarddarstellung ist immer erlaubt.',
+    allowedModes: 'Für Einbettungen erlaubte Darstellungen',
+    allowedModesHint:
+      'Die Standarddarstellung ist immer erlaubt. Weitere Darstellungen können per Shortcode oder Block angefordert werden.',
     presetDefault: 'Preset (Standard)',
     containerTemplate: 'Container-Template',
     eventTemplate: 'Termin-Template',
     detailTemplate: 'Detail-Template',
     allowedTemplates: 'Alternative Termin-Templates',
-    allowedTemplatesHint: 'Können per Filter „template“ gewählt werden.',
+    allowedTemplatesHint:
+      'Zusätzliche Termin-Templates für den Shortcode-Parameter „template“. Ohne Parameter gilt das oben gewählte Template.',
     sectionFormat: 'Zeit & Format',
     timezone: 'Zeitzone',
     siteTimezone: 'Website-Standard ({tz})',

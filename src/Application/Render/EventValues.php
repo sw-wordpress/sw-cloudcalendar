@@ -25,6 +25,7 @@ final class EventValues
         private readonly UrlGeneratorInterface $urls,
         private readonly HtmlSanitizerInterface $sanitizer,
         private readonly AttachmentRenderer $attachments,
+        private readonly RenderLabels $labels = new RenderLabels(),
     ) {
     }
 
@@ -68,6 +69,15 @@ final class EventValues
         $descriptionHtml = $occurrence->descriptionHtml !== '' ? $this->sanitizer->sanitizeDescription($occurrence->descriptionHtml) : '';
 
         return [
+            'event.labels.images' => $this->labels->images,
+            'event.has_multiple_images' => $localImage === '' && count($images) > 1,
+            'event.labels.details' => $this->labels->eventDetails,
+            'event.labels.date' => $this->labels->dateLabel,
+            'event.labels.time' => $this->labels->timeLabel,
+            'event.labels.location' => $this->labels->locationLabel,
+            'event.labels.all_day' => $this->labels->allDay,
+            'event.labels.show_image' => $this->labels->showImage,
+            'event.color_text' => ViewRenderer::textColor($colorOverride ?? $source->color ?? ''),
             'event.id' => (string) $occurrence->id,
             'event.title' => $occurrence->title,
             'event.description' => $occurrence->descriptionText,
@@ -85,6 +95,7 @@ final class EventValues
             'event.end_iso' => $occurrence->allDay ? $endInclusive->format('Y-m-d') : $end->format(DATE_ATOM),
             'event.day' => $this->dates->format($start, $tz, 'j'),
             'event.month_short' => $this->dates->format($start, $tz, 'M'),
+            'event.weekday_short' => $this->dates->format($start, $tz, 'D'),
             'event.weekday' => $this->dates->format($start, $tz, 'l'),
             'event.all_day' => $occurrence->allDay,
             'event.multi_day' => $multiDay,

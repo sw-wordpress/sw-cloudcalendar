@@ -23,7 +23,9 @@ Beispiel entsprechend einer Seite mit Veranstaltungsliste und Monatsraster (12/1
 [sw_calendar id="13" view="month" month="2026-11" day_limit="3" navigation_group="mgwh"]
 ```
 
-Für die bebilderte Liste das Preset **timeline-list** für das Event-Template verwenden. Bei mehreren Spalten bleibt
+Unter **Templates → Preset-Galerie** stehen **Monatsliste** und **Monatsliste – Bild rechts** zur Verfügung. Jeweils das Container- und Event-Template der installierten Kopie in der Ansicht wählen. Die Monatsüberschriften verwenden den Terminbeginn in der Ansichtszeitzone; Ganztagstermine behalten ihr Kalenderdatum. Eigene Container können dafür {{calendar.events_by_month}} verwenden.
+
+Für die bisherige bebilderte Liste das Preset **timeline-list** für das Event-Template verwenden. Bei mehreren Spalten bleibt
 auf kleinen Bildschirmen eine Spalte. `month` begrenzt Listen auf den Kalendermonat; im Raster werden zusätzlich die
 angrenzenden Tage der vollständigen Wochen berücksichtigt. Listen/Karten behalten zusätzlich die Seitennavigation
 innerhalb des gewählten Monats; diese Seitenlinks erhalten die Monatsauswahl auch ohne JavaScript. `navigation_group` verbindet nur ausdrücklich gleich
