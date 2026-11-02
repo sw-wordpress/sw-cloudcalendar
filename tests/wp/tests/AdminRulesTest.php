@@ -3,6 +3,7 @@
 use SW\Calendar\Domain\Connection\AuthMode;
 use SW\Calendar\Domain\Connection\ConnectionStatus;
 use SW\Calendar\Domain\Connection\Provider;
+use SW\Calendar\Infrastructure\Database\Schema;
 
 /**
  * Publication decisions, template validation and REST admin contracts (E2E-04, E2E-08).
@@ -20,6 +21,48 @@ final class AdminRulesTest extends SWC_TestCase {
 		$this->assertSame( 201, $response->get_status() );
 		$this->assertSame( 'draft', $response->get_data()['status'] );
 		$this->assertFalse( $response->get_data()['requires_confirmation'], 'Unauthenticated ICS feeds are not private at the provider' );
+	}
+
+	/** @dataProvider disappeared_after_save_cases */
+	public function test_save_returns_404_when_saved_record_disappears( string $resource, string $object_type, array $body ): void {
+		$connection = $this->ics_connection();
+		$source     = $this->source( $connection );
+		if ( 'sources' === $resource ) {
+			$body['connection_id'] = $connection;
+		} elseif ( 'views' === $resource ) {
+			$body['source_ids'] = array( $source );
+		}
+
+		$deleted = false;
+		$probe   = static function ( string $query ) use ( $resource, $object_type, &$deleted ): string {
+			$table = Schema::table( 'audit' );
+			if ( str_starts_with( $query, "INSERT INTO `$table`" ) && str_contains( $query, "'{$object_type}_created'" ) ) {
+				global $wpdb;
+				// The audit insert runs after persistence, before the manager reloads its result.
+				$record_table = Schema::table( $resource );
+				$id           = (int) $wpdb->get_var( "SELECT id FROM {$record_table} ORDER BY id DESC LIMIT 1" );
+				$deleted      = 1 === $wpdb->delete( $record_table, array( 'id' => $id ), array( '%d' ) );
+			}
+			return $query;
+		};
+		add_filter( 'query', $probe );
+		try {
+			$response = $this->rest( 'POST', '/admin/' . $resource, array(), $body );
+		} finally {
+			remove_filter( 'query', $probe );
+		}
+		$this->assertTrue( $deleted, 'The saved record must disappear before it is reloaded' );
+		$this->assertSame( 404, $response->get_status(), (string) wp_json_encode( $response->get_data() ) );
+		$this->assertSame( array( 'id' => 'not_found' ), $response->get_data()['data']['params'] );
+	}
+
+	public static function disappeared_after_save_cases(): array {
+		return array(
+			'connection' => array( 'connections', 'connection', array( 'provider' => 'ics', 'auth_mode' => 'none', 'name' => 'Feed', 'settings' => array( 'url' => 'https://93.184.215.14/feed.ics' ) ) ),
+			'source'     => array( 'sources', 'source', array( 'external_id' => 'new-feed', 'name' => 'Source', 'visibility' => 'public', 'timezone' => 'Europe/Berlin' ) ),
+			'view'       => array( 'views', 'view', array( 'name' => 'View', 'display_mode' => 'list' ) ),
+			'template'   => array( 'templates', 'template', array( 'name' => 'Template', 'kind' => 'event', 'editor_mode' => 'html', 'body' => '<p>{{event.title}}</p>', 'css' => '' ) ),
+		);
 	}
 
 	public function test_private_provider_calendar_requires_publication_confirmation(): void {

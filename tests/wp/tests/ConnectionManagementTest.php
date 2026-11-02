@@ -1,5 +1,6 @@
 <?php
 
+use SW\Calendar\Application\Http\HttpResponse;
 use SW\Calendar\Domain\CalendarException;
 use SW\Calendar\Domain\Connection\AuthMode;
 use SW\Calendar\Domain\Connection\ConnectionStatus;
@@ -284,6 +285,22 @@ final class ConnectionManagementTest extends SWC_TestCase {
 		$this->services->credentials()->update( $id, array( 'refresh_token' => 'rt2' ) );
 		$this->assertSame( 200, $this->rest( 'POST', '/admin/connections/' . $id . '/disconnect' )->get_status() );
 		$this->assertContains( 'oauth_revoke_failed', array_column( $this->services->logger()->recent( 5 ), 'code' ) );
+		$this->assertArrayNotHasKey( 'refresh_token', $this->services->credentials()->get( $id ) );
+	}
+
+	public function test_disconnect_returns_404_when_connection_disappears_during_revocation(): void {
+		$id = $this->google( array( 'client_id' => 'gid' ), ConnectionStatus::Connected );
+		$this->services->credentials()->update( $id, array( 'refresh_token' => 'rt' ) );
+		$this->http->queue[] = function () use ( $id ): HttpResponse {
+			// Simulate a concurrent deletion after the manager's initial lookup succeeded.
+			$this->services->connections()->delete( $id );
+			return new HttpResponse( 200, array(), '', 0 );
+		};
+
+		$params = $this->invalid_params( array(), 404, 'POST', '/admin/connections/' . $id . '/disconnect' );
+		$this->assertSame( array( 'id' => 'not_found' ), $params );
+		$this->assertCount( 1, $this->http->requests, 'Revocation must run before the connection disappears' );
+		$this->assertNull( $this->services->connections()->find( $id ) );
 		$this->assertArrayNotHasKey( 'refresh_token', $this->services->credentials()->get( $id ) );
 	}
 
