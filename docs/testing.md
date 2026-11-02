@@ -43,9 +43,12 @@ Zeilenabdeckung je Sprache muss **> 80 %** sein (ganzzahliger Vergleich, genau 8
 
 - **JS/TS:** `npm run test:coverage` in `apps/admin` (Vitest V8). Umfang: `apps/admin/src` (ohne reine Typdateien `src/types`,
   `*.d.ts`), `apps/admin/tools`, die ungebündelten Skripte `assets/js/**` und `blocks/**/*.js` (Tests:
-  `frontend-script.test.ts`, `block-editor.test.ts`). `scripts/check-coverage.mjs` prüft > 80 %, schlägt fehl, wenn ein
-  Skript aus `assets/js`/`blocks` im Bericht fehlt, und schreibt die LCOV-Pfade relativ zur Plugin-Wurzel (SonarQube).
+  `frontend-script.test.ts`, `block-editor.test.ts`). `scripts/check-coverage.mjs` prüft > 80 %, schlägt fehl, wenn eine
+  Produktivdatei aus Admin-App, Build-Plugin oder `assets/js`/`blocks` im Bericht fehlt, und schreibt die LCOV-Pfade
+  relativ zur Plugin-Wurzel (SonarQube).
 - **PHP:** Unit/Integration und WordPress-Suite liefern Clover, `tests/coverage/merge.php` vereinigt sie,
   `tests/coverage/check.php` prüft > 80 % und dass jede PHP-Datei aus `src`, `templates`, `blocks`, `sw-cloudcalendar.php`,
   `uninstall.php` im Bericht steht. Code, der nur beim Bootstrap vor Start der Messung läuft (Hauptdatei), zählt als
   nicht abgedeckt.
+
+Vitest 5 zählt ausführbare Zeilen; frühere Prozentwerte aus Vitest 3 sind nicht direkt vergleichbar.

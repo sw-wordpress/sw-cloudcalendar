@@ -104,7 +104,7 @@ AI agents must follow the project rules before changing code:
 
 ## Development
 
-Requirements: PHP 8.2+, Composer, Node.js 18.18+ with npm, Make, MariaDB (test database), GNU gettext (translations)
+Requirements: PHP 8.2+, Composer, Node.js 22.22.2+ (Node 22 line) with npm, Make, MariaDB (test database), GNU gettext (translations)
 and Docker for the release build.
 
 ```sh

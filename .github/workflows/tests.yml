@@ -50,7 +50,7 @@ jobs:
       run: php tests/coverage/check.php coverage/clover.xml
     - uses: actions/setup-node@v4
       with:
-        node-version: '22'
+        node-version-file: apps/admin/.nvmrc
         cache: npm
         cache-dependency-path: |
           apps/admin/package-lock.json
@@ -96,12 +96,12 @@ jobs:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
       with:
-        node-version: '22'
+        node-version-file: apps/admin/.nvmrc
         cache: npm
         cache-dependency-path: apps/admin/package-lock.json
     - run: npm ci
-    - name: Audit shipped npm packages
-      run: npm audit --omit=dev --audit-level=high
+    - name: Audit npm packages including dev tooling
+      run: npm audit --audit-level=high
     - run: npm run lint && npm run typecheck
     - name: Tests with strict JS/TS line coverage gate (> 80 %)
       run: npm run test:coverage
