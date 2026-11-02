@@ -7,7 +7,7 @@ Kalenderauswahl, Farbe und Sichtbarkeit. Termine, Bilder und ID-Zuordnungen werd
 ## Einrichtung
 
 1. Beide Plugins aktivieren. Unter **Kalender → Verbindungen → Neue Verbindung → Lokales Plugin** das Quellplugin wählen.
-2. Unter **Quellen** die gewünschten Kalender einzeln hinzufügen. Kalendername/Farbe werden vorgeschlagen und können
+2. Unter **Quellen → Neue Quelle → Mehrere Kalender hinzufügen** die gewünschten Kalender oder **Alle auswählen** wählen und gemeinsam als Entwürfe anlegen. Kalendername/Farbe werden vorgeschlagen und können
    überschrieben werden. Quellen starten als Entwurf. Sichtbarkeit festlegen und anschließend aktivieren.
 3. Eine öffentliche Freigabe muss ausdrücklich bestätigt werden. Die Auswahl im Quellplugin allein veröffentlicht nichts.
 4. Unter **Ansichten** mehrere Quellen auswählen; synchronisierte und lokale Kalender dürfen gemischt werden.

@@ -188,12 +188,12 @@ export interface SourceCreateInput {
 }
 
 export interface SourceUpdateInput {
-  name: string;
-  color: string;
-  timezone: string;
-  visibility: Visibility;
-  roles: string[];
-  settings: Partial<SourceSettings>;
+  name?: string;
+  color?: string;
+  timezone?: string;
+  visibility?: Visibility;
+  roles?: string[];
+  settings?: Partial<SourceSettings>;
   status?: EditableSourceStatus;
   confirm_publication?: true;
   confirm_private_attachments?: true;

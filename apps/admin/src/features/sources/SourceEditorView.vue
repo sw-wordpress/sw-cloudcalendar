@@ -124,6 +124,48 @@ const calendars = ref<ProviderCalendar[]>([]);
 const calendarsLoading = ref(false);
 const calendarsError = ref<ApiError | null>(null);
 const manualId = ref(false);
+const bulk = ref(false);
+const selectedCalendars = ref<string[]>([]);
+
+async function createDrafts(): Promise<void> {
+  if (saving.value || !connection.value || selectedCalendars.value.length === 0) return;
+  saving.value = true;
+  formError.value = null;
+  try {
+    for (const cal of calendars.value.filter((c) =>
+      selectedCalendars.value.includes(c.external_id),
+    )) {
+      await api.sources.create({
+        connection_id: connection.value.id,
+        external_id: cal.external_id,
+        name: cal.name,
+        color: cal.color && /^#[0-9a-f]{6}$/i.test(cal.color) ? cal.color.toLowerCase() : '#3366cc',
+        timezone:
+          cal.timezone && meta.value?.timezones.includes(cal.timezone)
+            ? cal.timezone
+            : (meta.value?.site_timezone ?? 'UTC'),
+        visibility: 'authenticated',
+        roles: [],
+        settings: defaultSourceSettings(meta.value),
+      });
+      selectedCalendars.value = selectedCalendars.value.filter((id) => id !== cal.external_id);
+      lookups.invalidate();
+    }
+    notify.success(t('sources.bulkCreated'));
+    await router.push('/sources');
+  } catch (e) {
+    formError.value = toApiError(e);
+    notify.error(e);
+  } finally {
+    saving.value = false;
+  }
+}
+
+function toggleCalendar(cal: ProviderCalendar): void {
+  selectedCalendars.value = selectedCalendars.value.includes(cal.external_id)
+    ? selectedCalendars.value.filter((id) => id !== cal.external_id)
+    : [...selectedCalendars.value, cal.external_id];
+}
 
 const canList = computed(
   () => !!connection.value?.capabilities.list_calendars && connection.value.provider !== 'ics',
@@ -131,6 +173,8 @@ const canList = computed(
 
 watch(connectionId, async (id) => {
   if (isEdit.value) return;
+  bulk.value = false;
+  selectedCalendars.value = [];
   calendars.value = [];
   calendarsError.value = null;
   externalId.value = '';
@@ -433,7 +477,7 @@ const fileConfirmation = computed(
         </SwcCard>
       </template>
       <div v-else class="swc-se">
-        <q-form class="swc-stack" greedy @submit="save()">
+        <q-form class="swc-stack" greedy @submit="bulk ? createDrafts() : save()">
           <!-- status strip (edit) -->
           <SwcCard v-if="source" :padding="true">
             <div class="swc-row swc-se__strip">
@@ -496,6 +540,7 @@ const fileConfirmation = computed(
                   }))
                 "
                 :label="t('sources.connection')"
+                :disable="saving"
                 :rules="[required]"
                 :error="!!fields.field('connection_id')"
                 :error-message="fields.field('connection_id')"
@@ -512,13 +557,41 @@ const fileConfirmation = computed(
                   {{ t('sources.icsExternalHint') }}
                 </p>
                 <template v-else-if="canList && !manualId">
+                  <q-toggle
+                    v-if="connection.provider === 'local'"
+                    v-model="bulk"
+                    :disable="saving"
+                    :label="t('sources.bulkSelect')"
+                  />
+                  <template v-if="bulk">
+                    <p class="swc-hint">{{ t('sources.bulkHint') }}</p>
+                    <div class="swc-row">
+                      <q-btn
+                        flat
+                        no-caps
+                        :disable="saving || calendarsLoading"
+                        :label="t('sources.selectAllCalendars')"
+                        @click="selectedCalendars = calendars.map((c) => c.external_id)"
+                      />
+                      <q-btn
+                        flat
+                        no-caps
+                        :disable="saving"
+                        :label="t('sources.clearCalendars')"
+                        @click="selectedCalendars = []"
+                      />
+                      <span role="status">{{
+                        t('sources.selectedCalendars', { n: selectedCalendars.length })
+                      }}</span>
+                    </div>
+                  </template>
                   <q-linear-progress v-if="calendarsLoading" indeterminate />
                   <p v-else-if="calendars.length === 0" class="swc-hint">
                     {{ t('sources.noCalendars') }}
                   </p>
                   <div
                     v-else
-                    role="radiogroup"
+                    :role="bulk ? 'group' : 'radiogroup'"
                     :aria-label="t('sources.pickCalendar')"
                     class="swc-se__cals"
                   >
@@ -526,15 +599,24 @@ const fileConfirmation = computed(
                       v-for="cal in calendars"
                       :key="cal.external_id"
                       class="swc-se__cal"
-                      :class="{ 'is-on': externalId === cal.external_id }"
+                      :class="{
+                        'is-on': bulk
+                          ? selectedCalendars.includes(cal.external_id)
+                          : externalId === cal.external_id,
+                      }"
                     >
                       <input
-                        type="radio"
+                        :type="bulk ? 'checkbox' : 'radio'"
+                        :disabled="saving"
                         class="swc-sr-only"
                         name="swc-calendar"
                         :value="cal.external_id"
-                        :checked="externalId === cal.external_id"
-                        @change="pickCalendar(cal)"
+                        :checked="
+                          bulk
+                            ? selectedCalendars.includes(cal.external_id)
+                            : externalId === cal.external_id
+                        "
+                        @change="bulk ? toggleCalendar(cal) : pickCalendar(cal)"
                       />
                       <span
                         class="swc-swatch"
@@ -557,6 +639,7 @@ const fileConfirmation = computed(
                     </label>
                   </div>
                   <q-btn
+                    v-if="!bulk"
                     flat
                     dense
                     no-caps
@@ -607,370 +690,384 @@ const fileConfirmation = computed(
             </dl>
           </SwcCard>
 
-          <!-- general -->
-          <SwcCard :title="t('sources.sectionGeneral')" icon="r_tune">
-            <div class="swc-form-grid">
-              <q-input
-                v-model="name"
-                outlined
-                dense
-                maxlength="190"
-                :label="t('common.name')"
-                :rules="[required]"
-                :error="!!fields.field('name')"
-                :error-message="fields.field('name')"
-              />
-              <q-input
-                v-model="color"
-                outlined
-                dense
-                :label="t('sources.color')"
-                :rules="[(v: string) => /^#[0-9a-fA-F]{6}$/.test(v) || t('validation.invalid')]"
-                :error="!!fields.field('color')"
-                :error-message="fields.field('color')"
-              >
-                <template #prepend>
-                  <input
-                    v-model="color"
-                    type="color"
-                    class="swc-se__color"
-                    :aria-label="t('sources.pickColor')"
-                  />
-                </template>
-              </q-input>
-              <TimezoneSelect
-                v-model="timezone"
-                :timezones="meta?.timezones ?? []"
-                :label="t('sources.timezone')"
-                :hint="t('sources.timezoneHint')"
-                :error="fields.field('timezone')"
-              />
-              <q-select
-                v-if="isEdit"
-                v-model="status"
-                outlined
-                dense
-                emit-value
-                map-options
-                :options="statusOptions"
-                :label="t('common.status')"
-                :hint="t('sources.statusHint')"
-                :error="!!fields.field('status')"
-                :error-message="fields.field('status')"
-              />
-            </div>
-            <p v-if="!isEdit" class="swc-callout is-info">{{ t('sources.draftHint') }}</p>
-          </SwcCard>
-
-          <!-- visibility -->
-          <SwcCard :title="t('sources.visibility')" icon="r_visibility">
-            <div role="radiogroup" :aria-label="t('sources.visibility')" class="swc-se__vis">
-              <label
-                v-for="opt in visibilityOptions"
-                :key="opt.value"
-                class="swc-se__vis-opt"
-                :class="{ 'is-on': visibility === opt.value }"
-              >
-                <input v-model="visibility" type="radio" class="swc-sr-only" :value="opt.value" />
-                <q-icon
-                  :name="
-                    opt.value === 'public'
-                      ? 'r_public'
-                      : opt.value === 'roles'
-                        ? 'r_group'
-                        : 'r_lock'
-                  "
-                  size="22px"
-                  aria-hidden="true"
-                />
-                <span>
-                  <strong>{{ t(`status.visibility.${opt.value}`) }}</strong>
-                  <small>{{ t(`sources.visibilityHints.${opt.value}`) }}</small>
-                </span>
-              </label>
-            </div>
-            <q-select
-              v-if="visibility === 'roles'"
-              v-model="roles"
-              outlined
-              dense
-              multiple
-              use-chips
-              emit-value
-              map-options
-              :options="roleOptions"
-              :label="t('sources.roles')"
-              :rules="[(v: string[]) => v.length > 0 || t('common.required')]"
-              :error="!!fields.field('roles')"
-              :error-message="fields.field('roles')"
+          <div v-if="bulk" class="swc-se__footer">
+            <q-btn flat no-caps to="/sources" :disable="saving" :label="t('common.cancel')" />
+            <q-btn
+              unelevated
+              no-caps
+              color="primary"
+              :loading="saving"
+              :disable="selectedCalendars.length === 0"
+              :label="t('sources.createDrafts')"
+              @click="createDrafts"
             />
-            <div
-              v-if="visibility === 'public'"
-              class="swc-callout is-warning swc-se__warn"
-              role="note"
-            >
-              <q-icon name="r_warning" size="22px" aria-hidden="true" />
-              <div>
-                <strong>{{ t('sources.publicWarningTitle') }}</strong>
-                <p>{{ t('sources.publicWarning') }}</p>
-                <p v-if="privateAtProvider">{{ t('sources.publicConfirmHint') }}</p>
-                <p v-if="confirmation">
-                  {{
-                    t('sources.confirmedAt', {
-                      time: fmt.dateTime(confirmation.confirmed_at),
-                      user: confirmation.user_id,
-                      revision: confirmation.source_revision,
-                    })
-                  }}
-                </p>
-              </div>
-            </div>
-          </SwcCard>
-
-          <!-- sync -->
-          <SwcCard
-            v-if="connection?.provider !== 'local'"
-            :title="t('sources.sectionSync')"
-            icon="r_sync"
-          >
-            <q-toggle v-model="settings.sync_enabled" :label="t('sources.syncEnabled')" />
-            <div class="swc-form-grid">
-              <q-input
-                v-model.number="settings.sync_interval_hours"
-                outlined
-                dense
-                type="number"
-                min="1"
-                max="48"
-                :label="t('sources.interval')"
-                :hint="t('sources.intervalHint')"
-                :suffix="t('common.hoursShort')"
-                :rules="[intIn(1, 48)]"
-                :error="!!fields.field('settings.sync_interval_hours')"
-                :error-message="fields.field('settings.sync_interval_hours')"
-              />
-              <q-input
-                v-model.number="settings.past_days"
-                outlined
-                dense
-                type="number"
-                min="0"
-                :max="maxWindow"
-                :label="t('sources.pastDays')"
-                :suffix="t('common.daysShort')"
-                :rules="[intIn(0, maxWindow)]"
-                :error="!!fields.field('settings.past_days')"
-                :error-message="fields.field('settings.past_days')"
-              />
-              <q-input
-                v-model.number="settings.future_days"
-                outlined
-                dense
-                type="number"
-                min="1"
-                :max="maxWindow"
-                :label="t('sources.futureDays')"
-                :suffix="t('common.daysShort')"
-                :rules="[intIn(1, maxWindow)]"
-                :error="!!fields.field('settings.future_days')"
-                :error-message="fields.field('settings.future_days')"
-              />
-            </div>
-            <p class="swc-hint">{{ t('sources.windowHint', { max: maxWindow }) }}</p>
-            <q-toggle
-              v-model="settings.exclude_private_events"
-              :label="t('sources.excludePrivate')"
-            />
-            <fieldset v-if="eventTypes.length > 0" class="swc-se__types">
-              <legend>{{ t('sources.excludedTypes') }}</legend>
-              <q-checkbox
-                v-for="type in eventTypes"
-                :key="type"
-                :model-value="settings.excluded_event_types.includes(type)"
-                :label="t(`sources.eventTypes.${type}`)"
-                @update:model-value="(v: boolean) => toggleEventType(type, v)"
-              />
-              <p class="swc-hint">{{ t('sources.excludedTypesHint') }}</p>
-            </fieldset>
-          </SwcCard>
-
-          <!-- attachments -->
-          <SwcCard :title="t('sources.sectionAttachments')" icon="r_attach_file">
-            <div v-if="!storageSafe" class="swc-callout is-danger" role="alert">
-              <q-icon name="r_gpp_bad" size="20px" aria-hidden="true" />
-              <span>{{ t('sources.storageUnsafe') }}</span>
-            </div>
-            <q-toggle
-              v-model="settings.attachments.sync_attachments"
-              :disable="!storageSafe && !settings.attachments.sync_attachments"
-              :label="t('sources.syncAttachments')"
-            />
-            <p
-              v-if="fields.field('settings.attachments.sync_attachments')"
-              class="swc-callout is-danger"
-            >
-              {{ fields.field('settings.attachments.sync_attachments') }}
-            </p>
-            <template v-if="settings.attachments.sync_attachments">
-              <q-toggle
-                v-model="settings.attachments.public_only"
-                :label="t('sources.publicOnly')"
-              />
-              <div class="swc-callout is-info">
-                <q-icon name="r_info" size="20px" aria-hidden="true" />
-                <div>
-                  <p>{{ t('sources.publicOnlyExplain') }}</p>
-                  <p v-if="neverVerifiable">{{ t('sources.neverVerifiable') }}</p>
-                </div>
-              </div>
-              <div
-                v-if="!settings.attachments.public_only && visibility === 'public'"
-                class="swc-callout is-warning"
-              >
-                <q-icon name="r_warning" size="20px" aria-hidden="true" />
-                <span>{{ t('sources.privateFilesPublicWarning') }}</span>
-              </div>
-              <p v-if="fileConfirmation" class="swc-hint">
-                {{
-                  t('sources.filesConfirmedAt', {
-                    time: fmt.dateTime(fileConfirmation.confirmed_at),
-                    user: fileConfirmation.user_id,
-                  })
-                }}
-              </p>
+          </div>
+          <template v-else>
+            <!-- general -->
+            <SwcCard :title="t('sources.sectionGeneral')" icon="r_tune">
               <div class="swc-form-grid">
                 <q-input
-                  v-model.number="settings.attachments.max_file_size_mb"
+                  v-model="name"
                   outlined
                   dense
-                  type="number"
-                  min="1"
-                  max="200"
-                  suffix="MB"
-                  :label="t('sources.maxFileSize')"
-                  :rules="[intIn(1, 200)]"
-                  :error="!!fields.field('settings.attachments.max_file_size_mb')"
-                  :error-message="fields.field('settings.attachments.max_file_size_mb')"
+                  maxlength="190"
+                  :label="t('common.name')"
+                  :rules="[required]"
+                  :error="!!fields.field('name')"
+                  :error-message="fields.field('name')"
                 />
                 <q-input
-                  v-model.number="settings.attachments.quota_mb"
+                  v-model="color"
                   outlined
                   dense
-                  type="number"
-                  min="1"
-                  suffix="MB"
-                  :label="t('sources.quota')"
-                  :rules="[intIn(1, 100000)]"
-                  :error="!!fields.field('settings.attachments.quota_mb')"
-                  :error-message="fields.field('settings.attachments.quota_mb')"
+                  :label="t('sources.color')"
+                  :rules="[(v: string) => /^#[0-9a-fA-F]{6}$/.test(v) || t('validation.invalid')]"
+                  :error="!!fields.field('color')"
+                  :error-message="fields.field('color')"
+                >
+                  <template #prepend>
+                    <input
+                      v-model="color"
+                      type="color"
+                      class="swc-se__color"
+                      :aria-label="t('sources.pickColor')"
+                    />
+                  </template>
+                </q-input>
+                <TimezoneSelect
+                  v-model="timezone"
+                  :timezones="meta?.timezones ?? []"
+                  :label="t('sources.timezone')"
+                  :hint="t('sources.timezoneHint')"
+                  :error="fields.field('timezone')"
                 />
-                <q-input
-                  v-model.number="settings.attachments.refresh_hours"
+                <q-select
+                  v-if="isEdit"
+                  v-model="status"
                   outlined
                   dense
-                  type="number"
-                  min="1"
-                  max="720"
-                  :suffix="t('common.hoursShort')"
-                  :label="t('sources.refreshHours')"
-                  :rules="[intIn(1, 720)]"
-                  :error="!!fields.field('settings.attachments.refresh_hours')"
-                  :error-message="fields.field('settings.attachments.refresh_hours')"
+                  emit-value
+                  map-options
+                  :options="statusOptions"
+                  :label="t('common.status')"
+                  :hint="t('sources.statusHint')"
+                  :error="!!fields.field('status')"
+                  :error-message="fields.field('status')"
                 />
               </div>
+              <p v-if="!isEdit" class="swc-callout is-info">{{ t('sources.draftHint') }}</p>
+            </SwcCard>
+
+            <!-- visibility -->
+            <SwcCard :title="t('sources.visibility')" icon="r_visibility">
+              <div role="radiogroup" :aria-label="t('sources.visibility')" class="swc-se__vis">
+                <label
+                  v-for="opt in visibilityOptions"
+                  :key="opt.value"
+                  class="swc-se__vis-opt"
+                  :class="{ 'is-on': visibility === opt.value }"
+                >
+                  <input v-model="visibility" type="radio" class="swc-sr-only" :value="opt.value" />
+                  <q-icon
+                    :name="
+                      opt.value === 'public'
+                        ? 'r_public'
+                        : opt.value === 'roles'
+                          ? 'r_group'
+                          : 'r_lock'
+                    "
+                    size="22px"
+                    aria-hidden="true"
+                  />
+                  <span>
+                    <strong>{{ t(`status.visibility.${opt.value}`) }}</strong>
+                    <small>{{ t(`sources.visibilityHints.${opt.value}`) }}</small>
+                  </span>
+                </label>
+              </div>
               <q-select
-                v-model="settings.attachments.allowed_mime_types"
+                v-if="visibility === 'roles'"
+                v-model="roles"
                 outlined
                 dense
                 multiple
                 use-chips
                 emit-value
                 map-options
-                :options="mimeOptions"
-                :label="t('sources.mimeTypes')"
-                :error="!!fields.field('settings.attachments.allowed_mime_types')"
-                :error-message="fields.field('settings.attachments.allowed_mime_types')"
+                :options="roleOptions"
+                :label="t('sources.roles')"
+                :rules="[(v: string[]) => v.length > 0 || t('common.required')]"
+                :error="!!fields.field('roles')"
+                :error-message="fields.field('roles')"
+              />
+              <div
+                v-if="visibility === 'public'"
+                class="swc-callout is-warning swc-se__warn"
+                role="note"
               >
-                <template #after>
-                  <q-btn
-                    flat
-                    dense
-                    no-caps
-                    :label="t('common.resetDefaults')"
-                    @click="resetMimes"
-                  />
-                </template>
-              </q-select>
-              <div class="swc-row">
-                <q-toggle
-                  v-model="settings.attachments.generate_image_previews"
-                  :label="t('sources.previews')"
+                <q-icon name="r_warning" size="22px" aria-hidden="true" />
+                <div>
+                  <strong>{{ t('sources.publicWarningTitle') }}</strong>
+                  <p>{{ t('sources.publicWarning') }}</p>
+                  <p v-if="privateAtProvider">{{ t('sources.publicConfirmHint') }}</p>
+                  <p v-if="confirmation">
+                    {{
+                      t('sources.confirmedAt', {
+                        time: fmt.dateTime(confirmation.confirmed_at),
+                        user: confirmation.user_id,
+                        revision: confirmation.source_revision,
+                      })
+                    }}
+                  </p>
+                </div>
+              </div>
+            </SwcCard>
+
+            <!-- sync -->
+            <SwcCard
+              v-if="connection?.provider !== 'local'"
+              :title="t('sources.sectionSync')"
+              icon="r_sync"
+            >
+              <q-toggle v-model="settings.sync_enabled" :label="t('sources.syncEnabled')" />
+              <div class="swc-form-grid">
+                <q-input
+                  v-model.number="settings.sync_interval_hours"
+                  outlined
+                  dense
+                  type="number"
+                  min="1"
+                  max="48"
+                  :label="t('sources.interval')"
+                  :hint="t('sources.intervalHint')"
+                  :suffix="t('common.hoursShort')"
+                  :rules="[intIn(1, 48)]"
+                  :error="!!fields.field('settings.sync_interval_hours')"
+                  :error-message="fields.field('settings.sync_interval_hours')"
                 />
-                <q-toggle
-                  v-model="settings.attachments.show_images"
-                  :label="t('sources.showImages')"
+                <q-input
+                  v-model.number="settings.past_days"
+                  outlined
+                  dense
+                  type="number"
+                  min="0"
+                  :max="maxWindow"
+                  :label="t('sources.pastDays')"
+                  :suffix="t('common.daysShort')"
+                  :rules="[intIn(0, maxWindow)]"
+                  :error="!!fields.field('settings.past_days')"
+                  :error-message="fields.field('settings.past_days')"
                 />
-                <q-toggle
-                  v-model="settings.attachments.show_file_list"
-                  :label="t('sources.showFileList')"
+                <q-input
+                  v-model.number="settings.future_days"
+                  outlined
+                  dense
+                  type="number"
+                  min="1"
+                  :max="maxWindow"
+                  :label="t('sources.futureDays')"
+                  :suffix="t('common.daysShort')"
+                  :rules="[intIn(1, maxWindow)]"
+                  :error="!!fields.field('settings.future_days')"
+                  :error-message="fields.field('settings.future_days')"
                 />
               </div>
-              <dl v-if="source" class="swc-dl">
-                <div>
-                  <dt>{{ t('sources.storedFiles') }}</dt>
-                  <dd class="swc-num">{{ totals.stored }} / {{ totals.total }}</dd>
-                </div>
-                <div>
-                  <dt>{{ t('sources.storedBytes') }}</dt>
-                  <dd>{{ fmt.bytes(source.attachments.bytes) }}</dd>
-                </div>
-              </dl>
-              <ul
-                v-if="source && source.attachments.counts.length > 0"
-                class="swc-row swc-se__counts"
+              <p class="swc-hint">{{ t('sources.windowHint', { max: maxWindow }) }}</p>
+              <q-toggle
+                v-model="settings.exclude_private_events"
+                :label="t('sources.excludePrivate')"
+              />
+              <fieldset v-if="eventTypes.length > 0" class="swc-se__types">
+                <legend>{{ t('sources.excludedTypes') }}</legend>
+                <q-checkbox
+                  v-for="type in eventTypes"
+                  :key="type"
+                  :model-value="settings.excluded_event_types.includes(type)"
+                  :label="t(`sources.eventTypes.${type}`)"
+                  @update:model-value="(v: boolean) => toggleEventType(type, v)"
+                />
+                <p class="swc-hint">{{ t('sources.excludedTypesHint') }}</p>
+              </fieldset>
+            </SwcCard>
+
+            <!-- attachments -->
+            <SwcCard :title="t('sources.sectionAttachments')" icon="r_attach_file">
+              <div v-if="!storageSafe" class="swc-callout is-danger" role="alert">
+                <q-icon name="r_gpp_bad" size="20px" aria-hidden="true" />
+                <span>{{ t('sources.storageUnsafe') }}</span>
+              </div>
+              <q-toggle
+                v-model="settings.attachments.sync_attachments"
+                :disable="!storageSafe && !settings.attachments.sync_attachments"
+                :label="t('sources.syncAttachments')"
+              />
+              <p
+                v-if="fields.field('settings.attachments.sync_attachments')"
+                class="swc-callout is-danger"
               >
-                <li
-                  v-for="row in source.attachments.counts"
-                  :key="`${row.sync_state}-${row.publication_state}`"
+                {{ fields.field('settings.attachments.sync_attachments') }}
+              </p>
+              <template v-if="settings.attachments.sync_attachments">
+                <q-toggle
+                  v-model="settings.attachments.public_only"
+                  :label="t('sources.publicOnly')"
+                />
+                <div class="swc-callout is-info">
+                  <q-icon name="r_info" size="20px" aria-hidden="true" />
+                  <div>
+                    <p>{{ t('sources.publicOnlyExplain') }}</p>
+                    <p v-if="neverVerifiable">{{ t('sources.neverVerifiable') }}</p>
+                  </div>
+                </div>
+                <div
+                  v-if="!settings.attachments.public_only && visibility === 'public'"
+                  class="swc-callout is-warning"
                 >
-                  <StatusChip
-                    domain="publication"
-                    :status="row.publication_state"
-                    :label="`${row.sync_state} · ${row.publication_state}: ${row.files}`"
+                  <q-icon name="r_warning" size="20px" aria-hidden="true" />
+                  <span>{{ t('sources.privateFilesPublicWarning') }}</span>
+                </div>
+                <p v-if="fileConfirmation" class="swc-hint">
+                  {{
+                    t('sources.filesConfirmedAt', {
+                      time: fmt.dateTime(fileConfirmation.confirmed_at),
+                      user: fileConfirmation.user_id,
+                    })
+                  }}
+                </p>
+                <div class="swc-form-grid">
+                  <q-input
+                    v-model.number="settings.attachments.max_file_size_mb"
+                    outlined
                     dense
+                    type="number"
+                    min="1"
+                    max="200"
+                    suffix="MB"
+                    :label="t('sources.maxFileSize')"
+                    :rules="[intIn(1, 200)]"
+                    :error="!!fields.field('settings.attachments.max_file_size_mb')"
+                    :error-message="fields.field('settings.attachments.max_file_size_mb')"
                   />
-                </li>
-              </ul>
-              <div v-if="source && source.attachments.last_errors.length > 0">
-                <p class="swc-eyebrow">{{ t('sources.attachmentErrors') }}</p>
-                <ul class="swc-se__errs">
-                  <li v-for="err in source.attachments.last_errors" :key="err">
-                    <code>{{ err }}</code>
+                  <q-input
+                    v-model.number="settings.attachments.quota_mb"
+                    outlined
+                    dense
+                    type="number"
+                    min="1"
+                    suffix="MB"
+                    :label="t('sources.quota')"
+                    :rules="[intIn(1, 100000)]"
+                    :error="!!fields.field('settings.attachments.quota_mb')"
+                    :error-message="fields.field('settings.attachments.quota_mb')"
+                  />
+                  <q-input
+                    v-model.number="settings.attachments.refresh_hours"
+                    outlined
+                    dense
+                    type="number"
+                    min="1"
+                    max="720"
+                    :suffix="t('common.hoursShort')"
+                    :label="t('sources.refreshHours')"
+                    :rules="[intIn(1, 720)]"
+                    :error="!!fields.field('settings.attachments.refresh_hours')"
+                    :error-message="fields.field('settings.attachments.refresh_hours')"
+                  />
+                </div>
+                <q-select
+                  v-model="settings.attachments.allowed_mime_types"
+                  outlined
+                  dense
+                  multiple
+                  use-chips
+                  emit-value
+                  map-options
+                  :options="mimeOptions"
+                  :label="t('sources.mimeTypes')"
+                  :error="!!fields.field('settings.attachments.allowed_mime_types')"
+                  :error-message="fields.field('settings.attachments.allowed_mime_types')"
+                >
+                  <template #after>
+                    <q-btn
+                      flat
+                      dense
+                      no-caps
+                      :label="t('common.resetDefaults')"
+                      @click="resetMimes"
+                    />
+                  </template>
+                </q-select>
+                <div class="swc-row">
+                  <q-toggle
+                    v-model="settings.attachments.generate_image_previews"
+                    :label="t('sources.previews')"
+                  />
+                  <q-toggle
+                    v-model="settings.attachments.show_images"
+                    :label="t('sources.showImages')"
+                  />
+                  <q-toggle
+                    v-model="settings.attachments.show_file_list"
+                    :label="t('sources.showFileList')"
+                  />
+                </div>
+                <dl v-if="source" class="swc-dl">
+                  <div>
+                    <dt>{{ t('sources.storedFiles') }}</dt>
+                    <dd class="swc-num">{{ totals.stored }} / {{ totals.total }}</dd>
+                  </div>
+                  <div>
+                    <dt>{{ t('sources.storedBytes') }}</dt>
+                    <dd>{{ fmt.bytes(source.attachments.bytes) }}</dd>
+                  </div>
+                </dl>
+                <ul
+                  v-if="source && source.attachments.counts.length > 0"
+                  class="swc-row swc-se__counts"
+                >
+                  <li
+                    v-for="row in source.attachments.counts"
+                    :key="`${row.sync_state}-${row.publication_state}`"
+                  >
+                    <StatusChip
+                      domain="publication"
+                      :status="row.publication_state"
+                      :label="`${row.sync_state} · ${row.publication_state}: ${row.files}`"
+                      dense
+                    />
                   </li>
                 </ul>
-              </div>
-            </template>
-          </SwcCard>
+                <div v-if="source && source.attachments.last_errors.length > 0">
+                  <p class="swc-eyebrow">{{ t('sources.attachmentErrors') }}</p>
+                  <ul class="swc-se__errs">
+                    <li v-for="err in source.attachments.last_errors" :key="err">
+                      <code>{{ err }}</code>
+                    </li>
+                  </ul>
+                </div>
+              </template>
+            </SwcCard>
 
-          <div class="swc-se__footer">
-            <q-badge
-              v-if="dirty && isEdit"
-              color="warning"
-              text-color="dark"
-              :label="t('common.unsaved')"
-            />
-            <q-btn flat no-caps to="/sources" :label="t('common.cancel')" />
-            <q-btn
-              unelevated
-              no-caps
-              color="primary"
-              type="submit"
-              icon="r_save"
-              :loading="saving"
-              :disable="!isEdit && (!connectionId || externalId.trim() === '')"
-              :label="isEdit ? t('common.save') : t('sources.createDraft')"
-            />
-          </div>
+            <div class="swc-se__footer">
+              <q-badge
+                v-if="dirty && isEdit"
+                color="warning"
+                text-color="dark"
+                :label="t('common.unsaved')"
+              />
+              <q-btn flat no-caps to="/sources" :label="t('common.cancel')" />
+              <q-btn
+                unelevated
+                no-caps
+                color="primary"
+                type="submit"
+                icon="r_save"
+                :loading="saving"
+                :disable="!isEdit && (!connectionId || externalId.trim() === '')"
+                :label="isEdit ? t('common.save') : t('sources.createDraft')"
+              />
+            </div>
+          </template>
         </q-form>
 
         <SwcCard v-if="source" :title="t('sources.runHistory')" icon="r_history" :padding="false">
