@@ -107,6 +107,7 @@ const de = {
     unknown_preset: 'Unbekanntes Preset',
   },
   providers: {
+    local: 'Lokales Plugin',
     google: 'Google Kalender',
     microsoft: 'Microsoft 365',
     ics: 'ICS / iCalendar',
@@ -188,6 +189,9 @@ const de = {
     noErrors: 'Keine Fehler protokolliert.',
   },
   connections: {
+    localTitle: 'Quellplugin',
+    localHint:
+      'Kalender direkt aus einem aktiven Plugin lesen. Termine werden nicht erneut gespeichert.',
     subtitle:
       'Zugänge zu Google, Microsoft 365 und ICS-Feeds. Geheimnisse werden verschlüsselt gespeichert und nie angezeigt.',
     add: 'Verbindung hinzufügen',
@@ -363,6 +367,7 @@ const de = {
     },
   },
   sources: {
+    localLive: 'Direkt aus dem Quellplugin',
     subtitle: 'Kalender, die synchronisiert und auf der Website angezeigt werden.',
     add: 'Quelle anlegen',
     createTitle: 'Neue Quelle',
@@ -502,6 +507,15 @@ const de = {
     confirmFilesCheck: 'Ich bestätige, dass diese privaten Dateien veröffentlicht werden dürfen.',
   },
   views: {
+    colorTitles: 'Betreff in Kalenderfarbe',
+    legend: 'Kalenderlegende anzeigen',
+    columns: 'Spalten (1–4)',
+    dayLimit: 'Sichtbare Termine pro Tag (1–20)',
+    month: 'Angezeigter Monat (optional)',
+    navigationGroup: 'Gemeinsame Monatsnavigation',
+    navigationGroupHint:
+      'Derselbe Gruppenname verbindet Liste und Monatsraster. Leer lassen für unabhängige Navigation.',
+
     subtitle:
       'Kombinationen aus Quellen, Darstellung und Templates – eingebunden per Shortcode oder Block.',
     add: 'Ansicht anlegen',

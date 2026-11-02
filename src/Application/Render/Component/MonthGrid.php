@@ -27,9 +27,9 @@ final class MonthGrid
     }
 
     /**
-     * @param list<array{occurrence: Occurrence, html: string}> $events Rendered event templates in display order.
+     * @param list<array{occurrence: Occurrence, html: string, color?: string}> $events Rendered event templates in display order.
      */
-    public function render(QueryRange $range, array $events, \DateTimeZone $tz, \DateTimeImmutable $now): TrustedHtml
+    public function render(QueryRange $range, array $events, \DateTimeZone $tz, \DateTimeImmutable $now, int $dayLimit = 3): TrustedHtml
     {
         $month = $range->month ?? new \DateTimeImmutable($range->floatingStart->format('Y-m-01'), $tz);
         $first = new \DateTimeImmutable($range->floatingStart->format('Y-m-d') . ' 00:00:00', $tz);
@@ -80,8 +80,22 @@ final class MonthGrid
                 . '</div>';
             if ($items !== []) {
                 $html .= '<ul class="swc-month__events">';
-                foreach ($items as $item) {
-                    $html .= '<li class="swc-month__event" data-swc-event="' . $item['occurrence']->id . '">' . $item['html'] . '</li>';
+                foreach ($items as $index => $item) {
+                    if ($index === $dayLimit) {
+                        $html .= '<li class="swc-month__more"><details><summary>' . $this->e(sprintf($this->labels->moreEvents, count($items) - $dayLimit)) . '</summary><ul class="swc-month__events">';
+                    }
+                    $color = \SW\Calendar\Application\Render\ViewRenderer::color($item['color'] ?? '');
+                    $rgb = array_map('hexdec', str_split(substr($color, 1), 2));
+                    $luminance = [];
+                    foreach ($rgb as $channel) {
+                        $value = $channel / 255;
+                        $luminance[] = $value <= 0.04045 ? $value / 12.92 : (($value + 0.055) / 1.055) ** 2.4;
+                    }
+                    $text = $luminance[0] * 0.2126 + $luminance[1] * 0.7152 + $luminance[2] * 0.0722 > 0.179 ? '#000000' : '#ffffff';
+                    $html .= '<li class="swc-month__event" style="--swc-event-color:' . $color . ';--swc-event-text:' . $text . '" data-swc-event="' . $this->e((string) $item['occurrence']->id) . '">' . $item['html'] . '</li>';
+                }
+                if (count($items) > $dayLimit) {
+                    $html .= '</ul></details></li>';
                 }
                 $html .= '</ul>';
             }

@@ -36,7 +36,7 @@ final class WpUrlGenerator implements UrlGeneratorInterface {
 		return rest_url( 'sw-cloudcalendar/v1/attachments/' . $attachmentId . '/preview' );
 	}
 
-	public function eventDetail( int $viewId, int $occurrenceId ): string {
+	public function eventDetail( int $viewId, int|string $occurrenceId ): string {
 		return add_query_arg(
 			array(
 				self::VIEW_PARAM  => $viewId,

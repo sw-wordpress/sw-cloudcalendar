@@ -48,6 +48,7 @@ final class PlaceholderRegistry
         'event.tentative' => [PlaceholderType::Flag, 'Event is tentative'],
         'event.calendar_name' => [PlaceholderType::Text, 'Name of the source calendar'],
         'event.color' => [PlaceholderType::Color, 'Colour of the source calendar (#rrggbb)'],
+        'event.image_alt' => [PlaceholderType::Text, 'Alternative text of the preview image'],
         'event.image' => [PlaceholderType::Url, 'Local preview URL of the first image attachment'],
         'event.has_images' => [PlaceholderType::Flag, 'Event has displayable images'],
         'event.has_files' => [PlaceholderType::Flag, 'Event has downloadable files'],

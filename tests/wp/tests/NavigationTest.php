@@ -17,7 +17,7 @@ final class NavigationTest extends SWC_TestCase {
 	 * @return list<int>
 	 */
 	private function ids( string $html ): array {
-		preg_match_all( '/class="swc-events__item[^"]*" data-swc-event="(\d+)"/', $html, $m );
+		preg_match_all( '/class="swc-events__item[^"]*"[^>]* data-swc-event="(\d+)"/', $html, $m );
 		return array_map( 'intval', $m[1] );
 	}
 

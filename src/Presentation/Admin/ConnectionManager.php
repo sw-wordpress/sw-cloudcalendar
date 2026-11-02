@@ -143,6 +143,13 @@ final class ConnectionManager {
 		$settings = $current;
 		$bool     = static fn ( mixed $v ): bool => in_array( $v, array( true, 1, '1', 'true', 'yes', 'on' ), true );
 		switch ( $provider ) {
+			case Provider::Local:
+				$adapter = (string) ( $current['adapter'] ?? $input['adapter'] ?? '' );
+				if ( ! isset( $current['adapter'] ) && null === $this->services->local_sources()->get( $adapter ) ) {
+					$errors['settings.adapter'] = 'unavailable';
+				}
+				$settings = array( 'adapter' => $adapter );
+				break;
 			case Provider::Ics:
 				if ( array_key_exists( 'url', $input ) || ! isset( $settings['url'] ) ) {
 					$url             = IcsProvider::normalizeUrl( esc_url_raw( (string) ( $input['url'] ?? '' ), array( 'https', 'http', 'webcal', 'webcals' ) ) );

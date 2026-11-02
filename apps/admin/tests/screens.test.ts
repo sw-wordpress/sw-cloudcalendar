@@ -1,9 +1,10 @@
 import { flushPromises, mount } from '@vue/test-utils';
 import type { VueWrapper } from '@vue/test-utils';
 import { createPinia } from 'pinia';
-import { Notify, QBtn, QForm, QInput, Quasar } from 'quasar';
+import { Notify, QBtn, QForm, QInput, QSelect, Quasar } from 'quasar';
 import ConfirmDialog from '../src/components/ui/ConfirmDialog.vue';
 import FormSheet from '../src/components/ui/FormSheet.vue';
+import SegmentedControl from '../src/components/ui/SegmentedControl.vue';
 import ConnectionSheet from '../src/features/connections/ConnectionSheet.vue';
 import iconSet from 'quasar/icon-set/material-icons-round';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
@@ -210,6 +211,7 @@ const diagnostics = {
   ],
 };
 const meta = {
+  local_sources: [{ id: 'churchtools-suite', name: 'ChurchTools Integration Suite' }],
   roles: { administrator: 'Administrator', editor: 'Editor' },
   auth_modes: { google: ['oauth', 'api_key'], microsoft: ['oauth'], ics: ['none', 'http_header'] },
   supported_mime_types: ['image/png', 'application/pdf'],
@@ -586,5 +588,32 @@ describe('admin actions against REST contracts', () => {
     } finally {
       window.swcloudcalendarConfig!.capabilities = ['manage_sw_calendar'];
     }
+  });
+});
+
+it('creates an external plugin connection without requesting credentials', async () => {
+  await render('/connections', async (wrapper) => {
+    await clickIcon(wrapper, 'r_add');
+    const sheet = wrapper.getComponent(ConnectionSheet);
+    sheet.getComponent(SegmentedControl).vm.$emit('update:modelValue', 'local');
+    await settle();
+    const name = sheet.findAllComponents(QInput).find((input) => input.props('label') === 'Name')!;
+    name.vm.$emit('update:modelValue', ' ChurchTools ');
+    const select = sheet.getComponent(QSelect);
+    expect(select.props('options')).toContainEqual({
+      label: 'ChurchTools Integration Suite',
+      value: 'churchtools-suite',
+    });
+    select.vm.$emit('update:modelValue', 'churchtools-suite');
+    await settle();
+    sheet.getComponent(FormSheet).vm.$emit('submit');
+    await settle();
+    expect(written('admin/connections', 'POST')).toMatchObject({
+      name: 'ChurchTools',
+      provider: 'local',
+      auth_mode: 'none',
+      settings: { adapter: 'churchtools-suite' },
+      secrets: {},
+    });
   });
 });

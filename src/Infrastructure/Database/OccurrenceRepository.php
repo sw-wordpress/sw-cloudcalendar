@@ -121,7 +121,7 @@ final class OccurrenceRepository implements OccurrenceStoreInterface, Occurrence
 			$where .= ' AND location LIKE %s';
 			$args[] = '%' . $wpdb->esc_like( $location ) . '%';
 		}
-		$exclude = array_values( array_filter( array_map( 'intval', $excludeIds ), static fn ( int $id ): bool => $id > 0 ) );
+		$exclude = array_values( array_filter( array_map( 'intval', array_filter( $excludeIds, static fn ( $id ): bool => is_int( $id ) || ctype_digit( (string) $id ) ) ), static fn ( int $id ): bool => $id > 0 ) );
 		if ( array() !== $exclude ) {
 			$where .= ' AND id NOT IN (' . Db::int_placeholders( $exclude ) . ')';
 			$args   = array_merge( $args, $exclude );
@@ -147,7 +147,10 @@ final class OccurrenceRepository implements OccurrenceStoreInterface, Occurrence
 		);
 	}
 
-	public function findById( int $id ): ?Occurrence {
+	public function findById( int|string $id ): ?Occurrence {
+		if ( ! is_int( $id ) && ! ctype_digit( $id ) ) {
+			return null;
+		}
 		$table = Schema::table( 'occurrences' );
 		$row   = Db::wpdb()->get_row( Db::wpdb()->prepare( 'SELECT ' . self::COLUMNS . " FROM {$table} WHERE id = %d", $id ), ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		return is_array( $row ) ? $this->map( $row ) : null;

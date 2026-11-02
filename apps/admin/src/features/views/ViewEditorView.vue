@@ -478,6 +478,65 @@ watch(previewMode, () => void renderPreview());
                 :error-message="fields.field('time_format')"
               />
             </div>
+            <q-select
+              v-model="filters.color_titles"
+              outlined
+              dense
+              :label="t('views.colorTitles')"
+              emit-value
+              map-options
+              :options="[
+                { value: 'default', label: t('common.default') },
+                { value: 'yes', label: t('common.yes') },
+                { value: 'no', label: t('common.no') },
+              ]"
+            />
+            <q-select
+              v-model="filters.legend"
+              outlined
+              dense
+              :label="t('views.legend')"
+              emit-value
+              map-options
+              :options="[
+                { value: 'default', label: t('common.default') },
+                { value: 'yes', label: t('common.yes') },
+                { value: 'no', label: t('common.no') },
+              ]"
+            />
+            <q-input
+              v-model="filters.columns"
+              type="number"
+              min="1"
+              max="4"
+              outlined
+              dense
+              :label="t('views.columns')"
+            />
+            <q-input
+              v-model="filters.day_limit"
+              type="number"
+              min="1"
+              max="20"
+              outlined
+              dense
+              :label="t('views.dayLimit')"
+            />
+            <q-input
+              v-model="filters.month"
+              outlined
+              dense
+              placeholder="2026-11"
+              :label="t('views.month')"
+            />
+            <q-input
+              v-model="filters.navigation_group"
+              outlined
+              dense
+              maxlength="64"
+              :label="t('views.navigationGroup')"
+              :hint="t('views.navigationGroupHint')"
+            />
             <q-toggle v-model="form.show_navigation" :label="t('views.showNavigation')" />
             <p class="swc-hint">{{ t('views.showNavigationHint') }}</p>
             <q-toggle v-model="form.html_cache" :label="t('views.htmlCache')" />

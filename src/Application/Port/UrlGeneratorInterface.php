@@ -10,7 +10,7 @@ interface UrlGeneratorInterface
 
     public function attachmentPreview(int $attachmentId): string;
 
-    public function eventDetail(int $viewId, int $occurrenceId): string;
+    public function eventDetail(int $viewId, int|string $occurrenceId): string;
 
     public function month(int $viewId, string $month): string;
 

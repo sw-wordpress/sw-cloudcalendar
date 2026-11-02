@@ -24,6 +24,7 @@ enum AuthMode: string
             Provider::Google => [self::OAuth, self::ApiKey],
             Provider::Microsoft => [self::OAuth],
             Provider::Ics => [self::None, self::HttpHeader],
+            Provider::Local => [self::None],
         };
     }
 }

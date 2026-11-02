@@ -356,3 +356,44 @@ describe('frontend.js navigation and details', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });
+
+it('synchronizes only explicitly grouped month views and resets pagination', async () => {
+  document.body.innerHTML = `
+    <div class="swc-calendar" data-swc-view="1" data-swc-mode="month" data-swc-group="mgwh" data-swc-state='{}'><a href="/?swc_month=2026-11" data-swc-month="2026-11">Next</a></div>
+    <div class="swc-calendar" data-swc-view="2" data-swc-mode="list" data-swc-group="mgwh" data-swc-state='{"page":4,"source":[7]}'></div>
+    <div class="swc-calendar" data-swc-view="3" data-swc-mode="list" data-swc-group="other"></div>`;
+  routeFetch({
+    'admin-ajax.php': { body: { nonce: '' } },
+    '/render': { body: { html: '<div class="swc-calendar"></div>', css: {} } },
+  });
+  await loadScript(CONFIG);
+  click(document.querySelector('a')!);
+  await flush();
+  await flush();
+  expect(
+    calls().some(
+      (u) =>
+        u.includes('views/2/render') &&
+        u.includes('month=2026-11') &&
+        u.includes('page=1') &&
+        u.includes('view=list'),
+    ),
+  ).toBe(true);
+  expect(calls().some((u) => u.includes('views/1/render'))).toBe(true);
+  expect(calls().some((u) => u.includes('views/3/render'))).toBe(false);
+});
+
+it('loads opaque external event references in dynamic detail placeholders', async () => {
+  document.body.innerHTML =
+    '<div class="swc-calendar swc-dynamic" data-swc-view="1" data-swc-event="local.2.NDI"></div>';
+  routeFetch({
+    'admin-ajax.php': { body: { nonce: '' } },
+    'events/local.2.NDI': { body: { html: '<div>External detail</div>', css: {} } },
+  });
+  await loadScript(CONFIG);
+  document.dispatchEvent(new Event('DOMContentLoaded'));
+  await flush();
+  await flush();
+  expect(calls().some((u) => u.includes('events/local.2.NDI'))).toBe(true);
+  expect(document.body.textContent).toContain('External detail');
+});

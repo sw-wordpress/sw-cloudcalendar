@@ -102,6 +102,11 @@ AI agents must follow the project rules before changing code:
 - Decisions and open points: [docs/decisions.md](docs/decisions.md), further docs in [docs/](docs/)
 - README structure: [README-STANDARD.md](https://github.com/sw-wordpress/sw-securelogin/blob/master/docs/README-STANDARD.md)
 
+## Local plugin sources
+
+Other WordPress plugins can provide calendars directly without copying events. Registration API, schema, permissions
+and examples: [Local sources](docs/local-sources.md). ChurchTools Suite supplies its adapter externally.
+
 ## Development
 
 Requirements: PHP 8.2+, Composer, Node.js 22.22.2+ (Node 22 line) with npm, Make, MariaDB (test database), GNU gettext (translations)

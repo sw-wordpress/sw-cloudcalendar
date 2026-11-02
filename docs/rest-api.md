@@ -152,3 +152,17 @@ shape as `/validate`) when body or CSS are invalid; other field errors (e.g. `na
 | GET | `/admin/meta` | `{ roles, auth_modes, supported_mime_types, default_mime_types, event_types, max_window_days, redirect_uri, storage_safe, site_timezone, timezones, date_format, time_format, encryption_fallback }` |
 
 Sync run: `{ id, source_id, started_at, finished_at, status: running|success|failed, mode: full|delta, created, updated, deleted, attachments, error_code, message, metrics }`.
+
+## Local plugin sources (v1)
+
+`GET /admin/meta` also returns `local_sources: [{id, name}]`. Connections accept `provider: "local"`, `auth_mode: "none"`,
+`settings: {adapter: "<registered-id>"}`. Sources report `local: true` and force event/file synchronization off.
+Public source creation requires explicit publication confirmation. Local sources do not support the sync action.
+
+Event IDs may be numeric (existing API) or an opaque `local.<source-id>.<base64url-id>` reference. Detail routes and
+`swc_event` links accept both. Event collections additionally expose an optional `image: {url, alt}` for public local
+preview images. Local view responses use `no-store`; all view/source/adapter restrictions apply before reads.
+
+New filters: `color_titles`, `legend` (boolean), `columns` (1–4), `day_limit` (1–20), `navigation_group`
+(`[A-Za-z0-9_-]`, 1–64 chars). `month` also restricts list/card queries to that month.
+See [local-sources.md](local-sources.md) for the adapter contract.

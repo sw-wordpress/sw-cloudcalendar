@@ -76,3 +76,18 @@
 .swc-dialog__close { position: absolute; top: .5rem; right: .5rem; width: 2.25rem; height: 2.25rem; border: 0; border-radius: 50%; background: rgba(0, 0, 0, .06); font-size: 1.4rem; line-height: 1; cursor: pointer; }
 @media (prefers-reduced-motion: no-preference) { .swc-dialog[open] { animation: swc-fade .15s ease-out; } }
 @keyframes swc-fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* Shared presentation options also apply to externally supplied calendars. */
+.swc-calendar .swc-events__item { min-width: 0; }
+.swc-calendar.swc-color-titles .swc-events__item h3 a[data-swc-detail] { color: var(--swc-event-color); }
+.swc-calendar .swc-legend { display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; list-style: none; padding: 0; }
+.swc-calendar .swc-legend li { display: flex; align-items: center; gap: .4rem; }
+.swc-calendar .swc-legend__color { width: .8rem; height: .8rem; border-radius: 50%; display: inline-block; }
+.swc-calendar .swc-month__event .swc-chip { background: var(--swc-event-color); color: var(--swc-event-text); }
+.swc-calendar .swc-month__more { list-style: none; }
+.swc-calendar .swc-month__more summary { cursor: pointer; }
+@media (min-width: 48rem) {
+ .swc-calendar.swc-columns-2 .swc-events { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1.5rem; }
+ .swc-calendar.swc-columns-3 .swc-events { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 1.5rem; }
+ .swc-calendar.swc-columns-4 .swc-events { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 1.5rem; }
+}

@@ -104,6 +104,7 @@ const en: typeof de = {
     unknown_preset: 'Unknown preset',
   },
   providers: {
+    local: 'Local plugin',
     google: 'Google Calendar',
     microsoft: 'Microsoft 365',
     ics: 'ICS / iCalendar',
@@ -185,6 +186,9 @@ const en: typeof de = {
     noErrors: 'No errors logged.',
   },
   connections: {
+    localTitle: 'Source plugin',
+    localHint:
+      'Read calendars directly from an active plugin without storing another copy of its events.',
     subtitle:
       'Access to Google, Microsoft 365 and ICS feeds. Secrets are stored encrypted and never displayed.',
     add: 'Add connection',
@@ -357,6 +361,7 @@ const en: typeof de = {
     },
   },
   sources: {
+    localLive: 'Live from source plugin',
     subtitle: 'Calendars that are synchronised and displayed on the website.',
     add: 'Create source',
     createTitle: 'New source',
@@ -488,6 +493,15 @@ const en: typeof de = {
     confirmFilesCheck: 'I confirm that these private files may be published.',
   },
   views: {
+    colorTitles: 'Use calendar colour for titles',
+    legend: 'Show calendar legend',
+    columns: 'Columns (1–4)',
+    dayLimit: 'Visible events per day (1–20)',
+    month: 'Displayed month (optional)',
+    navigationGroup: 'Shared month navigation',
+    navigationGroupHint:
+      'Use the same group name to link list and month views. Leave empty for independent navigation.',
+
     subtitle:
       'Combinations of sources, display mode and templates – embedded via shortcode or block.',
     add: 'Create view',

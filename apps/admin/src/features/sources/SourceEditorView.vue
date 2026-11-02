@@ -379,6 +379,7 @@ const fileConfirmation = computed(
     >
       <template v-if="source">
         <q-btn
+          v-if="!source.local"
           flat
           no-caps
           icon="r_sync"
@@ -387,6 +388,7 @@ const fileConfirmation = computed(
           @click="sync(false)"
         />
         <q-btn
+          v-if="!source.local"
           flat
           no-caps
           icon="r_restart_alt"
@@ -726,7 +728,11 @@ const fileConfirmation = computed(
           </SwcCard>
 
           <!-- sync -->
-          <SwcCard :title="t('sources.sectionSync')" icon="r_sync">
+          <SwcCard
+            v-if="connection?.provider !== 'local'"
+            :title="t('sources.sectionSync')"
+            icon="r_sync"
+          >
             <q-toggle v-model="settings.sync_enabled" :label="t('sources.syncEnabled')" />
             <div class="swc-form-grid">
               <q-input

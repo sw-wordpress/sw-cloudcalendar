@@ -155,14 +155,18 @@ async function doDelete(): Promise<void> {
                 </td>
                 <td :data-label="t('sources.lastSync')">
                   <span :title="fmt.dateTime(s.last_success_at)">{{
-                    s.last_success_at ? fmt.relative(s.last_success_at) : t('common.never')
+                    s.local
+                      ? t('sources.localLive')
+                      : s.last_success_at
+                        ? fmt.relative(s.last_success_at)
+                        : t('common.never')
                   }}</span>
                 </td>
                 <td :data-label="t('sources.nextRun')">
                   {{ s.next_attempt_at ? fmt.relative(s.next_attempt_at) : '–' }}
                 </td>
                 <td :data-label="t('sources.events')" class="swc-num">
-                  {{ fmt.number(s.occurrence_count) }}
+                  {{ s.local ? t('sources.localLive') : fmt.number(s.occurrence_count) }}
                 </td>
                 <td :data-label="t('sources.files')" class="swc-num">
                   <template v-if="s.settings.attachments.sync_attachments">
@@ -174,6 +178,7 @@ async function doDelete(): Promise<void> {
                 </td>
                 <td data-label="" class="swc-src-actions">
                   <q-btn
+                    v-if="!s.local"
                     flat
                     round
                     dense
