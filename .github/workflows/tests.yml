@@ -48,6 +48,35 @@ jobs:
         retention-days: 14
     - name: Strict PHP line coverage gate (> 80 %)
       run: php tests/coverage/check.php coverage/clover.xml
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+        cache: npm
+        cache-dependency-path: |
+          apps/admin/package-lock.json
+          tests/E2E/package-lock.json
+    - name: Build admin assets for browser tests
+      run: npm ci --prefix apps/admin && npm run build --prefix apps/admin
+    - name: Install browser test dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y mariadb-client
+        npm ci --prefix tests/E2E
+        cd tests/E2E && npx playwright-core install --with-deps chromium
+    - name: Browser E2E
+      run: tests/E2E/run.sh "$RUNNER_TEMP/swc-e2e"
+    - name: Upload browser test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: browser-e2e
+        path: |
+          ${{ runner.temp }}/swc-e2e/result.txt
+          ${{ runner.temp }}/swc-e2e/server.log
+          ${{ runner.temp }}/swc-e2e/shots
+          ${{ runner.temp }}/swc-e2e/wp/debug.log
+        if-no-files-found: ignore
+        retention-days: 14
     services:
       mariadb:
         image: mariadb:11.4

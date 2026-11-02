@@ -94,3 +94,4 @@ await p.screenshot({ path: `${out}/admin-template-editor.png`, fullPage: true })
 await c.close();
 await browser.close();
 console.log(results.join('\n'));
+process.exitCode = results.some((result) => result.startsWith('FAIL ')) ? 1 : 0;

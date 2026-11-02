@@ -2,6 +2,7 @@
 /vendor-prefixed/
 /node_modules/
 /apps/admin/node_modules/
+/tests/E2E/node_modules/
 /assets/admin/
 /build/
 /dist/

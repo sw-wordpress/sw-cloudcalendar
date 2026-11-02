@@ -27,6 +27,17 @@ final class InfrastructureServicesTest extends SWC_TestCase {
 		parent::tear_down();
 	}
 
+	public function test_services_share_instances_and_accept_compatible_replacements(): void {
+		$cache = $this->services->cache();
+		$this->assertSame( $cache, $this->services->cache() );
+
+		$replacement = new TransientCache();
+		$this->services->set( 'cache', $replacement );
+		$this->assertSame( $replacement, $this->services->cache() );
+		$this->assertSame( $this->http, $this->services->http() );
+		$this->assertSame( $this->clock, $this->services->clock() );
+	}
+
 	public function test_every_error_code_has_a_message_and_fetch_failures_keep_the_detail(): void {
 		foreach ( ErrorCode::cases() as $code ) {
 			$this->assertNotSame( '', ErrorMessages::for( $code ), $code->value );

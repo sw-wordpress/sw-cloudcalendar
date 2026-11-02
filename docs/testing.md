@@ -8,7 +8,11 @@
 
 | Browser-E2E | `tests/E2E` | Wegwerf-WordPress (private MariaDB, PHP-Builtin-Server), Daten über den echten Sync-Service mit Fixture-Feed; Playwright/Chromium: Liste, Detail-Dialog, Monatsraster und REST-Navigation, Mobil-Agenda, geschützte View (kein Markup im Seitenquelltext für Gäste, nachgeladen nur mit Rolle), Editor ohne Admin-Zugriff (403), alle Admin-SPA-Seiten ohne Konsolenfehler, View- und Template-Editor mit Sandbox-Vorschau; Screenshots in `<workdir>/shots` |
 
-Aufruf: `CHROME=<chromium> PW_DIR=<node_modules mit playwright-core> tests/E2E/run.sh [workdir]` (nach `bin/test-db.sh start`).
+Aufruf: `npm ci --prefix tests/E2E`, dann in `tests/E2E` `npx playwright-core install --with-deps chromium`.
+Nach `bin/test-db.sh start` und dem Admin-Build: `tests/E2E/run.sh [workdir]`.
+`CHROME` und `PW_DIR` können Browser bzw. Node-Abhängigkeiten überschreiben; die Datenbank nutzt dieselben
+`SWC_TEST_DB_*`-Variablen wie die WordPress-Suite. CI führt die Browser-Suite im PHP-Job aus und archiviert
+Screenshots, Ergebnis und Server-/WordPress-Logs für 14 Tage.
 
 ## E2E-Szenarien (SPEC §18.3)
 
