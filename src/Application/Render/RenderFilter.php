@@ -70,7 +70,7 @@ final class RenderFilter
             $this->showImages ?? $defaults->showImages,
             $this->showAttachments ?? $defaults->showAttachments,
             $this->month ?? $defaults->month,
-            $this->page,
+            ($this->month ?? $defaults->month) !== null ? max(1, $this->page) : $this->page,
             $this->perPage ?? $defaults->perPage,
             $this->navigation ?? $defaults->navigation,
             $this->colorTitles ?? $defaults->colorTitles,

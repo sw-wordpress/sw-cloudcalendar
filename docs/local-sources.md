@@ -23,7 +23,8 @@ Beispiel entsprechend einer Seite mit Veranstaltungsliste und Monatsraster (12/1
 
 Für die bebilderte Liste das Preset **timeline-list** für das Event-Template verwenden. Bei mehreren Spalten bleibt
 auf kleinen Bildschirmen eine Spalte. `month` begrenzt Listen auf den Kalendermonat; im Raster werden zusätzlich die
-angrenzenden Tage der vollständigen Wochen berücksichtigt. `navigation_group` verbindet nur ausdrücklich gleich
+angrenzenden Tage der vollständigen Wochen berücksichtigt. Listen/Karten behalten zusätzlich die Seitennavigation
+innerhalb des gewählten Monats; diese Seitenlinks erhalten die Monatsauswahl auch ohne JavaScript. `navigation_group` verbindet nur ausdrücklich gleich
 benannte Ansichten; ohne Gruppe navigieren sie unabhängig. Die gemeinsame Navigation benötigt JavaScript.
 Alte Links mit `cts_month=11&cts_year=2026` werden als Monatsauswahl verstanden; neue Links verwenden `swc_month`.
 Der Monatskalender zeigt zunächst `day_limit` Termine je Tag; weitere Termine sind über ein natives, per Tastatur und

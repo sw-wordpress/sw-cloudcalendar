@@ -167,9 +167,12 @@ final class ViewRenderer
             $navigation = $showNavigation ? $grid->navigation($view->id, $range->month ?? $now, $tz) : new TrustedHtml('');
         } else {
             $eventsHtml = $this->listHtml($rendered, $mode);
-            $navigation = $showNavigation && $range->month !== null ? $grid->navigation($view->id, $range->month, $tz) : ($showNavigation
-                ? $grid->listNavigation($view->id, $filter->page, $found['hasPrevious'], $found['hasNext'])
-                : new TrustedHtml(''));
+            $navigation = $showNavigation
+                ? $grid->listNavigation($view->id, $filter->page, $found['hasPrevious'], $found['hasNext'], $filter->month)
+                : new TrustedHtml('');
+            if ($showNavigation && $range->month !== null) {
+                $navigation = new TrustedHtml($grid->navigation($view->id, $range->month, $tz) . $navigation);
+            }
         }
         $html = $this->renderer->render($container->compiled, $calendar + [
             'calendar.events' => $eventsHtml,
@@ -365,7 +368,7 @@ final class ViewRenderer
         );
         if ($page >= 1) {
             $found = $query($range, $descending, $limit, ($page - 1) * $limit, false);
-            $hasPrevious = $page > 1 || $query($before, true, 1, 0, true)['total'] > 0;
+            $hasPrevious = $page > 1 || ($filter->month === null && $query($before, true, 1, 0, true)['total'] > 0);
             return ['items' => $found['items'], 'total' => $found['total'], 'hasPrevious' => $hasPrevious, 'hasNext' => $found['total'] > $page * $limit];
         }
         $back = abs($page);

@@ -101,4 +101,75 @@ final class NavigationTest extends SWC_TestCase {
 		$ok = $this->rest( 'PUT', '/admin/sources/' . $this->source, array(), array( 'settings' => array( 'sync_interval_hours' => 24 ) ) );
 		$this->assertSame( 24, $ok->get_data()['settings']['sync_interval_hours'] );
 	}
+	public function test_month_filtered_lists_and_cards_keep_all_pages_and_month_in_links(): void {
+		$events = array();
+		$start = new DateTimeImmutable( '2026-11-05T10:00:00Z' );
+		for ( $i = 0; $i < 60; ++$i ) {
+			$time = $start->modify( '+' . $i . ' minutes' );
+			$events[] = new \SW\Calendar\Domain\Event\Occurrence(
+				$this->source, 'monthly-' . $i, 'monthly-' . $i, null, null,
+				'Monthly event ' . $i, '', '', '', '', $time, $time->modify( '+1 minute' ),
+				'UTC', false, \SW\Calendar\Domain\Event\OccurrenceStatus::Confirmed
+			);
+		}
+		foreach ( array( '2026-10-05', '2026-12-05' ) as $date ) {
+			$time = new DateTimeImmutable( $date . 'T10:00:00Z' );
+			$events[] = new \SW\Calendar\Domain\Event\Occurrence(
+				$this->source, $date, $date, null, null,
+				'Outside selected month', '', '', '', '', $time, $time->modify( '+1 hour' ),
+				'UTC', false, \SW\Calendar\Domain\Event\OccurrenceStatus::Confirmed
+			);
+		}
+		$this->services->occurrences()->replaceSnapshot( $this->source, $events, 2 );
+		foreach ( array( 'list', 'cards' ) as $mode ) {
+			$view = $this->view( array( $this->source ), $mode );
+			$first = $this->services->renderer()->render( $view, array( 'month' => '2026-11' ), null );
+			$this->assertSame( 60, $first->total );
+			$this->assertCount( 50, $this->ids( $first->html ) );
+			$this->assertStringContainsString( 'data-swc-month="2026-12"', $first->html );
+			$this->assertStringContainsString( 'data-swc-page="2"', $first->html );
+			$this->assertStringNotContainsString( 'data-swc-page="-1"', $first->html );
+			$this->assertStringNotContainsString( 'Outside selected month', $first->html );
+
+			$document = new DOMDocument();
+			$document->loadHTML( $first->html, LIBXML_NOERROR | LIBXML_NOWARNING );
+			$link = ( new DOMXPath( $document ) )->query( '//a[@data-swc-page="2"]' )->item( 0 );
+			$this->assertInstanceOf( DOMElement::class, $link );
+			parse_str( (string) wp_parse_url( $link->getAttribute( 'href' ), PHP_URL_QUERY ), $query );
+			$this->assertSame( '2026-11', $query['swc_month'] );
+			$this->assertSame( '2', $query['swc_page'] );
+			$_GET = $query;
+			try {
+				$second = do_shortcode( '[sw_calendar id="' . $view . '"]' );
+			} finally {
+				$_GET = array();
+			}
+			$this->assertCount( 10, $this->ids( $second ) );
+			$this->assertSame( array(), array_intersect( $this->ids( $first->html ), $this->ids( $second ) ) );
+			$this->assertStringContainsString( 'data-swc-page="1"', $second );
+			$this->assertStringNotContainsString( 'data-swc-page="3"', $second );
+			$this->assertStringNotContainsString( 'Outside selected month', $second );
+			$this->assertStringNotContainsString( 'swc-nav', $this->services->renderer()->render( $view, array( 'month' => '2026-11', 'navigation' => false ), null )->html );
+
+			$page_data = $this->rest( 'GET', '/views/' . $view . '/events', array( 'month' => '2026-11', 'page' => 2, 'per_page' => 50 ) )->get_data();
+			$this->assertCount( 10, $page_data['events'] );
+			$this->assertSame( 60, $page_data['pagination']['total'] );
+			$this->assertTrue( $page_data['pagination']['has_previous'] );
+			$this->assertFalse( $page_data['pagination']['has_next'] );
+		}
+	}
+
+	public function test_month_switch_clears_the_previous_page_and_month_pages_never_leave_the_range(): void {
+		$urls = new \SW\Calendar\Infrastructure\WordPress\WpUrlGenerator();
+		$urls->set_base_url( 'https://example.org/termine/?swc_page=2&swc_month=2026-11' );
+		parse_str( (string) wp_parse_url( $urls->month( 12, '2026-12' ), PHP_URL_QUERY ), $query );
+		$this->assertSame( '2026-12', $query['swc_month'] );
+		$this->assertArrayNotHasKey( 'swc_page', $query );
+		$view = $this->view( array( $this->source ) );
+		$backwards = $this->services->renderer()->render( $view, array( 'month' => '2026-11', 'page' => -1 ), null );
+		$first = $this->services->renderer()->render( $view, array( 'month' => '2026-11', 'page' => 1 ), null );
+		$this->assertSame( $this->ids( $first->html ), $this->ids( $backwards->html ) );
+		$this->assertStringNotContainsString( 'data-swc-page="-1"', $backwards->html );
+	}
+
 }

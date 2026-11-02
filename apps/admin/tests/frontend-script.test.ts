@@ -397,3 +397,20 @@ it('loads opaque external event references in dynamic detail placeholders', asyn
   expect(calls().some((u) => u.includes('events/local.2.NDI'))).toBe(true);
   expect(document.body.textContent).toContain('External detail');
 });
+
+it('keeps the selected month when paging a month-filtered list', async () => {
+  document.body.innerHTML = `<div class="swc-calendar" data-swc-view="4" data-swc-mode="list" data-swc-state='{"limit":50,"month":"2026-11","page":1}'><a id="more" href="?swc_month=2026-11&swc_page=2" data-swc-page="2">more</a></div>`;
+  routeFetch({
+    sw_calendar_rest_nonce: { body: {} },
+    'views/4/render': {
+      body: { html: '<section class="swc-calendar" id="month-page-two"></section>' },
+    },
+  });
+  await loadScript(CONFIG);
+  click(document.getElementById('more')!);
+  await flush();
+  const url = new URL(calls()[1]!);
+  expect(url.searchParams.get('page')).toBe('2');
+  expect(url.searchParams.get('month')).toBe('2026-11');
+  expect(document.getElementById('month-page-two')).not.toBeNull();
+});
