@@ -255,6 +255,12 @@ export interface ViewDefaultFilters {
   per_page?: number | string;
 }
 
+/**
+ * Template overrides per display mode (only modes with an override are listed). REST serialises an empty map as
+ * `{}`; a map that never held an entry can arrive as `[]`, so reading it goes through `viewModeTemplates()`.
+ */
+export type ViewModeTemplates = Partial<Record<DisplayMode, number>>;
+
 export interface ViewInput {
   name: string;
   enabled: boolean;
@@ -266,6 +272,9 @@ export interface ViewInput {
   event_template_id: number | null;
   detail_template_id: number | null;
   allowed_template_ids: number[];
+  /** display mode -> template overriding the view-wide one (empty object, or `[]`, when nothing is set) */
+  container_template_ids_by_mode: ViewModeTemplates;
+  event_template_ids_by_mode: ViewModeTemplates;
   timezone: string;
   language: string;
   /** source id -> #rrggbb (serialised as an object; an empty one may arrive as `[]` or `{}`) */

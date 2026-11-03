@@ -111,8 +111,10 @@ final class ViewRenderer
 
         $mode = $filter->mode !== null && $view->allowsMode($filter->mode) ? $filter->mode : $view->displayMode;
         $preset = PresetLibrary::defaultFor($mode);
-        $container = $this->templates->resolve($view->containerTemplateId, TemplateKind::Container, $preset);
-        $eventTemplateId = $filter->templateId !== null && $view->allowsTemplate($filter->templateId) ? $filter->templateId : $view->eventTemplateId;
+        // Templates may be chosen per display mode: a card design never lands in the month grid, and switching the
+        // mode re-resolves both templates instead of keeping one fixed pair.
+        $container = $this->templates->resolve($view->containerTemplateFor($mode), TemplateKind::Container, $preset);
+        $eventTemplateId = $filter->templateId !== null && $view->allowsTemplate($filter->templateId) ? $filter->templateId : $view->eventTemplateFor($mode);
         $event = $this->templates->resolve($eventTemplateId, TemplateKind::Event, $preset);
         $tz = $this->timeZone($view);
         $now = $this->clock->now();

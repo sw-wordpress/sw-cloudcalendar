@@ -555,6 +555,7 @@ const en: typeof de = {
         mode: 'Help with the default display mode',
         allowedModes: 'Help with allowed display modes',
         templates: 'Help with alternative event templates',
+        modeTemplates: 'Help with templates per display mode',
       },
       tips: {
         overview:
@@ -564,6 +565,8 @@ const en: typeof de = {
           'Allows different display modes through a shortcode or block. Enable “Display tabs on the website” to let visitors switch modes. Click for details.',
         templates:
           'Approved alternatives for individual events. Changes neither the default display mode nor the default template. Click for details.',
+        modeTemplates:
+          'One display mode can inherit the view templates or use its own. Click for details.',
       },
       modes: {
         list: 'A continuous event list, optionally with multiple columns.',
@@ -579,7 +582,9 @@ const en: typeof de = {
         detail: 'The full display shown when an event is opened.',
       },
       fixedTemplates:
-        'An explicitly selected template remains selected when switching between list, cards and month. Only “Preset (default)” automatically selects the matching default template. Changing the display mode alone therefore does not redesign a custom event template.',
+        'A template chosen for the whole view stays the same when switching between list, cards and month; only “Preset (default)” picks the matching default template automatically. A view that should look identical in every display mode therefore needs no further settings.',
+      modeTemplates:
+        'Without their own choice, a display mode uses the template selected above. A mode specific choice applies to that mode only: cards can have their own container and event templates while list and month keep the shared one. This is the order of precedence: approved template from the embed, mode specific template, view template, preset of the mode.',
       allowedModes:
         'Controls which display modes an embed may request instead of the default, for example with view="cards". The default display mode is always allowed.',
       allowedTemplates:
@@ -618,6 +623,13 @@ const en: typeof de = {
     containerTemplate: 'Container template',
     eventTemplate: 'Event template',
     detailTemplate: 'Detail template',
+    templatesGeneralHint:
+      'These templates apply to every display mode – unless a mode selects its own below.',
+    modeTemplates: 'Templates per display mode',
+    modeTemplatesHint:
+      'Only the selected mode differs from the template above, for example cards with their own event template. “View default” inherits the choice above (or the preset of the mode if nothing is selected there).',
+    modeTemplateInherit: 'View default',
+    modeTemplateLabel: '{kind} for {mode}',
     allowedTemplates: 'Alternative event templates',
     allowedTemplatesHint:
       'Additional event templates for the shortcode “template” parameter. Without it, the template selected above applies.',

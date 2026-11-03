@@ -15,6 +15,8 @@ final class CalendarView
      * @param array<string, mixed>   $defaultFilters Raw filter defaults, normalized by the filter schema.
      * @param list<DisplayMode>      $allowedModes
      * @param list<int>              $allowedTemplateIds Event templates selectable through `template`.
+     * @param array<string, int>     $containerTemplateIdsByMode Display mode => container template overriding the view-wide choice.
+     * @param array<string, int>     $eventTemplateIdsByMode Display mode => event template overriding the view-wide choice.
      * @param array<int, string>     $colorRules Source id => #rrggbb override.
      */
     public function __construct(
@@ -38,6 +40,10 @@ final class CalendarView
         public readonly string $timeFormat = '',
         /** Previous/next navigation (months in the grid, earlier/further events in lists). */
         public readonly bool $showNavigation = true,
+        /** Container template per display mode (`DisplayMode::value` => template id), overriding `$containerTemplateId`. */
+        public readonly array $containerTemplateIdsByMode = [],
+        /** Event template per display mode (`DisplayMode::value` => template id), overriding `$eventTemplateId`. */
+        public readonly array $eventTemplateIdsByMode = [],
     ) {
     }
 
@@ -49,6 +55,21 @@ final class CalendarView
     public function allowsTemplate(int $templateId): bool
     {
         return $templateId === $this->eventTemplateId || in_array($templateId, $this->allowedTemplateIds, true);
+    }
+
+    /**
+     * Container template of one display mode: a mode specific choice wins over the view wide one, so a design meant
+     * for cards does not change the month grid. Null ("standard") keeps the preset of the mode.
+     */
+    public function containerTemplateFor(DisplayMode $mode): ?int
+    {
+        return $this->containerTemplateIdsByMode[$mode->value] ?? $this->containerTemplateId;
+    }
+
+    /** Event template of one display mode, same precedence as {@see self::containerTemplateFor()}. */
+    public function eventTemplateFor(DisplayMode $mode): ?int
+    {
+        return $this->eventTemplateIdsByMode[$mode->value] ?? $this->eventTemplateId;
     }
 
     public function timeZone(): \DateTimeZone

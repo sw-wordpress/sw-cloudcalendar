@@ -38,3 +38,9 @@
 - Vorhandene `TODO.md` und vergleichbare Fortschrittsdateien bei Bedarf aktualisieren.
 - Nach jeder Implementierung kurz zusammenfassen: Änderungen, automatisierte Prüfergebnisse und konkrete manuelle Testschritte mit erwartetem Ergebnis.
 - Keine erfolgreichen Prüfungen, vollständige Implementierungen oder Commits behaupten, die nicht tatsächlich erfolgt sind.
+
+## Statische Ressourcen und Cache-Busting
+- Eingebundene CSS- und JavaScript-Dateien immer mit der aktuellen Plugin-Version als Versionsparameter versehen, um veraltete Browser-Caches nach Updates zu vermeiden.
+- In WordPress bevorzugt wp_enqueue_script() und wp_enqueue_style() mit der zentral definierten Plugin-Version verwenden.
+- Keine fest codierten Versionsnummern, Zeitstempel oder zufälligen Cache-Busting-Parameter nutzen.
+- Auch dynamisch eingebundene Assets und weitere statische Ressourcen berücksichtigen.

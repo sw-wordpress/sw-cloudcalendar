@@ -5,7 +5,7 @@ import { uid } from '@/utils/ids';
 
 withDefaults(
   defineProps<{
-    topic?: 'mode' | 'allowedModes' | 'templates' | 'overview';
+    topic?: 'mode' | 'allowedModes' | 'templates' | 'modeTemplates' | 'overview';
     viewId?: number | null;
   }>(),
   {
@@ -65,6 +65,8 @@ const titleId = uid('swc-display-help');
           </template>
         </dl>
         <p class="swc-callout is-info">{{ t('views.displayHelp.fixedTemplates') }}</p>
+        <h3>{{ t('views.modeTemplates') }}</h3>
+        <p>{{ t('views.displayHelp.modeTemplates') }}</p>
         <h3>{{ t('views.allowedModes') }}</h3>
         <p>{{ t('views.displayHelp.allowedModes') }}</p>
         <h3>{{ t('views.allowedTemplates') }}</h3>

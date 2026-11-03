@@ -570,6 +570,7 @@ const de = {
         mode: 'Hilfe zur Standarddarstellung',
         allowedModes: 'Hilfe zu erlaubten Darstellungen',
         templates: 'Hilfe zu alternativen Termin-Templates',
+        modeTemplates: 'Hilfe zu Templates je Darstellung',
       },
       tips: {
         overview:
@@ -579,6 +580,8 @@ const de = {
           'Erlaubt abweichende Darstellungen per Shortcode oder Block. Sichtbare Tabs lassen sich mit „Darstellungs-Tabs auf der Website“ einschalten. Klicken für Details.',
         templates:
           'Freigegebene Alternativen für einzelne Termine. Ändert weder die Standarddarstellung noch das Standard-Template. Klicken für Details.',
+        modeTemplates:
+          'Eine Darstellung kann das Template der Ansicht übernehmen oder selbst gestalten. Klicken für Details.',
       },
       modes: {
         list: 'Fortlaufende Terminliste, bei Bedarf mit mehreren Spalten.',
@@ -594,7 +597,9 @@ const de = {
         detail: 'Die ausführliche Anzeige, die sich beim Öffnen eines Termins zeigt.',
       },
       fixedTemplates:
-        'Ein fest gewähltes Template bleibt beim Wechsel zwischen Liste, Karten und Monat erhalten. Nur „Preset (Standard)“ wählt automatisch das passende Standard-Template. Ein Darstellungswechsel allein gestaltet daher ein eigenes Termin-Template nicht neu.',
+        'Ein für die ganze Ansicht gewähltes Template bleibt beim Wechsel zwischen Liste, Karten und Monat erhalten; nur „Preset (Standard)“ wählt automatisch das passende Standard-Template. Eine Ansicht, die in allen Darstellungen gleich aussehen soll, braucht deshalb keine weiteren Einstellungen.',
+      modeTemplates:
+        'Ohne eigene Wahl gilt das oben eingestellte Template für jede Darstellung. Mit einer eigenen Wahl gilt sie nur für diese Darstellung: Karten können ein eigenes Container- und Termin-Template haben, während Liste und Monat das gemeinsame Standard-Template behalten. Es gilt in dieser Reihenfolge: freigegebenes template aus der Einbettung, Template der Darstellung, Template der Ansicht, Preset der Darstellung.',
       allowedModes:
         'Legt fest, welche Darstellungen eine Einbettung abweichend vom Standard anfordern darf, z. B. mit view="cards". Die Standarddarstellung ist immer erlaubt.',
       allowedTemplates:
@@ -633,6 +638,13 @@ const de = {
     containerTemplate: 'Container-Template',
     eventTemplate: 'Termin-Template',
     detailTemplate: 'Detail-Template',
+    templatesGeneralHint:
+      'Diese Templates gelten für alle Darstellungen – es sei denn, eine Darstellung setzt unten etwas anderes.',
+    modeTemplates: 'Templates je Darstellung',
+    modeTemplatesHint:
+      'Nur die gewählte Darstellung weicht ab, z. B. Karten mit eigenem Termin-Template. „Standard der Ansicht“ übernimmt die obige Wahl (ist dort nichts gewählt, das Preset der Darstellung).',
+    modeTemplateInherit: 'Standard der Ansicht',
+    modeTemplateLabel: '{kind} für {mode}',
     allowedTemplates: 'Alternative Termin-Templates',
     allowedTemplatesHint:
       'Zusätzliche Termin-Templates für den Shortcode-Parameter „template“. Ohne Parameter gilt das oben gewählte Template.',

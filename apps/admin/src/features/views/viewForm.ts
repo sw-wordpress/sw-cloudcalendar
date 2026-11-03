@@ -1,4 +1,10 @@
-import type { CalendarView, DisplayMode, ViewDefaultFilters, ViewInput } from '@/types/api';
+import type {
+  CalendarView,
+  DisplayMode,
+  ViewDefaultFilters,
+  ViewInput,
+  ViewModeTemplates,
+} from '@/types/api';
 
 export type TriState = 'default' | 'yes' | 'no';
 
@@ -87,6 +93,64 @@ export function fromFilterForm(form: FilterForm): ViewDefaultFilters {
   return out;
 }
 
+/** Editable form of the mode specific template overrides (`null` = the template of the whole view applies). */
+export interface ModeTemplateForm {
+  container: Record<DisplayMode, number | null>;
+  event: Record<DisplayMode, number | null>;
+}
+
+/**
+ * Raw map from REST or the form into a sparse map of usable ids. REST may send `{}` or an empty `[]`, and modes
+ * without an override (or with `null`) inherit the template of the view and are therefore dropped.
+ */
+export function cleanModeTemplates(
+  raw: Partial<Record<DisplayMode, number | null>> | unknown[] | null | undefined,
+): ViewModeTemplates {
+  const out: ViewModeTemplates = {};
+  if (!raw || Array.isArray(raw)) return out;
+  for (const mode of DISPLAY_MODES) {
+    const id = raw[mode];
+    if (typeof id === 'number' && Number.isInteger(id) && id > 0) out[mode] = id;
+  }
+  return out;
+}
+
+/** Same contract as `cleanModeTemplates`, but one entry per display mode (`null` = inherit). */
+export function viewModeTemplates(
+  raw: Partial<Record<DisplayMode, number | null>> | unknown[] | null | undefined,
+): Record<DisplayMode, number | null> {
+  const out: Record<DisplayMode, number | null> = { list: null, cards: null, month: null };
+  if (!raw || Array.isArray(raw)) return out;
+  for (const mode of DISPLAY_MODES) {
+    const id = raw[mode];
+    if (typeof id === 'number' && Number.isInteger(id) && id > 0) out[mode] = id;
+  }
+  return out;
+}
+
+export function blankModeTemplateForm(): ModeTemplateForm {
+  return { container: viewModeTemplates(null), event: viewModeTemplates(null) };
+}
+
+export function toModeTemplateForm(
+  view: Partial<Pick<ViewInput, 'container_template_ids_by_mode' | 'event_template_ids_by_mode'>>,
+): ModeTemplateForm {
+  return {
+    container: viewModeTemplates(view.container_template_ids_by_mode),
+    event: viewModeTemplates(view.event_template_ids_by_mode),
+  };
+}
+
+/** Only real overrides are sent, so an unset mode inherits the view-wide template again. */
+export function fromModeTemplateForm(
+  form: ModeTemplateForm,
+): Pick<ViewInput, 'container_template_ids_by_mode' | 'event_template_ids_by_mode'> {
+  return {
+    container_template_ids_by_mode: cleanModeTemplates(form.container),
+    event_template_ids_by_mode: cleanModeTemplates(form.event),
+  };
+}
+
 export function blankView(): ViewInput {
   return {
     name: '',
@@ -99,6 +163,8 @@ export function blankView(): ViewInput {
     event_template_id: null,
     detail_template_id: null,
     allowed_template_ids: [],
+    container_template_ids_by_mode: {},
+    event_template_ids_by_mode: {},
     timezone: '',
     language: '',
     color_rules: {},
@@ -124,6 +190,8 @@ export function toViewInput(v: CalendarView): ViewInput {
     event_template_id: v.event_template_id,
     detail_template_id: v.detail_template_id,
     allowed_template_ids: [...v.allowed_template_ids],
+    container_template_ids_by_mode: cleanModeTemplates(v.container_template_ids_by_mode),
+    event_template_ids_by_mode: cleanModeTemplates(v.event_template_ids_by_mode),
     timezone: v.timezone ?? '',
     language: v.language ?? '',
     color_rules: { ...rules },

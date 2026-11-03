@@ -457,7 +457,9 @@ describe('screens render against the contract fixtures', () => {
   });
   it('views list and editor', async () => {
     expect(await render('/views')).toContain('[sw_calendar id="5"]');
-    expect(await render('/views/5')).toContain('Live-Vorschau');
+    const editor = await render('/views/5');
+    expect(editor).toContain('Live-Vorschau');
+    expect(editor).toContain('Templates je Darstellung');
   });
   it('templates list and editors', async () => {
     expect(await render('/templates')).toContain('Karte');
@@ -542,6 +544,26 @@ describe('admin actions against REST contracts', () => {
       });
     });
   });
+  it('saves a template choice for a single display only', async () => {
+    await render('/views/5', async (wrapper) => {
+      const select = (label: string) =>
+        wrapper.findAllComponents(QSelect).find((c) => c.props('label') === label);
+      // The fixture releases list and month; both get a row, cards (not allowed) does not.
+      expect(select('Termin-Template für Monat')).toBeDefined();
+      expect(select('Container-Template für Liste')).toBeDefined();
+      expect(select('Termin-Template für Karten')).toBeUndefined();
+      select('Termin-Template für Monat')!.vm.$emit('update:modelValue', 7);
+      await settle();
+      wrapper.getComponent(QForm).vm.$emit('submit');
+      await settle();
+      expect(written('admin/views/5', 'PUT')).toMatchObject({
+        event_template_id: 7,
+        event_template_ids_by_mode: { month: 7 },
+        container_template_ids_by_mode: {},
+      });
+    });
+  });
+
   it('creates local calendars together and retries only unfinished drafts', async () => {
     const original = routes['admin/connections'];
     const originalCalendars = routes['admin/connections/1/calendars'];

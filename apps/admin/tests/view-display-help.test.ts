@@ -9,7 +9,7 @@ afterEach(() => {
 });
 
 describe('view display help', () => {
-  it.each(['overview', 'mode', 'allowedModes', 'templates'] as const)(
+  it.each(['overview', 'mode', 'allowedModes', 'templates', 'modeTemplates'] as const)(
     'opens accessible help from the %s button without changing the form',
     async (topic) => {
       const wrapper = mount(ViewDisplayHelp, {
@@ -35,7 +35,8 @@ describe('view display help', () => {
       const title = document.getElementById(dialog.getAttribute('aria-labelledby')!);
       expect(title?.textContent).toBe('So entsteht die Kalenderansicht');
       expect(dialog.textContent).toContain('Kalenderraster');
-      expect(dialog.textContent).toContain('Ein fest gewähltes Template bleibt');
+      expect(dialog.textContent).toContain('Ein für die ganze Ansicht gewähltes Template');
+      expect(dialog.textContent).toContain('Ohne eigene Wahl gilt das oben eingestellte Template');
       expect(dialog.textContent).toContain('Die Freigaben allein erzeugen keine sichtbare Auswahl');
       expect(dialog.querySelector('code')?.textContent).toBe(
         '[sw_calendar id="5" view="cards" template="7"]',

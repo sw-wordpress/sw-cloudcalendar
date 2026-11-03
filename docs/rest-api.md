@@ -113,7 +113,7 @@ required` (public source with `public_only=false`), `settings.attachments.sync_a
 
 | Method | Path | Body / result |
 |---|---|---|
-| GET/POST | `/admin/views` | View body: `{ name, enabled, source_ids, default_filters, display_mode, allowed_modes, container_template_id, event_template_id, detail_template_id, allowed_template_ids, timezone, language, color_rules, html_cache, date_format, time_format, show_navigation }` |
+| GET/POST | `/admin/views` | View body: `{ name, enabled, source_ids, default_filters, display_mode, allowed_modes, container_template_id, event_template_id, detail_template_id, allowed_template_ids, container_template_ids_by_mode, event_template_ids_by_mode, timezone, language, color_rules, html_cache, date_format, time_format, show_navigation }` – the two `*_by_mode` maps are keyed by display mode (`list`/`cards`/`month`) and hold template ids that replace the view-wide choice for that mode only; validation errors are reported as `event_template_ids_by_mode.cards`. See [templates.md](templates.md) for the precedence. |
 | GET/PUT/DELETE | `/admin/views/{id}` | result adds `id, revision, shortcode, dynamic` (dynamic = contains non-public sources → loaded via REST) |
 | POST | `/admin/views/preview` | `{ id?, view: <View body>, filters?: {…} }` → `{ html, css: {scope: css}, total }` – renders the unsaved (or disabled) form state with the ACL of the current admin; validation errors like PUT; never cached |
 

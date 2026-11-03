@@ -20,14 +20,17 @@ import { useLookupsStore } from '@/stores/lookups';
 import type { CalendarView, DisplayMode, RenderResult, TemplateKind, ViewInput } from '@/types/api';
 import {
   DISPLAY_MODES,
+  blankModeTemplateForm,
   blankView,
   cleanColorRules,
   fromFilterForm,
+  fromModeTemplateForm,
   toFilterForm,
+  toModeTemplateForm,
   toViewInput,
 } from './viewForm';
 import ViewDisplayHelp from './ViewDisplayHelp.vue';
-import type { FilterForm, TriState } from './viewForm';
+import type { FilterForm, ModeTemplateForm, TriState } from './viewForm';
 
 const props = defineProps<{ id?: string }>();
 const { t } = useI18n();
@@ -42,6 +45,7 @@ const isEdit = computed(() => viewId.value !== null);
 const stored = ref<CalendarView | null>(null);
 const form = ref<ViewInput>(blankView());
 const filters = ref<FilterForm>(toFilterForm({}));
+const modeTemplates = ref<ModeTemplateForm>(blankModeTemplateForm());
 const dirty = ref(false);
 
 const loader = useAsyncData(
@@ -66,13 +70,14 @@ async function load(): Promise<void> {
   stored.value = result.view;
   form.value = result.view ? toViewInput(result.view) : blankView();
   filters.value = toFilterForm(form.value.default_filters);
+  modeTemplates.value = result.view ? toModeTemplateForm(result.view) : blankModeTemplateForm();
   await nextTick();
   dirty.value = false;
   if (result.view) void renderPreview();
 }
 onMounted(load);
 watch(viewId, load);
-watch([form, filters], () => (dirty.value = true), { deep: true });
+watch([form, filters, modeTemplates], () => (dirty.value = true), { deep: true });
 
 /* ---------- options ---------- */
 const sourceOptions = computed(() =>
@@ -93,6 +98,27 @@ function templateOptions(kind: TemplateKind) {
       .filter((tpl) => tpl.kind === kind)
       .map((tpl) => ({ value: tpl.id as number | null, label: tpl.name })),
   ];
+}
+/** Choices of a mode override: „standard“ inherits the template of the whole view (or its preset). */
+function modeTemplateOptions(kind: TemplateKind) {
+  return [
+    { value: null as number | null, label: t('views.modeTemplateInherit') },
+    ...templates.value
+      .filter((tpl) => tpl.kind === kind)
+      .map((tpl) => ({ value: tpl.id as number | null, label: tpl.name })),
+  ];
+}
+/** Only displays a visitor may actually see: the standard one plus the released ones. */
+const templateModes = computed(() =>
+  DISPLAY_MODES.filter(
+    (m) => m === form.value.display_mode || form.value.allowed_modes.includes(m),
+  ),
+);
+function modeTemplateLabel(kind: TemplateKind, mode: DisplayMode): string {
+  return t('views.modeTemplateLabel', {
+    kind: t(`views.${kind}Template`),
+    mode: t(`views.modes.${mode}`),
+  });
 }
 const eventTemplateChoices = computed(() =>
   templates.value
@@ -142,6 +168,7 @@ function buildBody(): ViewInput {
   return {
     ...form.value,
     name: form.value.name.trim(),
+    ...fromModeTemplateForm(modeTemplates.value),
     allowed_modes: form.value.allowed_modes.includes(form.value.display_mode)
       ? form.value.allowed_modes
       : [...form.value.allowed_modes, form.value.display_mode],
@@ -167,6 +194,7 @@ async function save(): Promise<void> {
     stored.value = saved;
     form.value = toViewInput(saved);
     filters.value = toFilterForm(saved.default_filters);
+    modeTemplates.value = toModeTemplateForm(saved);
     await nextTick();
     dirty.value = false;
     void renderPreview();
@@ -415,6 +443,7 @@ watch(previewMode, () => void renderPreview());
                 :hint="t('views.showSearchHint')"
               />
             </div>
+            <p class="swc-hint">{{ t('views.templatesGeneralHint') }}</p>
             <div class="swc-form-grid">
               <q-select
                 v-model="form.container_template_id"
@@ -450,6 +479,40 @@ watch(previewMode, () => void renderPreview());
                 :error-message="fields.field('detail_template_id')"
               />
             </div>
+            <fieldset class="swc-ve__fs" data-swc-mode-templates>
+              <legend>
+                {{ t('views.modeTemplates') }}
+                <ViewDisplayHelp topic="modeTemplates" :view-id="viewId" />
+              </legend>
+              <p class="swc-hint">{{ t('views.modeTemplatesHint') }}</p>
+              <div v-for="m in templateModes" :key="m" class="swc-ve__mode" :data-swc-mode="m">
+                <span class="swc-ve__mode-name">{{ t(`views.modes.${m}`) }}</span>
+                <div class="swc-form-grid">
+                  <q-select
+                    v-model="modeTemplates.container[m]"
+                    outlined
+                    dense
+                    emit-value
+                    map-options
+                    :options="modeTemplateOptions('container')"
+                    :label="modeTemplateLabel('container', m)"
+                    :error="!!fields.field(`container_template_ids_by_mode.${m}`)"
+                    :error-message="fields.field(`container_template_ids_by_mode.${m}`)"
+                  />
+                  <q-select
+                    v-model="modeTemplates.event[m]"
+                    outlined
+                    dense
+                    emit-value
+                    map-options
+                    :options="modeTemplateOptions('event')"
+                    :label="modeTemplateLabel('event', m)"
+                    :error="!!fields.field(`event_template_ids_by_mode.${m}`)"
+                    :error-message="fields.field(`event_template_ids_by_mode.${m}`)"
+                  />
+                </div>
+              </div>
+            </fieldset>
             <q-select
               v-model="form.allowed_template_ids"
               outlined
@@ -821,6 +884,22 @@ watch(previewMode, () => void renderPreview());
   font-size: 13px;
   font-weight: 600;
   padding: 0 4px;
+}
+.swc-ve__mode {
+  display: grid;
+  grid-template-columns: minmax(90px, 0.2fr) minmax(0, 1fr);
+  gap: 4px 12px;
+  align-items: center;
+}
+.swc-ve__mode-name {
+  font-size: 13px;
+  font-weight: 600;
+}
+@media (max-width: 720px) {
+  .swc-ve__mode {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
 }
 .swc-ve__footer {
   display: flex;

@@ -81,7 +81,7 @@ final class ViewRepository implements ViewRepositoryInterface {
 	public function ids_using_template( int $template_id ): array {
 		$ids = array();
 		foreach ( $this->all() as $view ) {
-			if ( in_array( $template_id, array_merge( array( $view->containerTemplateId, $view->eventTemplateId, $view->detailTemplateId ), $view->allowedTemplateIds ), true ) ) {
+			if ( in_array( $template_id, array_merge( array( $view->containerTemplateId, $view->eventTemplateId, $view->detailTemplateId ), $view->allowedTemplateIds, array_values( $view->containerTemplateIdsByMode ), array_values( $view->eventTemplateIdsByMode ) ), true ) ) {
 				$ids[] = $view->id;
 			}
 		}
@@ -95,6 +95,18 @@ final class ViewRepository implements ViewRepositoryInterface {
 		$config  = Db::json( $row['config_json'] );
 		$int_ids = static fn ( mixed $list ): array => array_values( array_unique( array_filter( array_map( 'intval', is_array( $list ) ? $list : array() ), static fn ( int $id ): bool => $id > 0 ) ) );
 		$opt_id  = static fn ( mixed $value ): ?int => is_numeric( $value ) && (int) $value > 0 ? (int) $value : null;
+		/** Display mode => template id; unknown modes and empty ids fall back to the view-wide template. */
+		$by_mode = static function ( mixed $map ) use ( $opt_id ): array {
+			$templates = array();
+			foreach ( (array) $map as $mode => $template_id ) {
+				$parsed = DisplayMode::tryFrom( (string) $mode );
+				$id     = $opt_id( $template_id );
+				if ( null !== $parsed && null !== $id ) {
+					$templates[ $parsed->value ] = $id;
+				}
+			}
+			return $templates;
+		};
 		$modes   = array();
 		foreach ( (array) ( $config['allowed_modes'] ?? array() ) as $mode ) {
 			$parsed = DisplayMode::tryFrom( (string) $mode );
@@ -127,7 +139,9 @@ final class ViewRepository implements ViewRepositoryInterface {
 			(bool) ( $config['html_cache'] ?? true ),
 			(string) ( $config['date_format'] ?? '' ),
 			(string) ( $config['time_format'] ?? '' ),
-			(bool) ( $config['show_navigation'] ?? true )
+			(bool) ( $config['show_navigation'] ?? true ),
+			$by_mode( $config['container_template_ids_by_mode'] ?? array() ),
+			$by_mode( $config['event_template_ids_by_mode'] ?? array() )
 		);
 	}
 }
