@@ -9,10 +9,10 @@ SWC_PERF_REPORT=/tmp/swc-performance.json composer test:performance
 Die Suite installiert WordPress in der bestehenden **Wegwerf-Testdatenbank** neu; niemals auf eine
 Site-Datenbank umkonfigurieren oder parallel zu `composer test:wp` starten. Der Testdatensatz wird
 zurückgerollt. Ohne `SWC_PERF_REPORT` liegt das JSON unter `/tmp/swc-performance.json`.
-CI führt den Benchmark bei Pushes und Pull Requests aus und archiviert die Messung für 14 Tage.
+CI führt den Benchmark bei Pushes und Pull Requests aus und archiviert die Messung für 90 Tage.
 Bei erfolgreichen PR-Läufen aus demselben Repository aktualisiert ein separater Job einen Bot-Kommentar
 mit Median, P95, SQL-Zahlen und Anzahl ausgegebener Monatsereignisse. Nur dieser Job erhält
-`issues: write` und `pull-requests: write`; Fork-/Dependabot-PRs erhalten Job-Summary und Artefakt ohne Kommentar.
+`issues: write`, `pull-requests: write` und `actions: read`; Fork-/Dependabot-PRs erhalten Job-Summary und Artefakt ohne Kommentar.
 Der Kommentar-Formatter ist mit `node --test tests/Performance/comment.test.cjs` prüfbar.
 [baseline.json](baseline.json) enthält den lokalen Referenzlauf.
 
@@ -64,3 +64,13 @@ Ein Vergleich von WordPress mit aktiviertem und deaktiviertem sw-cloudcalendar i
 dieser Suite: Die Messungen zeigen die Kosten seiner Aktionen, nicht den globalen Bootstrap-Aufwand
 auf gewöhnlichen WordPress-Seiten. Produktivhardware, Seiten-Cache und gleichzeitige Aufrufe können
 andere Ergebnisse liefern.
+
+## Vergleich im PR
+
+Der Kommentar lädt das Benchmark-Artefakt des letzten erfolgreichen Push-Laufs von `tests.yml`
+auf dem Standardbranch (`master`). Er verlinkt Referenzlauf und Commit und zeigt Median sowie
+maximale SQL-Abfragezahl beider Läufe mit prozentualer Änderung (positiv = höhere Kosten).
+Fehlt der Lauf oder ist das Artefakt abgelaufen, zeigt er nur aktuelle Werte und einen Hinweis.
+Geänderte Datensätze, fehlende Szenarien und Monatsansichten mit unterschiedlicher Anzahl
+ausgegebener Ereignisse werden nicht verglichen. Bei Referenzwert null bleibt die Prozentänderung leer.
+Runner-Schwankungen und Einzelmessungen bleiben zu beachten; es gibt keine neue Zeitgrenze.

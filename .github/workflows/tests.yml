@@ -56,7 +56,7 @@ jobs:
         name: calendar-performance
         path: ${{ runner.temp }}/swc-performance.json
         if-no-files-found: error
-        retention-days: 14
+        retention-days: 90
     - name: Merge and normalize Clover paths
       run: php tests/coverage/merge.php coverage/unit.xml coverage/wordpress.xml
     - name: Upload Clover coverage
@@ -119,6 +119,7 @@ jobs:
       contents: read
       issues: write
       pull-requests: write
+      actions: read
     concurrency:
       group: performance-comment-${{ github.event.pull_request.number }}
       cancel-in-progress: false
