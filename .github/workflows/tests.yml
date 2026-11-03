@@ -37,6 +37,26 @@ jobs:
     - name: WordPress coverage
       working-directory: tests/wp
       run: vendor/bin/phpunit -c phpunit.xml.dist --coverage-clover ../../coverage/wordpress.xml
+    - name: Test performance report formatter
+      run: node --test tests/Performance/comment.test.cjs
+    - name: Local performance benchmark (2000 events)
+      env:
+        SWC_PERF_REPORT: ${{ runner.temp }}/swc-performance.json
+      run: composer test:performance
+    - name: Performance job summary
+      uses: actions/github-script@v8
+      with:
+        script: |
+          await require('./.github/scripts/performance-comment.cjs').run(
+            { github, context, core }, `${process.env.RUNNER_TEMP}/swc-performance.json`
+          );
+    - name: Upload performance measurements
+      uses: actions/upload-artifact@v7
+      with:
+        name: calendar-performance
+        path: ${{ runner.temp }}/swc-performance.json
+        if-no-files-found: error
+        retention-days: 14
     - name: Merge and normalize Clover paths
       run: php tests/coverage/merge.php coverage/unit.xml coverage/wordpress.xml
     - name: Upload Clover coverage
@@ -87,6 +107,35 @@ jobs:
         ports:
         - 33078:3306
         options: --health-cmd="healthcheck.sh --connect --innodb_initialized" --health-interval=5s --health-timeout=5s --health-retries=20
+  performance-comment:
+    name: Performance PR comment
+    needs: php
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.user.login != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    concurrency:
+      group: performance-comment-${{ github.event.pull_request.number }}
+      cancel-in-progress: false
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        sparse-checkout: .github/scripts
+        persist-credentials: false
+    - uses: actions/download-artifact@v8
+      with:
+        name: calendar-performance
+        path: performance
+    - uses: actions/github-script@v8
+      with:
+        script: |
+          await require('./.github/scripts/performance-comment.cjs').run(
+            { github, context, core }, 'performance/swc-performance.json', true
+          );
   frontend:
     runs-on: ubuntu-latest
     defaults:

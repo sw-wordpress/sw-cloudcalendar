@@ -120,6 +120,7 @@ bin/test-db.sh start                         # private MariaDB on 127.0.0.1:3307
 
 composer check                               # cs, cs:wp, PHPStan and PHPUnit (unit + integration)
 composer test:wp                             # WordPress integration tests
+composer test:performance                    # 2000 events/month; JSON report (tests/Performance)
 bin/i18n.sh check                            # translations complete and up to date
 (cd apps/admin && npm run typecheck && npm run lint && npm test)
 
