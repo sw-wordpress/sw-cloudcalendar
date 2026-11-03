@@ -723,6 +723,14 @@ const de = {
     cssEditor: 'Template-CSS',
     syntaxHint:
       'Platzhalter in doppelten geschweiften Klammern, Abschnitte mit # (vorhanden) bzw. ^ (nicht vorhanden) und / zum Schließen. Keine Skripte, Event-Handler oder externen Ressourcen.',
+    reset: 'Zurücksetzen',
+    resetTitle: 'Auf Preset zurücksetzen?',
+    resetMarkupText: 'Das HTML wird durch die aktuelle Version des Presets „{key}“ ersetzt.',
+    resetCssText: 'Das CSS wird durch die aktuelle Version des Presets „{key}“ ersetzt.',
+    resetC1:
+      'Deine Änderungen in diesem Feld gehen verloren. Das Template ändert sich erst nach dem Speichern.',
+    resetMissing: 'Das Preset „{key}“ existiert nicht mehr.',
+    resetDone: 'Auf Preset zurückgesetzt. Zum Übernehmen speichern.',
     cssHint:
       "Das CSS wird automatisch auf das Template begrenzt; url(), {'@'}import und Ähnliches sind nicht erlaubt.",
     validation: 'Prüfung',

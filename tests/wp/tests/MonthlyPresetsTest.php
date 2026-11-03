@@ -1,6 +1,7 @@
 <?php
 
 use SW\Calendar\Application\Local\LocalEvent;
+use SW\Calendar\Application\Render\Template\CssSanitizer;
 use SW\Calendar\Domain\Template\TemplateKind;
 use SW\Calendar\Presentation\Admin\TemplateManager;
 
@@ -65,6 +66,26 @@ final class MonthlyPresetsTest extends SWC_TestCase {
 				$this->assertStringContainsString( '@container', implode( '', (array) $data['css'] ) );
 			}
 		}
+	}
+
+	/** Layout guard: the stacked date column and the first content line have to sit on one text baseline. */
+	public function test_image_right_list_css_keeps_date_column_and_date_line_on_one_baseline(): void {
+		$css    = $this->services->presets()->css( 'image-right-list', TemplateKind::Event );
+		$scoped = CssSanitizer::scope( $css, '.swc-tpl-9' );
+		$rules  = array(
+			'/\.swc-right-row\s*\{[^}]*align-items:\s*baseline;/' => 'Weekday and date line share one grid baseline instead of box tops',
+			'/\.swc-right-row__meta\s*\{[^}]*line-height:\s*[.\d]+;/' => 'Own line-height keeps a theme line-height from shifting the date line',
+			'/\.swc-right-row__media\s*\{[^}]*align-self:\s*start;/' => 'Images keep the row top instead of snapping to the text baseline',
+		);
+		foreach ( $rules as $pattern => $reason ) {
+			$this->assertMatchesRegularExpression( $pattern, $css, $reason );
+			$this->assertMatchesRegularExpression( $pattern, $scoped, $reason . ' after scoping' );
+		}
+		$this->assertDoesNotMatchRegularExpression(
+			'/\.swc-right-row\s*\{[^}]*align-items:\s*start;/',
+			$scoped,
+			'Box top alignment would misalign the columns with theme line-heights'
+		);
 	}
 
 	public function test_classic_list_keeps_flat_layout(): void {

@@ -292,6 +292,40 @@ async function doDelete(): Promise<void> {
   }
 }
 
+/* ---------- reset to the preset the template was created from ---------- */
+const resetPart = ref<'markup' | 'css' | null>(null);
+const resetOpen = ref(false);
+const resetting = ref(false);
+const resetError = ref<string | null>(null);
+const canReset = computed(() => stored.value?.preset_key != null && stored.value.preset_key !== '');
+function askReset(part: 'markup' | 'css'): void {
+  resetPart.value = part;
+  resetError.value = null;
+  resetOpen.value = true;
+}
+async function doReset(): Promise<void> {
+  const key = stored.value?.preset_key;
+  if (!key || !resetPart.value) return;
+  resetting.value = true;
+  resetError.value = null;
+  try {
+    const preset = (await api.templates.presets()).find((p) => p.key === key);
+    const part = preset?.templates[kind.value];
+    if (!part) {
+      resetError.value = t('templates.resetMissing', { key });
+      return;
+    }
+    if (resetPart.value === 'markup') body.value = part.body;
+    else css.value = part.css;
+    resetOpen.value = false;
+    notify.success(t('templates.resetDone'));
+  } catch (e) {
+    resetError.value = toApiError(e).message;
+  } finally {
+    resetting.value = false;
+  }
+}
+
 function insertPlaceholder(placeholder: string, sigil: '' | '#' | '^'): void {
   tab.value = 'markup';
   void nextTick(() => htmlEditor.value?.insertPlaceholder(placeholder, sigil));
@@ -444,6 +478,11 @@ const previewModes = computed(() =>
                 :min-height="420"
               />
               <p class="swc-hint">{{ t('templates.syntaxHint') }}</p>
+              <p v-if="canReset && mode === 'html'" class="swc-hint">
+                <a href="#" class="swc-te__reset" @click.prevent="askReset('markup')">{{
+                  t('templates.reset')
+                }}</a>
+              </p>
             </div>
             <div v-show="tab === 'css'" class="swc-te__pane">
               <CodeEditor
@@ -453,6 +492,11 @@ const previewModes = computed(() =>
                 :min-height="300"
               />
               <p class="swc-hint">{{ t('templates.cssHint') }}</p>
+              <p v-if="canReset" class="swc-hint">
+                <a href="#" class="swc-te__reset" @click.prevent="askReset('css')">{{
+                  t('templates.reset')
+                }}</a>
+              </p>
             </div>
 
             <section class="swc-te__validation" :aria-label="t('templates.validation')">
@@ -584,6 +628,22 @@ const previewModes = computed(() =>
       :consequences="[t('templates.toVisualC1')]"
       :confirm-label="t('templates.newVisualTemplate')"
       @confirm="newVisual"
+    />
+    <ConfirmDialog
+      v-model="resetOpen"
+      :danger="false"
+      :title="t('templates.resetTitle')"
+      :message="
+        t(resetPart === 'css' ? 'templates.resetCssText' : 'templates.resetMarkupText', {
+          key: stored?.preset_key ?? '',
+        })
+      "
+      :target="name || t('templates.untitled')"
+      :consequences="[t('templates.resetC1')]"
+      :confirm-label="t('templates.reset')"
+      :loading="resetting"
+      :error="resetError"
+      @confirm="doReset"
     />
     <ConfirmDialog
       v-model="deleteOpen"

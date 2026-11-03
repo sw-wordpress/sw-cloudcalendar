@@ -708,6 +708,13 @@ const en: typeof de = {
     cssEditor: 'Template CSS',
     syntaxHint:
       'Placeholders in double curly braces, sections with # (present) or ^ (absent) and / to close them. No scripts, event handlers or external resources.',
+    reset: 'Reset',
+    resetTitle: 'Reset to preset?',
+    resetMarkupText: 'The HTML is replaced by the current version of the preset “{key}”.',
+    resetCssText: 'The CSS is replaced by the current version of the preset “{key}”.',
+    resetC1: 'Your changes in this field are discarded. The template is only changed after saving.',
+    resetMissing: 'The preset “{key}” no longer exists.',
+    resetDone: 'Reset to preset. Save to apply.',
     cssHint:
       "The CSS is automatically scoped to the template; url(), {'@'}import and similar are not allowed.",
     validation: 'Validation',

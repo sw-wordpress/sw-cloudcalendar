@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace SW\Calendar\Presentation\Admin;
 
 use SW\Calendar\Application\Render\PresetLibrary;
+use SW\Calendar\Application\Render\PresetUpgrader;
 use SW\Calendar\Application\Render\PreviewRenderer;
 use SW\Calendar\Application\Render\Template\CssSanitizer;
 use SW\Calendar\Application\Render\Template\PlaceholderRegistry;
@@ -212,6 +213,15 @@ final class TemplateManager {
 		foreach ( $this->services->presets()->keys() as $key ) {
 			$this->install_preset( $key );
 		}
+	}
+
+	/** Brings stored preset copies that still carry an outdated shipped CSS up to date (customised ones stay). */
+	public function upgrade_legacy_presets(): int {
+		$count = ( new PresetUpgrader( $this->services->templates(), $this->services->presets() ) )->upgrade();
+		if ( $count > 0 ) {
+			$this->services->audit()->record( 'templates_preset_upgraded', 'template', 0 );
+		}
+		return $count;
 	}
 
 	/**

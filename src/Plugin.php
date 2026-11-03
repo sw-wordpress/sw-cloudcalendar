@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace SW\Calendar;
 
+use SW\Calendar\Application\Render\PresetUpgrader;
 use SW\Calendar\Infrastructure\Database\Schema;
 use SW\Calendar\Infrastructure\WordPress\Capabilities;
 use SW\Calendar\Infrastructure\WordPress\QueueRunner;
@@ -25,6 +26,8 @@ use SW\Calendar\Presentation\Rest\ViewsController;
 use SW\Calendar\Presentation\Shortcode\CalendarShortcode;
 
 final class Plugin {
+
+	private const PRESET_REVISION_OPTION = 'sw_calendar_preset_revision';
 
 	private static ?Plugin $instance = null;
 	private bool $booted             = false;
@@ -81,6 +84,16 @@ final class Plugin {
 			Capabilities::grant_defaults();
 			( new TemplateManager( Services::instance() ) )->seed_presets();
 		}
+		$this->maybe_upgrade_presets();
+	}
+
+	/** Runs once per {@see PresetUpgrader::REVISION}; skipped until the tables exist. */
+	private function maybe_upgrade_presets(): void {
+		if ( (int) get_option( self::PRESET_REVISION_OPTION, 0 ) >= PresetUpgrader::REVISION || Schema::needs_migration() ) {
+			return;
+		}
+		( new TemplateManager( Services::instance() ) )->upgrade_legacy_presets();
+		update_option( self::PRESET_REVISION_OPTION, PresetUpgrader::REVISION, true );
 	}
 
 	public function initialize_site( \WP_Site $site ): void {

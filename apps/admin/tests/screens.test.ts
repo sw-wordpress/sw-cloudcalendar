@@ -876,6 +876,56 @@ describe('admin actions against REST contracts', () => {
       expect(written('admin/templates/7', 'PUT')).toMatchObject({ body: template.body, css: '' });
     });
   });
+  it('resets markup and CSS of a preset based template to the current preset', async () => {
+    const originalTemplate = routes['admin/templates/7'];
+    const originalPresets = routes['admin/templates/presets'];
+    routes['admin/templates/7'] = {
+      ...template,
+      preset_key: 'p1',
+      body: '<b>old</b>',
+      css: '.old{color:red}',
+    };
+    routes['admin/templates/presets'] = [
+      {
+        key: 'p1',
+        name: 'P1',
+        mode: 'list',
+        description: '',
+        templates: {
+          container: { body: '', css: '' },
+          event: { body: '<i>{{event.title}}</i>', css: '.new{color:blue}' },
+          detail: { body: '', css: '' },
+        },
+      },
+    ];
+    try {
+      await render('/templates/7', async (wrapper) => {
+        const links = () => wrapper.findAll('a.swc-te__reset');
+        expect(links()).toHaveLength(2);
+        for (const index of [0, 1]) {
+          await links()[index]!.trigger('click');
+          wrapper
+            .findAllComponents(ConfirmDialog)
+            .find((item) => item.props('modelValue'))!
+            .vm.$emit('confirm');
+          await settle();
+        }
+        await clickIcon(wrapper, 'r_save');
+        expect(written('admin/templates/7', 'PUT')).toMatchObject({
+          body: '<i>{{event.title}}</i>',
+          css: '.new{color:blue}',
+        });
+      });
+    } finally {
+      routes['admin/templates/7'] = originalTemplate;
+      routes['admin/templates/presets'] = originalPresets;
+    }
+  });
+  it('offers no reset for templates without a preset', async () => {
+    await render('/templates/7', async (wrapper) => {
+      expect(wrapper.findAll('a.swc-te__reset')).toHaveLength(0);
+    });
+  });
   it('tests and disconnects a connection after confirmation', async () => {
     await render('/connections', async (wrapper) => {
       await clickIcon(wrapper, 'r_network_check');
