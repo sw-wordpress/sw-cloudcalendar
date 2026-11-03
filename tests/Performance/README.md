@@ -12,7 +12,7 @@ zurückgerollt. Ohne `SWC_PERF_REPORT` liegt das JSON unter `/tmp/swc-performanc
 CI führt den Benchmark bei Pushes und Pull Requests aus und archiviert die Messung für 14 Tage.
 Bei erfolgreichen PR-Läufen aus demselben Repository aktualisiert ein separater Job einen Bot-Kommentar
 mit Median, P95, SQL-Zahlen und Anzahl ausgegebener Monatsereignisse. Nur dieser Job erhält
-`issues: write`; Fork-/Dependabot-PRs erhalten Job-Summary und Artefakt ohne Kommentar.
+`issues: write` und `pull-requests: write`; Fork-/Dependabot-PRs erhalten Job-Summary und Artefakt ohne Kommentar.
 Der Kommentar-Formatter ist mit `node --test tests/Performance/comment.test.cjs` prüfbar.
 [baseline.json](baseline.json) enthält den lokalen Referenzlauf.
 

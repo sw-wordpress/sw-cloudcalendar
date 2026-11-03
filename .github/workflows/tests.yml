@@ -118,6 +118,7 @@ jobs:
     permissions:
       contents: read
       issues: write
+      pull-requests: write
     concurrency:
       group: performance-comment-${{ github.event.pull_request.number }}
       cancel-in-progress: false

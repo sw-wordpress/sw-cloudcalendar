@@ -46,3 +46,12 @@ for (const existing of [false, true, 'stale']) {
     assert.equal(calls[0][1][existing ? 'comment_id' : 'issue_number'], existing ? 11 : 2);
   });
 }
+
+// GitHub requires PR write access when the issue comment belongs to a pull request.
+test('comment job grants PR write permission without granting it to test jobs', () => {
+  const workflow = require('node:fs').readFileSync(path.join(__dirname, '../../.github/workflows/tests.yml'), 'utf8');
+  const commentJob = workflow.split('  performance-comment:\n')[1].split('  frontend:\n')[0];
+  assert.match(commentJob, /      pull-requests: write\n/);
+  assert.match(commentJob, /      issues: write\n/);
+  assert.doesNotMatch(workflow.split('  performance-comment:\n')[0], /pull-requests: write|issues: write/);
+});
