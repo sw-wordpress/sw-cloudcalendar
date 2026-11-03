@@ -65,9 +65,9 @@ final class AdminPage {
 		if ( $hook !== $this->hook || ! is_readable( SW_CALENDAR_DIR . 'assets/admin/app.js' ) ) {
 			return;
 		}
-		$version = (string) filemtime( SW_CALENDAR_DIR . 'assets/admin/app.js' );
-		wp_enqueue_style( self::HANDLE, SW_CALENDAR_URL . 'assets/admin/app.css', array(), $version );
-		wp_enqueue_script( self::HANDLE, SW_CALENDAR_URL . 'assets/admin/app.js', array(), $version, true );
+		// The plugin version busts browser caches after updates; lazy chunks carry a content hash in their file name.
+		wp_enqueue_style( self::HANDLE, SW_CALENDAR_URL . 'assets/admin/app.css', array(), SW_CALENDAR_VERSION );
+		wp_enqueue_script( self::HANDLE, SW_CALENDAR_URL . 'assets/admin/app.js', array(), SW_CALENDAR_VERSION, true );
 		wp_add_inline_script( self::HANDLE, 'window.swcloudcalendarConfig = ' . wp_json_encode( $this->config() ) . ';', 'before' );
 	}
 

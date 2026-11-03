@@ -263,7 +263,7 @@ final class TemplateManager {
 				'errors' => $errors,
 			);
 		}
-		$urls     = new PreviewUrlGenerator( SW_CALENDAR_URL . 'assets/img/preview.png' );
+		$urls     = new PreviewUrlGenerator( add_query_arg( 'ver', SW_CALENDAR_VERSION, SW_CALENDAR_URL . 'assets/img/preview.png' ) );
 		$renderer = new PreviewRenderer( $this->services->dates(), $urls, $this->services->sanitizer(), $this->services->labels(), (int) get_option( 'start_of_week', 1 ) );
 		$tz       = new \DateTimeZone( Settings::site_timezone() );
 		$result   = $renderer->render( $parts['container'], $parts['event'], $parts['detail'], $mode, $this->services->clock()->now(), $tz, $scopes, $css );

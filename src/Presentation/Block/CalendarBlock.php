@@ -15,6 +15,17 @@ use SW\Calendar\Services;
 final class CalendarBlock {
 
 	public function register(): void {
+		// block.json is static: the central plugin version is the cache buster of the editor style (the script's comes
+		// from index.asset.php).
+		add_filter(
+			'block_type_metadata',
+			static function ( array $metadata ): array {
+				if ( 'sw-cloudcalendar/calendar' === ( $metadata['name'] ?? '' ) ) {
+					$metadata['version'] = SW_CALENDAR_VERSION;
+				}
+				return $metadata;
+			}
+		);
 		register_block_type(
 			SW_CALENDAR_DIR . 'blocks/calendar',
 			array( 'render_callback' => array( $this, 'render' ) )

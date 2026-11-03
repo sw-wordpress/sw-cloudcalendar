@@ -119,9 +119,23 @@ final class DiagnosticsAndAdminPageTest extends SWC_TestCase {
 		}
 		$this->assertTrue( wp_script_is( 'sw-cloudcalendar-admin', 'enqueued' ) );
 		$this->assertTrue( wp_style_is( 'sw-cloudcalendar-admin', 'enqueued' ) );
+		$this->assertSame( SW_CALENDAR_VERSION, wp_scripts()->registered['sw-cloudcalendar-admin']->ver, 'Admin script is cache busted by the plugin version' );
+		$this->assertSame( SW_CALENDAR_VERSION, wp_styles()->registered['sw-cloudcalendar-admin']->ver, 'Admin style is cache busted by the plugin version' );
 		$inline = implode( '', (array) wp_scripts()->get_data( 'sw-cloudcalendar-admin', 'before' ) );
 		$this->assertStringContainsString( 'window.swcloudcalendarConfig = ', $inline );
 		wp_dequeue_script( 'sw-cloudcalendar-admin' );
 		wp_dequeue_style( 'sw-cloudcalendar-admin' );
+	}
+
+	public function test_frontend_and_block_assets_carry_the_plugin_version(): void {
+		\SW\Calendar\Presentation\Frontend\CalendarOutput::register_assets();
+		$this->assertSame( SW_CALENDAR_VERSION, wp_scripts()->registered[ \SW\Calendar\Presentation\Frontend\CalendarOutput::SCRIPT ]->ver );
+		$this->assertSame( SW_CALENDAR_VERSION, wp_styles()->registered[ \SW\Calendar\Presentation\Frontend\CalendarOutput::STYLE ]->ver );
+
+		$asset = include SW_CALENDAR_DIR . 'blocks/calendar/index.asset.php';
+		$this->assertSame( SW_CALENDAR_VERSION, $asset['version'] );
+		$type = WP_Block_Type_Registry::get_instance()->get_registered( 'sw-cloudcalendar/calendar' );
+		$this->assertNotNull( $type );
+		$this->assertSame( SW_CALENDAR_VERSION, wp_styles()->registered['sw-cloudcalendar-calendar-editor-style']->ver, 'Editor style follows the plugin version, not block.json' );
 	}
 }
