@@ -656,6 +656,9 @@ const de = {
     dateFormat: 'Datumsformat',
     timeFormat: 'Zeitformat',
     formatHint: 'PHP-Datumsformat. Leer = WordPress-Einstellung ({format}).',
+    primaryColor: 'Primärfarbe',
+    primaryColorReset: 'Standard verwenden',
+    primaryColorHint: 'Färbt die Umschalter der Darstellungsform und den Button „Suchen“ dieser Ansicht. Standard: Farben des Designs.',
     showNavigation: 'Navigation anzeigen',
     showNavigationHint:
       'Monatsansicht: „Vorheriger Monat“ / „Nächster Monat“. Liste und Karten: „Frühere Termine“ / „Weitere Termine“. Im Shortcode mit navigation="false" bzw. "true" überschreibbar.',

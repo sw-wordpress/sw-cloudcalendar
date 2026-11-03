@@ -141,7 +141,8 @@ final class ViewRepository implements ViewRepositoryInterface {
 			(string) ( $config['time_format'] ?? '' ),
 			(bool) ( $config['show_navigation'] ?? true ),
 			$by_mode( $config['container_template_ids_by_mode'] ?? array() ),
-			$by_mode( $config['event_template_ids_by_mode'] ?? array() )
+			$by_mode( $config['event_template_ids_by_mode'] ?? array() ),
+			is_string( $config['primary_color'] ?? null ) && 1 === preg_match( '/^#[0-9a-fA-F]{6}$/', $config['primary_color'] ) ? strtolower( $config['primary_color'] ) : ''
 		);
 	}
 }

@@ -531,7 +531,12 @@ final class ViewRenderer
         if ($filter->colorTitles === true) {
             $classes[] = 'swc-color-titles';
         }
-        return '<div class="' . implode(' ', array_unique($classes)) . '" data-swc-view="' . $view->id . '" data-swc-mode="' . $mode->value . '"'
+        $style = '';
+        if ($view->primaryColor !== '') {
+            $classes[] = 'swc-has-primary';
+            $style = ' style="--swc-primary:' . $view->primaryColor . ';--swc-primary-text:' . self::textColor($view->primaryColor) . '"';
+        }
+        return '<div class="' . implode(' ', array_unique($classes)) . '"' . $style . ' data-swc-view="' . $view->id . '" data-swc-mode="' . $mode->value . '"'
             . ' data-swc-group="' . TemplateCompiler::escape($filter->navigationGroup ?? '') . '" data-swc-state="' . TemplateCompiler::escape((string) json_encode($state)) . '">' . $html . '</div>';
     }
 

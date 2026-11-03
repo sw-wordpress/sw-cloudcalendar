@@ -44,6 +44,8 @@ final class CalendarView
         public readonly array $containerTemplateIdsByMode = [],
         /** Event template per display mode (`DisplayMode::value` => template id), overriding `$eventTemplateId`. */
         public readonly array $eventTemplateIdsByMode = [],
+        /** Accent of mode tabs and search button as `#rrggbb`; empty keeps the stylesheet default. */
+        public readonly string $primaryColor = '',
     ) {
     }
 

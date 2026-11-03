@@ -121,6 +121,14 @@ describe('view form', () => {
       '1': '#aabbcc',
     });
   });
+  it('keeps the primary colour and defaults to none for older views', () => {
+    expect(blankView().primary_color).toBe('');
+    const stored = { ...blankView(), id: 5, revision: 1, primary_color: '#aa3300' } as CalendarView;
+    expect(toViewInput(stored).primary_color).toBe('#aa3300');
+    const legacy = { ...blankView(), id: 6, revision: 1 } as unknown as Record<string, unknown>;
+    delete legacy.primary_color;
+    expect(toViewInput(legacy as unknown as CalendarView).primary_color).toBe('');
+  });
   it('carries mode specific templates and lets unset modes inherit again', () => {
     // REST may answer an empty map as `[]`, so a stored view is read defensively.
     const stored = {

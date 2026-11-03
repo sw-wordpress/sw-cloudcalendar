@@ -633,6 +633,25 @@ watch(previewMode, () => void renderPreview());
               :label="t('views.navigationGroup')"
               :hint="t('views.navigationGroupHint')"
             />
+            <div class="swc-row">
+              <span>{{ t('views.primaryColor') }}</span>
+              <input
+                type="color"
+                class="swc-ve__picker"
+                :value="form.primary_color || '#2271b1'"
+                :aria-label="t('views.primaryColor')"
+                @input="form.primary_color = ($event.target as HTMLInputElement).value"
+              />
+              <q-btn
+                v-if="form.primary_color"
+                flat
+                dense
+                no-caps
+                :label="t('views.primaryColorReset')"
+                @click="form.primary_color = ''"
+              />
+            </div>
+            <p class="swc-hint">{{ t('views.primaryColorHint') }}</p>
             <q-toggle v-model="form.show_navigation" :label="t('views.showNavigation')" />
             <p class="swc-hint">{{ t('views.showNavigationHint') }}</p>
             <q-toggle v-model="form.html_cache" :label="t('views.htmlCache')" />

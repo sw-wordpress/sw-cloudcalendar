@@ -641,6 +641,9 @@ const en: typeof de = {
     dateFormat: 'Date format',
     timeFormat: 'Time format',
     formatHint: 'PHP date format. Empty = WordPress setting ({format}).',
+    primaryColor: 'Primary colour',
+    primaryColorReset: 'Use default',
+    primaryColorHint: 'Colours the display mode tabs and the “Search” button of this view. Default: theme colours.',
     showNavigation: 'Show navigation',
     showNavigationHint:
       'Month view: “Previous month” / “Next month”. List and cards: “Earlier events” / “More events”. Can be overridden in the shortcode with navigation="false" or "true".',

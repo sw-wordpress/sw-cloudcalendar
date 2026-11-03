@@ -279,6 +279,8 @@ export interface ViewInput {
   language: string;
   /** source id -> #rrggbb (serialised as an object; an empty one may arrive as `[]` or `{}`) */
   color_rules: Record<string, string>;
+  /** `#rrggbb` accent of mode tabs and search button; empty = default. */
+  primary_color: string;
   html_cache: boolean;
   date_format: string;
   time_format: string;

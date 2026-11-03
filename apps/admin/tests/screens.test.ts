@@ -121,6 +121,7 @@ const view = {
   timezone: '',
   language: '',
   color_rules: [],
+  primary_color: '',
   html_cache: true,
   date_format: '',
   time_format: '',

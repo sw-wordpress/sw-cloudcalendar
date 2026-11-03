@@ -40,6 +40,7 @@ final class ViewManager {
 			'allowed_template_ids'           => $view->allowedTemplateIds,
 			'container_template_ids_by_mode' => (object) $view->containerTemplateIdsByMode,
 			'event_template_ids_by_mode'     => (object) $view->eventTemplateIdsByMode,
+			'primary_color'                  => $view->primaryColor,
 			'timezone'                       => $view->timezone,
 			'language'                       => $view->language,
 			'color_rules'                    => (object) $view->colorRules,
@@ -201,6 +202,10 @@ final class ViewManager {
 			}
 			$colors[ (int) $source_id ] = strtolower( (string) $color );
 		}
+		$primary_color = (string) ( $data['primary_color'] ?? '' );
+		if ( '' !== $primary_color && 1 !== preg_match( '/^#[0-9a-fA-F]{6}$/', $primary_color ) ) {
+			$errors['primary_color'] = 'invalid';
+		}
 		$formats = array();
 		foreach ( array( 'date_format', 'time_format' ) as $field ) {
 			$value = (string) ( $data[ $field ] ?? '' );
@@ -223,6 +228,7 @@ final class ViewManager {
 			'allowed_template_ids'           => array_values( array_unique( $allowed_templates ) ),
 			'container_template_ids_by_mode' => $templates_by_mode['container_template_ids_by_mode'],
 			'event_template_ids_by_mode'     => $templates_by_mode['event_template_ids_by_mode'],
+			'primary_color'                  => strtolower( $primary_color ),
 			'timezone'                       => $timezone,
 			'language'                       => $language,
 			'color_rules'                    => $colors,

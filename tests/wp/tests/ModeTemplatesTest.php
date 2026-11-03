@@ -249,4 +249,33 @@ final class ModeTemplatesTest extends SWC_TestCase {
 			);
 		}
 	}
+
+	public function test_primary_color_is_stored_validated_and_rendered_for_tabs_and_search(): void {
+		$source = $this->source( $this->ics_connection() );
+		$body   = array(
+			'name'          => 'Farbe',
+			'source_ids'    => array( $source ),
+			'display_mode'  => 'list',
+			'allowed_modes' => array( 'list', 'cards' ),
+			'timezone'      => 'Europe/Berlin',
+			'html_cache'    => false,
+		);
+
+		$invalid = $this->rest( 'POST', '/admin/views', array(), $body + array( 'primary_color' => 'red' ) );
+		$this->assertSame( 400, $invalid->get_status(), 'Only #rrggbb is accepted' );
+
+		$created = $this->rest( 'POST', '/admin/views', array(), $body + array( 'primary_color' => '#AA3300' ) );
+		$this->assertSame( 201, $created->get_status() );
+		$this->assertSame( '#aa3300', $created->get_data()['primary_color'] );
+		$id = (int) $created->get_data()['id'];
+
+		$html = $this->services->renderer()->render( $id, array( 'mode_switcher' => 'true' ), null )->html;
+		$this->assertStringContainsString( '--swc-primary:#aa3300;--swc-primary-text:#ffffff', $html );
+		$this->assertStringContainsString( 'swc-has-primary', $html );
+
+		$reset = $this->rest( 'PUT', '/admin/views/' . $id, array(), $body + array( 'primary_color' => '' ) );
+		$this->assertSame( '', $reset->get_data()['primary_color'] );
+		$plain = $this->services->renderer()->render( $id, array(), null )->html;
+		$this->assertStringNotContainsString( '--swc-primary', $plain, 'Without a colour the stylesheet default stays' );
+	}
 }
