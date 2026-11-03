@@ -11,7 +11,7 @@
 /* Lists and cards */
 .swc-events { list-style: none; margin: 0; padding: 0; }
 .swc-events--list > .swc-events__item + .swc-events__item { border-top: 1px solid var(--swc-border); }
-.swc-events--cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 1rem; }
+.swc-events--cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 1rem; list-style:none; }
 .swc-events__item.is-tentative { opacity: .8; }
 
 /* Month grid: table on wide screens, agenda on small screens */
@@ -87,9 +87,9 @@
 .swc-calendar .swc-month__more { list-style: none; }
 .swc-calendar .swc-month__more summary { cursor: pointer; }
 @media (min-width: 48rem) {
- .swc-calendar.swc-columns-2 .swc-events { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1.5rem; }
- .swc-calendar.swc-columns-3 .swc-events { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 1.5rem; }
- .swc-calendar.swc-columns-4 .swc-events { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 1.5rem; }
+ .swc-calendar.swc-columns-2 .swc-events { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1.5rem; list-style:none; }
+ .swc-calendar.swc-columns-3 .swc-events { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 1.5rem; list-style:none; }
+ .swc-calendar.swc-columns-4 .swc-events { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 1.5rem; list-style:none; }
 }
 
 .swc-calendar .swc-month-group + .swc-month-group { margin-top: 2rem; }
