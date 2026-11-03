@@ -34,7 +34,7 @@ Screenshots, Ergebnis und Server-/WordPress-Logs für 14 Tage.
 | E2E-15 | `SyncServiceTest::testLockPreventsParallelRunAndExpiredLockIsTakenOver`, Job-Idempotenz |
 
 **Nicht automatisiert:** Formular-Workflows der Admin-SPA im Browser (Anlegen/Speichern; abgedeckt durch Vitest und
-die REST-Tests), Tests gegen echte Google-/Microsoft-Konten, Last-/Performance-Messungen (SPEC §17) und Tests mit
+die REST-Tests), Tests gegen echte Google-/Microsoft-Konten, parallele Lasttests und Tests mit
 realen Page-Cache-Plugins.
 
 ## Coverage
@@ -52,3 +52,11 @@ Zeilenabdeckung je Sprache muss **> 80 %** sein (ganzzahliger Vergleich, genau 8
   nicht abgedeckt.
 
 Vitest 5 zählt ausführbare Zeilen; frühere Prozentwerte aus Vitest 3 sind nicht direkt vergleichbar.
+
+
+## Performance (2.000 Ereignisse/Monat)
+
+`composer test:performance` nutzt die lokale WordPress-Testumgebung und deren Wegwerf-Datenbank
+(Voraussetzungen wie `composer test:wp`, siehe [Development](../README.md#development)).
+Nicht parallel zur WordPress-Suite ausführen: Beide installieren ihre Testtabellen neu.
+Details, Grenzen und Referenzmessung: [tests/Performance/README.md](../tests/Performance/README.md).

@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<phpunit bootstrap="../wp/bootstrap.php" colors="true" failOnWarning="true" failOnRisky="true">
+    <testsuites>
+        <testsuite name="performance"><file>CalendarPerformanceTest.php</file></testsuite>
+    </testsuites>
+</phpunit>

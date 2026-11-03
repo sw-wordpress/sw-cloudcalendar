@@ -1,0 +1,582 @@
+{
+    "php": "8.5.4",
+    "wordpress": "6.9.10",
+    "database": "11.8.6",
+    "events": 2000,
+    "month": "2026-11",
+    "created_at_utc": "2026-11-03T12:26:14+00:00",
+    "xdebug_mode": "off",
+    "rendered_unique_events": {
+        "list": 50,
+        "cards": 50,
+        "month": 1000
+    },
+    "peak_process_bytes": 84410368,
+    "summary": {
+        "import": {
+            "samples": 1,
+            "median_ms": 5151.047914,
+            "p95_ms": 5151.047914,
+            "max_queries": 66
+        },
+        "sync_unchanged": {
+            "samples": 1,
+            "median_ms": 5340.915908,
+            "p95_ms": 5340.915908,
+            "max_queries": 51
+        },
+        "sync_304": {
+            "samples": 1,
+            "median_ms": 62.23668,
+            "p95_ms": 62.23668,
+            "max_queries": 30
+        },
+        "events_cold": {
+            "samples": 1,
+            "median_ms": 5.590374,
+            "p95_ms": 5.590374,
+            "max_queries": 10
+        },
+        "events_warm": {
+            "samples": 10,
+            "median_ms": 5.310624000000001,
+            "p95_ms": 5.587814,
+            "max_queries": 10
+        },
+        "page_20_cold": {
+            "samples": 1,
+            "median_ms": 4.568083,
+            "p95_ms": 4.568083,
+            "max_queries": 8
+        },
+        "page_20_warm": {
+            "samples": 10,
+            "median_ms": 4.460893,
+            "p95_ms": 4.870033,
+            "max_queries": 8
+        },
+        "search_cold": {
+            "samples": 1,
+            "median_ms": 6.501595,
+            "p95_ms": 6.501595,
+            "max_queries": 10
+        },
+        "search_warm": {
+            "samples": 10,
+            "median_ms": 6.549065000000001,
+            "p95_ms": 6.684145,
+            "max_queries": 10
+        },
+        "detail_cold": {
+            "samples": 1,
+            "median_ms": 3.047363,
+            "p95_ms": 3.047363,
+            "max_queries": 9
+        },
+        "detail_warm": {
+            "samples": 10,
+            "median_ms": 1.072346,
+            "p95_ms": 1.150241,
+            "max_queries": 6
+        },
+        "render_list_cold": {
+            "samples": 1,
+            "median_ms": 11.938999,
+            "p95_ms": 11.938999,
+            "max_queries": 19
+        },
+        "render_list_warm": {
+            "samples": 10,
+            "median_ms": 1.0107255,
+            "p95_ms": 1.15986,
+            "max_queries": 5
+        },
+        "render_cards_cold": {
+            "samples": 1,
+            "median_ms": 10.919559,
+            "p95_ms": 10.919559,
+            "max_queries": 19
+        },
+        "render_cards_warm": {
+            "samples": 10,
+            "median_ms": 0.997281,
+            "p95_ms": 1.081081,
+            "max_queries": 5
+        },
+        "render_month_cold": {
+            "samples": 1,
+            "median_ms": 97.929909,
+            "p95_ms": 97.929909,
+            "max_queries": 19
+        },
+        "render_month_warm": {
+            "samples": 10,
+            "median_ms": 1.8879415000000002,
+            "p95_ms": 2.193141,
+            "max_queries": 5
+        },
+        "sync_update_100": {
+            "samples": 1,
+            "median_ms": 5577.522438,
+            "p95_ms": 5577.522438,
+            "max_queries": 153
+        },
+        "sync_delete_100": {
+            "samples": 1,
+            "median_ms": 5084.708682,
+            "p95_ms": 5084.708682,
+            "max_queries": 51
+        }
+    },
+    "raw": {
+        "import": [
+            {
+                "ms": 5151.047914,
+                "queries": 66,
+                "memory_delta_bytes": 23068672
+            }
+        ],
+        "sync_unchanged": [
+            {
+                "ms": 5340.915908,
+                "queries": 51,
+                "memory_delta_bytes": 8388608
+            }
+        ],
+        "sync_304": [
+            {
+                "ms": 62.23668,
+                "queries": 30,
+                "memory_delta_bytes": 0
+            }
+        ],
+        "events_cold": [
+            {
+                "ms": 5.590374,
+                "queries": 10,
+                "memory_delta_bytes": 0
+            }
+        ],
+        "events_warm": [
+            {
+                "ms": 5.282715,
+                "queries": 10,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 5.325584,
+                "queries": 10,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 5.587814,
+                "queries": 10,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 5.295664,
+                "queries": 10,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 5.295374,
+                "queries": 10,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 5.260594,
+                "queries": 10,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 5.427774,
+                "queries": 10,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 5.564484,
+                "queries": 10,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 5.458195,
+                "queries": 10,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 5.206965,
+                "queries": 10,
+                "memory_delta_bytes": 0
+            }
+        ],
+        "page_20_cold": [
+            {
+                "ms": 4.568083,
+                "queries": 8,
+                "memory_delta_bytes": 0
+            }
+        ],
+        "page_20_warm": [
+            {
+                "ms": 4.696303,
+                "queries": 8,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 4.870033,
+                "queries": 8,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 4.451183,
+                "queries": 8,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 4.405254,
+                "queries": 8,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 4.408113,
+                "queries": 8,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 4.403214,
+                "queries": 8,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 4.429583,
+                "queries": 8,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 4.557094,
+                "queries": 8,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 4.470603,
+                "queries": 8,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 4.576643,
+                "queries": 8,
+                "memory_delta_bytes": 0
+            }
+        ],
+        "search_cold": [
+            {
+                "ms": 6.501595,
+                "queries": 10,
+                "memory_delta_bytes": 0
+            }
+        ],
+        "search_warm": [
+            {
+                "ms": 6.510995,
+                "queries": 10,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 6.684145,
+                "queries": 10,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 6.550125,
+                "queries": 10,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 6.426275,
+                "queries": 10,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 6.600815,
+                "queries": 10,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 6.548005,
+                "queries": 10,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 6.389606,
+                "queries": 10,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 6.474456,
+                "queries": 10,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 6.568125,
+                "queries": 10,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 6.554835,
+                "queries": 10,
+                "memory_delta_bytes": 0
+            }
+        ],
+        "detail_cold": [
+            {
+                "ms": 3.047363,
+                "queries": 9,
+                "memory_delta_bytes": 0
+            }
+        ],
+        "detail_warm": [
+            {
+                "ms": 1.150241,
+                "queries": 6,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 1.079001,
+                "queries": 6,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 1.083711,
+                "queries": 6,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 1.08942,
+                "queries": 6,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 1.054611,
+                "queries": 6,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 1.065011,
+                "queries": 6,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 1.032471,
+                "queries": 6,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 1.091041,
+                "queries": 6,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 1.065691,
+                "queries": 6,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 1.033721,
+                "queries": 6,
+                "memory_delta_bytes": 0
+            }
+        ],
+        "render_list_cold": [
+            {
+                "ms": 11.938999,
+                "queries": 19,
+                "memory_delta_bytes": 2097152
+            }
+        ],
+        "render_list_warm": [
+            {
+                "ms": 1.15986,
+                "queries": 5,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 1.018021,
+                "queries": 5,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 0.989701,
+                "queries": 5,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 0.974251,
+                "queries": 5,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 1.003951,
+                "queries": 5,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 1.0175,
+                "queries": 5,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 1.08502,
+                "queries": 5,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 1.002331,
+                "queries": 5,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 1.022711,
+                "queries": 5,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 0.982181,
+                "queries": 5,
+                "memory_delta_bytes": 0
+            }
+        ],
+        "render_cards_cold": [
+            {
+                "ms": 10.919559,
+                "queries": 19,
+                "memory_delta_bytes": 0
+            }
+        ],
+        "render_cards_warm": [
+            {
+                "ms": 1.081081,
+                "queries": 5,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 1.01459,
+                "queries": 5,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 0.978671,
+                "queries": 5,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 1.009461,
+                "queries": 5,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 0.989671,
+                "queries": 5,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 0.979811,
+                "queries": 5,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 0.96755,
+                "queries": 5,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 1.004891,
+                "queries": 5,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 1.016141,
+                "queries": 5,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 0.986751,
+                "queries": 5,
+                "memory_delta_bytes": 0
+            }
+        ],
+        "render_month_cold": [
+            {
+                "ms": 97.929909,
+                "queries": 19,
+                "memory_delta_bytes": 2097152
+            }
+        ],
+        "render_month_warm": [
+            {
+                "ms": 2.193141,
+                "queries": 5,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 1.981731,
+                "queries": 5,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 1.894112,
+                "queries": 5,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 1.928561,
+                "queries": 5,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 1.870292,
+                "queries": 5,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 1.879101,
+                "queries": 5,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 1.878522,
+                "queries": 5,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 1.883901,
+                "queries": 5,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 1.891982,
+                "queries": 5,
+                "memory_delta_bytes": 0
+            },
+            {
+                "ms": 1.863451,
+                "queries": 5,
+                "memory_delta_bytes": 0
+            }
+        ],
+        "sync_update_100": [
+            {
+                "ms": 5577.522438,
+                "queries": 153,
+                "memory_delta_bytes": 0
+            }
+        ],
+        "sync_delete_100": [
+            {
+                "ms": 5084.708682,
+                "queries": 51,
+                "memory_delta_bytes": 0
+            }
+        ]
+    },
+    "scope": "sw-cloudcalendar local sync and REST actions; no unloaded-plugin control"
+}
