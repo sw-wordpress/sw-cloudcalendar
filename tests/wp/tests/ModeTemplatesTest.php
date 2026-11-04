@@ -251,6 +251,7 @@ final class ModeTemplatesTest extends SWC_TestCase {
 	}
 
 	public function test_primary_color_is_stored_validated_and_rendered_for_tabs_and_search(): void {
+		$this->admin();
 		$source = $this->source( $this->ics_connection() );
 		$body   = array(
 			'name'          => 'Farbe',
