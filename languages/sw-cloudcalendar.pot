@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR SW CloudCalendar contributors
+# Copyright (C) 2026 Stefan Warnat
 # This file is distributed under the same license as the sw-cloudcalendar package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Stefan Warnat <ich@stefanwarnat.de>, 2026
 #
 #, fuzzy
 msgid ""

@@ -21,7 +21,7 @@ make_pot() {
       --keyword=__:1 --keyword=_e:1 --keyword=esc_html__:1 --keyword=esc_attr__:1 --keyword=esc_html_e:1 \
       --keyword=_x:1,2c --keyword=_n:1,2 --keyword=_nx:1,2,4c \
       --package-name="sw-cloudcalendar" --package-version="$VERSION" --msgid-bugs-address="" \
-      --copyright-holder="SW CloudCalendar contributors" --sort-by-file --no-wrap -o "$php_pot")
+      --copyright-holder="Stefan Warnat" --sort-by-file --no-wrap -o "$php_pot")
   (cd "$ROOT" && xgettext --language=JavaScript --from-code=UTF-8 --keyword=__:1 --keyword=_x:1,2c --keyword=_n:1,2 \
       --msgid-bugs-address="" --sort-by-file --no-wrap -o "$js_pot" blocks/calendar/index.js)
   php "$ROOT/bin/i18n-extra.php" "$extra_pot"
