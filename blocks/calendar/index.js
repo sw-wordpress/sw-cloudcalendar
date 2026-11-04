@@ -36,8 +36,8 @@
 	}
 
 	function numberOrUndefined( value ) {
-		const parsed = parseInt( value, 10 );
-		return isNaN( parsed ) || parsed <= 0 ? undefined : parsed;
+		const parsed = Number.parseInt( value, 10 );
+		return Number.isNaN( parsed ) || parsed <= 0 ? undefined : parsed;
 	}
 
 	function textOrUndefined( value ) {
@@ -66,7 +66,7 @@
 					value: String( a.viewId || 0 ),
 					options: viewOptions,
 					onChange: function ( value ) {
-						setAttributes( { viewId: parseInt( value, 10 ) || 0 } );
+						setAttributes( { viewId: Number.parseInt( value, 10 ) || 0 } );
 					},
 				} ),
 				el( SelectControl, {
