@@ -107,6 +107,7 @@ const de = {
     unknown_preset: 'Unbekanntes Preset',
   },
   providers: {
+    local: 'Lokales Plugin',
     google: 'Google Kalender',
     microsoft: 'Microsoft 365',
     ics: 'ICS / iCalendar',
@@ -188,6 +189,9 @@ const de = {
     noErrors: 'Keine Fehler protokolliert.',
   },
   connections: {
+    localTitle: 'Quellplugin',
+    localHint:
+      'Kalender direkt aus einem aktiven Plugin lesen. Termine werden nicht erneut gespeichert.',
     subtitle:
       'Zugänge zu Google, Microsoft 365 und ICS-Feeds. Geheimnisse werden verschlüsselt gespeichert und nie angezeigt.',
     add: 'Verbindung hinzufügen',
@@ -363,6 +367,7 @@ const de = {
     },
   },
   sources: {
+    localLive: 'Direkt aus dem Quellplugin',
     subtitle: 'Kalender, die synchronisiert und auf der Website angezeigt werden.',
     add: 'Quelle anlegen',
     createTitle: 'Neue Quelle',
@@ -384,6 +389,8 @@ const de = {
     failures: '1 Fehlversuch | {n} Fehlversuche',
     syncing: 'Synchronisiert …',
     queued: 'In Warteschlange',
+    manualSync: 'Synchronisation manuell durchführen',
+    manualSyncCompleted: 'Synchronisation abgeschlossen',
     syncNow: 'Jetzt synchronisieren',
     syncNowNamed: '„{name}“ jetzt synchronisieren',
     syncQueued: 'Synchronisierung von „{name}“ wurde eingeplant.',
@@ -400,6 +407,34 @@ const de = {
     deleted: 'Quelle gelöscht.',
     saved: 'Quelle gespeichert.',
     created: 'Quelle als Entwurf angelegt.',
+    eventsThisMonth: 'Termine im aktuellen Monat',
+    availableEvents: 'Verfügbare Termine',
+    eventsMonth: 'Monat',
+    noEventsInMonth: 'Keine Termine in diesem Monat.',
+    eventTitle: 'Titel',
+    eventStart: 'Beginn',
+    eventEnd: 'Ende',
+    eventLocation: 'Ort',
+    eventAllDay: 'Ganztägig',
+    bulkAction: 'Mehrfachaktion',
+    bulkActivate: 'Aktivieren',
+    bulkPause: 'Pausieren',
+    bulkPublic: 'Auf Öffentlich setzen',
+    bulkAuthenticated: 'Auf angemeldete beschränken',
+    bulkApply: 'Anwenden',
+    selectedSources: '{n} Quellen ausgewählt',
+    selectAllSources: 'Alle Quellen auswählen',
+    selection: 'Auswahl',
+    selectSource: 'Quelle {name} auswählen',
+    bulkUpdated: 'Quellen aktualisiert',
+    bulkSelect: 'Mehrere Kalender hinzufügen',
+    selectAllCalendars: 'Alle auswählen',
+    clearCalendars: 'Auswahl aufheben',
+    selectedCalendars: '{n} Kalender ausgewählt',
+    createDrafts: 'Ausgewählte als Entwürfe anlegen',
+    bulkCreated: 'Kalender als Entwürfe angelegt',
+    bulkHint:
+      'Name und Farbe werden übernommen. Die Quellen sind zunächst nur für angemeldete Benutzer sichtbar und müssen anschließend einzeln aktiviert werden.',
     createDraft: 'Als Entwurf anlegen',
     sectionCalendar: 'Kalender',
     connection: 'Verbindung',
@@ -502,6 +537,15 @@ const de = {
     confirmFilesCheck: 'Ich bestätige, dass diese privaten Dateien veröffentlicht werden dürfen.',
   },
   views: {
+    colorTitles: 'Betreff in Kalenderfarbe',
+    legend: 'Kalenderlegende anzeigen',
+    columns: 'Spalten (1–4)',
+    dayLimit: 'Sichtbare Termine pro Tag (1–20)',
+    month: 'Angezeigter Monat (optional)',
+    navigationGroup: 'Gemeinsame Monatsnavigation',
+    navigationGroupHint:
+      'Derselbe Gruppenname verbindet Liste und Monatsraster. Leer lassen für unabhängige Navigation.',
+
     subtitle:
       'Kombinationen aus Quellen, Darstellung und Templates – eingebunden per Shortcode oder Block.',
     add: 'Ansicht anlegen',
@@ -510,6 +554,64 @@ const de = {
     editorSubtitle: 'Quellen, Darstellung, Formate und Standardfilter.',
     emptyTitle: 'Noch keine Ansichten',
     emptyText: 'Eine Ansicht legt fest, welche Quellen wie angezeigt werden.',
+    modeSwitcher: 'Darstellungs-Tabs auf der Website',
+    modeSwitcherHint:
+      'Standard: aus. Zeigt nur die oben erlaubten Darstellungen als sichtbare Tabs.',
+    showSearch: 'Terminsuche anzeigen',
+    showSearchHint: 'Standard: an für alle Darstellungen. Durchsucht den gewählten Zeitraum.',
+    defaultDisplayMode: 'Standarddarstellung',
+    displayHelp: {
+      open: 'Aufbau verstehen',
+      title: 'So entsteht die Kalenderansicht',
+      intro:
+        'Die Quellen liefern die Termine. Die Darstellung bestimmt die Grundstruktur, Templates gestalten deren Inhalt.',
+      labels: {
+        overview: 'Hilfe zum Aufbau der Kalenderansicht',
+        mode: 'Hilfe zur Standarddarstellung',
+        allowedModes: 'Hilfe zu erlaubten Darstellungen',
+        templates: 'Hilfe zu alternativen Termin-Templates',
+        modeTemplates: 'Hilfe zu Templates je Darstellung',
+      },
+      tips: {
+        overview:
+          'Darstellungen, Templates und erlaubte Alternativen erklärt. Klicken für die vollständige Hilfe.',
+        mode: 'Grundstruktur der Ausgabe: Liste, Karten oder Monatsraster. Templates bestimmen die Gestaltung. Klicken für Details.',
+        allowedModes:
+          'Erlaubt abweichende Darstellungen per Shortcode oder Block. Sichtbare Tabs lassen sich mit „Darstellungs-Tabs auf der Website“ einschalten. Klicken für Details.',
+        templates:
+          'Freigegebene Alternativen für einzelne Termine. Ändert weder die Standarddarstellung noch das Standard-Template. Klicken für Details.',
+        modeTemplates:
+          'Eine Darstellung kann das Template der Ansicht übernehmen oder selbst gestalten. Klicken für Details.',
+      },
+      modes: {
+        list: 'Fortlaufende Terminliste, bei Bedarf mit mehreren Spalten.',
+        cards: 'Termine als Karten in einem Raster.',
+        month:
+          'Kalenderraster mit Wochentagen und Tagesfeldern; die Termine stehen im jeweiligen Tag.',
+      },
+      templatesTitle: 'Was gestalten die Templates?',
+      templates: {
+        container: 'Der äußere Rahmen: etwa Überschrift, Monatsgruppen, Termine und Navigation.',
+        event:
+          'Die Gestaltung eines einzelnen Termins: etwa Datum, Titel, Beschreibung und Bild. Im Monatsraster wird es innerhalb eines Tages verwendet.',
+        detail: 'Die ausführliche Anzeige, die sich beim Öffnen eines Termins zeigt.',
+      },
+      fixedTemplates:
+        'Ein für die ganze Ansicht gewähltes Template bleibt beim Wechsel zwischen Liste, Karten und Monat erhalten; nur „Preset (Standard)“ wählt automatisch das passende Standard-Template. Eine Ansicht, die in allen Darstellungen gleich aussehen soll, braucht deshalb keine weiteren Einstellungen.',
+      modeTemplates:
+        'Ohne eigene Wahl gilt das oben eingestellte Template für jede Darstellung. Mit einer eigenen Wahl gilt sie nur für diese Darstellung: Karten können ein eigenes Container- und Termin-Template haben, während Liste und Monat das gemeinsame Standard-Template behalten. Es gilt in dieser Reihenfolge: freigegebenes template aus der Einbettung, Template der Darstellung, Template der Ansicht, Preset der Darstellung.',
+      allowedModes:
+        'Legt fest, welche Darstellungen eine Einbettung abweichend vom Standard anfordern darf, z. B. mit view="cards". Die Standarddarstellung ist immer erlaubt.',
+      allowedTemplates:
+        'Gibt zusätzliche Termin-Templates für den Parameter template frei. Ohne diesen Parameter bleibt das oben gewählte Termin-Template aktiv; dieses ist immer erlaubt. Container und Detail werden dadurch nicht gewechselt.',
+      exampleTitle: 'Beispiel',
+      example:
+        'Standard ist „Liste“. Du erlaubst zusätzlich „Karten“ und gibst das Termin-Template mit ID 7 frei. Diese Einbettung verwendet dann Karten mit Template 7:',
+      noSwitcher:
+        'Die Freigaben allein erzeugen keine sichtbare Auswahl. Mit „Darstellungs-Tabs auf der Website“ können Besucher zwischen den erlaubten Darstellungen wechseln. Alternative Termin-Templates werden weiterhin beim Einbinden gewählt.',
+      presets:
+        'Für ein vollständiges Design aus der Preset-Galerie wählst du die zugehörigen Container- und Termin-Templates, bei Bedarf auch das Detail-Template.',
+    },
     displayMode: 'Darstellung',
     modes: { list: 'Liste', cards: 'Karten', month: 'Monat' },
     sources: 'Quellen',
@@ -529,14 +631,23 @@ const de = {
     colorFor: 'Farbe für „{name}“',
     useSourceColor: 'Quellfarbe verwenden',
     sectionDisplay: 'Darstellung & Templates',
-    allowedModes: 'Erlaubte Darstellungen (umschaltbar per Filter)',
-    allowedModesHint: 'Die Standarddarstellung ist immer erlaubt.',
+    allowedModes: 'Für Einbettungen erlaubte Darstellungen',
+    allowedModesHint:
+      'Die Standarddarstellung ist immer erlaubt. Weitere Darstellungen können per Shortcode oder Block angefordert werden.',
     presetDefault: 'Preset (Standard)',
     containerTemplate: 'Container-Template',
     eventTemplate: 'Termin-Template',
     detailTemplate: 'Detail-Template',
+    templatesGeneralHint:
+      'Diese Templates gelten für alle Darstellungen – es sei denn, eine Darstellung setzt unten etwas anderes.',
+    modeTemplates: 'Templates je Darstellung',
+    modeTemplatesHint:
+      'Nur die gewählte Darstellung weicht ab, z. B. Karten mit eigenem Termin-Template. „Standard der Ansicht“ übernimmt die obige Wahl (ist dort nichts gewählt, das Preset der Darstellung).',
+    modeTemplateInherit: 'Standard der Ansicht',
+    modeTemplateLabel: '{kind} für {mode}',
     allowedTemplates: 'Alternative Termin-Templates',
-    allowedTemplatesHint: 'Können per Filter „template“ gewählt werden.',
+    allowedTemplatesHint:
+      'Zusätzliche Termin-Templates für den Shortcode-Parameter „template“. Ohne Parameter gilt das oben gewählte Template.',
     sectionFormat: 'Zeit & Format',
     timezone: 'Zeitzone',
     siteTimezone: 'Website-Standard ({tz})',
@@ -545,6 +656,9 @@ const de = {
     dateFormat: 'Datumsformat',
     timeFormat: 'Zeitformat',
     formatHint: 'PHP-Datumsformat. Leer = WordPress-Einstellung ({format}).',
+    primaryColor: 'Primärfarbe',
+    primaryColorReset: 'Standard verwenden',
+    primaryColorHint: 'Färbt die Umschalter der Darstellungsform und den Button „Suchen“ dieser Ansicht. Standard: Farben des Designs.',
     showNavigation: 'Navigation anzeigen',
     showNavigationHint:
       'Monatsansicht: „Vorheriger Monat“ / „Nächster Monat“. Liste und Karten: „Frühere Termine“ / „Weitere Termine“. Im Shortcode mit navigation="false" bzw. "true" überschreibbar.',
@@ -624,6 +738,14 @@ const de = {
     cssEditor: 'Template-CSS',
     syntaxHint:
       'Platzhalter in doppelten geschweiften Klammern, Abschnitte mit # (vorhanden) bzw. ^ (nicht vorhanden) und / zum Schließen. Keine Skripte, Event-Handler oder externen Ressourcen.',
+    reset: 'Zurücksetzen',
+    resetTitle: 'Auf Preset zurücksetzen?',
+    resetMarkupText: 'Das HTML wird durch die aktuelle Version des Presets „{key}“ ersetzt.',
+    resetCssText: 'Das CSS wird durch die aktuelle Version des Presets „{key}“ ersetzt.',
+    resetC1:
+      'Deine Änderungen in diesem Feld gehen verloren. Das Template ändert sich erst nach dem Speichern.',
+    resetMissing: 'Das Preset „{key}“ existiert nicht mehr.',
+    resetDone: 'Auf Preset zurückgesetzt. Zum Übernehmen speichern.',
     cssHint:
       "Das CSS wird automatisch auf das Template begrenzt; url(), {'@'}import und Ähnliches sind nicht erlaubt.",
     validation: 'Prüfung',

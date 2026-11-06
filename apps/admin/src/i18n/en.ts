@@ -104,6 +104,7 @@ const en: typeof de = {
     unknown_preset: 'Unknown preset',
   },
   providers: {
+    local: 'Local plugin',
     google: 'Google Calendar',
     microsoft: 'Microsoft 365',
     ics: 'ICS / iCalendar',
@@ -185,6 +186,9 @@ const en: typeof de = {
     noErrors: 'No errors logged.',
   },
   connections: {
+    localTitle: 'Source plugin',
+    localHint:
+      'Read calendars directly from an active plugin without storing another copy of its events.',
     subtitle:
       'Access to Google, Microsoft 365 and ICS feeds. Secrets are stored encrypted and never displayed.',
     add: 'Add connection',
@@ -357,6 +361,7 @@ const en: typeof de = {
     },
   },
   sources: {
+    localLive: 'Live from source plugin',
     subtitle: 'Calendars that are synchronised and displayed on the website.',
     add: 'Create source',
     createTitle: 'New source',
@@ -377,6 +382,8 @@ const en: typeof de = {
     failures: '1 failed attempt | {n} failed attempts',
     syncing: 'Synchronising …',
     queued: 'Queued',
+    manualSync: 'Run synchronization manually',
+    manualSyncCompleted: 'Synchronization completed',
     syncNow: 'Synchronise now',
     syncNowNamed: 'Synchronise “{name}” now',
     syncQueued: 'Synchronisation of “{name}” has been queued.',
@@ -391,6 +398,34 @@ const en: typeof de = {
     deleted: 'Source deleted.',
     saved: 'Source saved.',
     created: 'Source created as draft.',
+    eventsThisMonth: 'Events this month',
+    availableEvents: 'Available events',
+    eventsMonth: 'Month',
+    noEventsInMonth: 'No events in this month.',
+    eventTitle: 'Title',
+    eventStart: 'Start',
+    eventEnd: 'End',
+    eventLocation: 'Location',
+    eventAllDay: 'All day',
+    bulkAction: 'Bulk action',
+    bulkActivate: 'Activate',
+    bulkPause: 'Pause',
+    bulkPublic: 'Set to public',
+    bulkAuthenticated: 'Restrict to signed-in users',
+    bulkApply: 'Apply',
+    selectedSources: '{n} sources selected',
+    selectAllSources: 'Select all sources',
+    selection: 'Selection',
+    selectSource: 'Select source {name}',
+    bulkUpdated: 'Sources updated',
+    bulkSelect: 'Add multiple calendars',
+    selectAllCalendars: 'Select all',
+    clearCalendars: 'Clear selection',
+    selectedCalendars: '{n} calendars selected',
+    createDrafts: 'Create selected as drafts',
+    bulkCreated: 'Calendars created as drafts',
+    bulkHint:
+      'Names and colors are preserved. Sources are initially restricted to signed-in users and must then be activated individually.',
     createDraft: 'Create as draft',
     sectionCalendar: 'Calendar',
     connection: 'Connection',
@@ -488,6 +523,15 @@ const en: typeof de = {
     confirmFilesCheck: 'I confirm that these private files may be published.',
   },
   views: {
+    colorTitles: 'Use calendar colour for titles',
+    legend: 'Show calendar legend',
+    columns: 'Columns (1–4)',
+    dayLimit: 'Visible events per day (1–20)',
+    month: 'Displayed month (optional)',
+    navigationGroup: 'Shared month navigation',
+    navigationGroupHint:
+      'Use the same group name to link list and month views. Leave empty for independent navigation.',
+
     subtitle:
       'Combinations of sources, display mode and templates – embedded via shortcode or block.',
     add: 'Create view',
@@ -496,6 +540,63 @@ const en: typeof de = {
     editorSubtitle: 'Sources, display, formats and default filters.',
     emptyTitle: 'No views yet',
     emptyText: 'A view defines which sources are displayed and how.',
+    modeSwitcher: 'Display tabs on the website',
+    modeSwitcherHint: 'Default: off. Shows only the display modes allowed above as visible tabs.',
+    showSearch: 'Show event search',
+    showSearchHint: 'Default: on for every display mode. Searches the selected date range.',
+    defaultDisplayMode: 'Default display mode',
+    displayHelp: {
+      open: 'Understand the layout',
+      title: 'How the calendar view is built',
+      intro:
+        'Sources supply events. The display mode sets the structure, while templates style its content.',
+      labels: {
+        overview: 'Help with the calendar view structure',
+        mode: 'Help with the default display mode',
+        allowedModes: 'Help with allowed display modes',
+        templates: 'Help with alternative event templates',
+        modeTemplates: 'Help with templates per display mode',
+      },
+      tips: {
+        overview:
+          'Display modes, templates and allowed alternatives explained. Click for full help.',
+        mode: 'Output structure: list, cards or a month grid. Templates control the design. Click for details.',
+        allowedModes:
+          'Allows different display modes through a shortcode or block. Enable “Display tabs on the website” to let visitors switch modes. Click for details.',
+        templates:
+          'Approved alternatives for individual events. Changes neither the default display mode nor the default template. Click for details.',
+        modeTemplates:
+          'One display mode can inherit the view templates or use its own. Click for details.',
+      },
+      modes: {
+        list: 'A continuous event list, optionally with multiple columns.',
+        cards: 'Events as cards in a grid.',
+        month: 'A calendar grid with weekdays and day cells; events appear within their day.',
+      },
+      templatesTitle: 'What do the templates control?',
+      templates: {
+        container:
+          'The outer frame: for example, the heading, month groups, events and navigation.',
+        event:
+          'One event: for example, its date, title, description and image. In a month grid it is used inside a day cell.',
+        detail: 'The full display shown when an event is opened.',
+      },
+      fixedTemplates:
+        'A template chosen for the whole view stays the same when switching between list, cards and month; only “Preset (default)” picks the matching default template automatically. A view that should look identical in every display mode therefore needs no further settings.',
+      modeTemplates:
+        'Without their own choice, a display mode uses the template selected above. A mode specific choice applies to that mode only: cards can have their own container and event templates while list and month keep the shared one. This is the order of precedence: approved template from the embed, mode specific template, view template, preset of the mode.',
+      allowedModes:
+        'Controls which display modes an embed may request instead of the default, for example with view="cards". The default display mode is always allowed.',
+      allowedTemplates:
+        'Approves additional event templates for the template parameter. Without this parameter, the event template selected above remains active; that template is always allowed. The container and detail templates stay the same.',
+      exampleTitle: 'Example',
+      example:
+        'The default is “List”. You also allow “Cards” and approve event template ID 7. This embed then uses cards with template 7:',
+      noSwitcher:
+        'These permissions alone do not create a visible selector. Enable “Display tabs on the website” to let visitors choose an allowed mode. Alternative event templates are still chosen when embedding.',
+      presets:
+        'For a complete design from the preset gallery, select its matching container and event templates, and optionally its detail template.',
+    },
     displayMode: 'Display mode',
     modes: { list: 'List', cards: 'Cards', month: 'Month' },
     sources: 'Sources',
@@ -515,14 +616,23 @@ const en: typeof de = {
     colorFor: 'Colour for “{name}”',
     useSourceColor: 'Use source colour',
     sectionDisplay: 'Display & templates',
-    allowedModes: 'Allowed display modes (switchable via filter)',
-    allowedModesHint: 'The default display mode is always allowed.',
+    allowedModes: 'Display modes allowed for embeds',
+    allowedModesHint:
+      'The default display mode is always allowed. Additional modes can be requested through a shortcode or block.',
     presetDefault: 'Preset (default)',
     containerTemplate: 'Container template',
     eventTemplate: 'Event template',
     detailTemplate: 'Detail template',
+    templatesGeneralHint:
+      'These templates apply to every display mode – unless a mode selects its own below.',
+    modeTemplates: 'Templates per display mode',
+    modeTemplatesHint:
+      'Only the selected mode differs from the template above, for example cards with their own event template. “View default” inherits the choice above (or the preset of the mode if nothing is selected there).',
+    modeTemplateInherit: 'View default',
+    modeTemplateLabel: '{kind} for {mode}',
     allowedTemplates: 'Alternative event templates',
-    allowedTemplatesHint: 'Can be chosen with the “template” filter.',
+    allowedTemplatesHint:
+      'Additional event templates for the shortcode “template” parameter. Without it, the template selected above applies.',
     sectionFormat: 'Time & format',
     timezone: 'Time zone',
     siteTimezone: 'Site default ({tz})',
@@ -531,6 +641,9 @@ const en: typeof de = {
     dateFormat: 'Date format',
     timeFormat: 'Time format',
     formatHint: 'PHP date format. Empty = WordPress setting ({format}).',
+    primaryColor: 'Primary colour',
+    primaryColorReset: 'Use default',
+    primaryColorHint: 'Colours the display mode tabs and the “Search” button of this view. Default: theme colours.',
     showNavigation: 'Show navigation',
     showNavigationHint:
       'Month view: “Previous month” / “Next month”. List and cards: “Earlier events” / “More events”. Can be overridden in the shortcode with navigation="false" or "true".',
@@ -610,6 +723,13 @@ const en: typeof de = {
     cssEditor: 'Template CSS',
     syntaxHint:
       'Placeholders in double curly braces, sections with # (present) or ^ (absent) and / to close them. No scripts, event handlers or external resources.',
+    reset: 'Reset',
+    resetTitle: 'Reset to preset?',
+    resetMarkupText: 'The HTML is replaced by the current version of the preset “{key}”.',
+    resetCssText: 'The CSS is replaced by the current version of the preset “{key}”.',
+    resetC1: 'Your changes in this field are discarded. The template is only changed after saving.',
+    resetMissing: 'The preset “{key}” no longer exists.',
+    resetDone: 'Reset to preset. Save to apply.',
     cssHint:
       "The CSS is automatically scoped to the template; url(), {'@'}import and similar are not allowed.",
     validation: 'Validation',

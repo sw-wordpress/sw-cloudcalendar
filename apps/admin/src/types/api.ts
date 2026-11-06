@@ -21,7 +21,7 @@ export interface WpError {
 
 /* ------------------------------------------------------------------ connections */
 
-export type Provider = 'google' | 'microsoft' | 'ics';
+export type Provider = 'google' | 'microsoft' | 'ics' | 'local';
 export type AuthMode = 'oauth' | 'api_key' | 'none' | 'http_header';
 export type ConnectionStatus =
   'disconnected' | 'connecting' | 'connected' | 'reauth_required' | 'failed' | 'disabled';
@@ -44,7 +44,7 @@ export interface MicrosoftConnectionSettings {
 }
 export type ConnectionSettings = IcsConnectionSettings &
   GoogleConnectionSettings &
-  MicrosoftConnectionSettings;
+  MicrosoftConnectionSettings & { adapter?: string };
 
 export interface ProviderCapabilities {
   list_calendars: boolean;
@@ -151,6 +151,7 @@ export interface AttachmentStats {
 }
 
 export interface Source {
+  local?: boolean;
   id: number;
   connection_id: number;
   provider: Provider | null;
@@ -187,12 +188,12 @@ export interface SourceCreateInput {
 }
 
 export interface SourceUpdateInput {
-  name: string;
-  color: string;
-  timezone: string;
-  visibility: Visibility;
-  roles: string[];
-  settings: Partial<SourceSettings>;
+  name?: string;
+  color?: string;
+  timezone?: string;
+  visibility?: Visibility;
+  roles?: string[];
+  settings?: Partial<SourceSettings>;
   status?: EditableSourceStatus;
   confirm_publication?: true;
   confirm_private_attachments?: true;
@@ -230,6 +231,13 @@ export type DisplayMode = 'list' | 'cards' | 'month';
 
 /** Default filters of a view (same keys as the shortcode/REST filter parameters). */
 export interface ViewDefaultFilters {
+  mode_switcher?: boolean | string;
+  show_search?: boolean | string;
+  color_titles?: boolean | string;
+  legend?: boolean | string;
+  columns?: number | string;
+  day_limit?: number | string;
+  navigation_group?: string;
   source?: string | number[];
   view?: DisplayMode;
   limit?: number | string;
@@ -247,6 +255,12 @@ export interface ViewDefaultFilters {
   per_page?: number | string;
 }
 
+/**
+ * Template overrides per display mode (only modes with an override are listed). REST serialises an empty map as
+ * `{}`; a map that never held an entry can arrive as `[]`, so reading it goes through `viewModeTemplates()`.
+ */
+export type ViewModeTemplates = Partial<Record<DisplayMode, number>>;
+
 export interface ViewInput {
   name: string;
   enabled: boolean;
@@ -258,10 +272,15 @@ export interface ViewInput {
   event_template_id: number | null;
   detail_template_id: number | null;
   allowed_template_ids: number[];
+  /** display mode -> template overriding the view-wide one (empty object, or `[]`, when nothing is set) */
+  container_template_ids_by_mode: ViewModeTemplates;
+  event_template_ids_by_mode: ViewModeTemplates;
   timezone: string;
   language: string;
   /** source id -> #rrggbb (serialised as an object; an empty one may arrive as `[]` or `{}`) */
   color_rules: Record<string, string>;
+  /** `#rrggbb` accent of mode tabs and search button; empty = default. */
+  primary_color: string;
   html_cache: boolean;
   date_format: string;
   time_format: string;
@@ -490,7 +509,8 @@ export interface AuditEntry {
 export interface Meta {
   /** role slug -> translated name */
   roles: Record<string, string>;
-  auth_modes: Record<Provider, AuthMode[]>;
+  auth_modes: Record<Exclude<Provider, 'local'>, AuthMode[]> & { local?: AuthMode[] };
+  local_sources?: { id: string; name: string }[];
   supported_mime_types: string[];
   default_mime_types: string[];
   event_types: string[];
@@ -506,4 +526,12 @@ export interface Meta {
 
 export interface DeletedResult {
   deleted: boolean;
+}
+
+export interface SourceEvent {
+  title: string;
+  start: string;
+  end: string;
+  all_day: boolean;
+  location: string;
 }

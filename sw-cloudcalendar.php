@@ -3,10 +3,10 @@
  * Plugin Name:       SW CloudCalendar
  * Plugin URI:        https://example.com/sw-cloudcalendar
  * Description:       Read-only integration of Google Calendar, Microsoft 365 and ICS feeds: local synchronisation, flexible templates, protected attachments.
- * Version:           1.0.0
+ * Version:           0.6.2
  * Requires at least: 6.5
  * Requires PHP:      8.2
- * Author:            SW CloudCalendar contributors
+ * Author:            Stefan Warnat
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       sw-cloudcalendar

@@ -60,7 +60,7 @@ final class Lifecycle {
 		$root    = (string) ( $storage['fallback'] ?? '' );
 		Schema::drop_all();
 		Capabilities::revoke_all();
-		foreach ( array( Settings::OPTION, StorageGuard::OPTION, TransientCache::GENERATION_OPTION, TransientCache::STATS_OPTION, QueueRunner::LAST_TICK_OPTION, QueueRunner::LAST_MAINTENANCE_OPTION ) as $option ) {
+		foreach ( array( Settings::OPTION, StorageGuard::OPTION, TransientCache::GENERATION_OPTION, TransientCache::STATS_OPTION, QueueRunner::LAST_TICK_OPTION, QueueRunner::LAST_MAINTENANCE_OPTION, 'sw_calendar_preset_revision' ) as $option ) {
 			delete_option( $option );
 		}
 		// Only the plugin's own fallback directory below uploads is deleted; a configured external path is left alone.

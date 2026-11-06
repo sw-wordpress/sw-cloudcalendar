@@ -9,6 +9,7 @@ use SW\Calendar\Application\Port\HtmlSanitizerInterface;
 use SW\Calendar\Application\Port\UrlGeneratorInterface;
 use SW\Calendar\Application\Render\Component\AttachmentRenderer;
 use SW\Calendar\Application\Render\Template\TrustedHtml;
+use SW\Calendar\Application\Render\Template\TemplateCompiler;
 use SW\Calendar\Domain\Attachment\Attachment;
 use SW\Calendar\Domain\Event\Occurrence;
 use SW\Calendar\Domain\Event\OccurrenceStatus;
@@ -24,6 +25,7 @@ final class EventValues
         private readonly UrlGeneratorInterface $urls,
         private readonly HtmlSanitizerInterface $sanitizer,
         private readonly AttachmentRenderer $attachments,
+        private readonly RenderLabels $labels = new RenderLabels(),
     ) {
     }
 
@@ -63,9 +65,19 @@ final class EventValues
         $images = $showImages ? array_values(array_filter($attachments, static fn (Attachment $a): bool => $a->isImage)) : [];
         $files = $showFiles ? array_values(array_filter($attachments, static fn (Attachment $a): bool => !$a->isImage)) : [];
         $firstImage = $images[0] ?? null;
+        $localImage = $showImages ? $occurrence->imageUrl : '';
         $descriptionHtml = $occurrence->descriptionHtml !== '' ? $this->sanitizer->sanitizeDescription($occurrence->descriptionHtml) : '';
 
         return [
+            'event.labels.images' => $this->labels->images,
+            'event.has_multiple_images' => $localImage === '' && count($images) > 1,
+            'event.labels.details' => $this->labels->eventDetails,
+            'event.labels.date' => $this->labels->dateLabel,
+            'event.labels.time' => $this->labels->timeLabel,
+            'event.labels.location' => $this->labels->locationLabel,
+            'event.labels.all_day' => $this->labels->allDay,
+            'event.labels.show_image' => $this->labels->showImage,
+            'event.color_text' => ViewRenderer::textColor($colorOverride ?? $source->color ?? ''),
             'event.id' => (string) $occurrence->id,
             'event.title' => $occurrence->title,
             'event.description' => $occurrence->descriptionText,
@@ -83,16 +95,18 @@ final class EventValues
             'event.end_iso' => $occurrence->allDay ? $endInclusive->format('Y-m-d') : $end->format(DATE_ATOM),
             'event.day' => $this->dates->format($start, $tz, 'j'),
             'event.month_short' => $this->dates->format($start, $tz, 'M'),
+            'event.weekday_short' => $this->dates->format($start, $tz, 'D'),
             'event.weekday' => $this->dates->format($start, $tz, 'l'),
             'event.all_day' => $occurrence->allDay,
             'event.multi_day' => $multiDay,
             'event.tentative' => $occurrence->status === OccurrenceStatus::Tentative,
             'event.calendar_name' => $source->name ?? '',
             'event.color' => $colorOverride ?? $source->color ?? '',
-            'event.image' => $firstImage === null ? '' : ($firstImage->previewKey !== null ? $this->urls->attachmentPreview($firstImage->id) : $this->urls->attachmentContent($firstImage->id)),
-            'event.has_images' => $images !== [],
+            'event.image' => $firstImage === null ? $localImage : ($firstImage->previewKey !== null ? $this->urls->attachmentPreview($firstImage->id) : $this->urls->attachmentContent($firstImage->id)),
+            'event.image_alt' => $occurrence->imageAlt,
+            'event.has_images' => $images !== [] || $localImage !== '',
             'event.has_files' => $files !== [],
-            'event.attachments.gallery' => $this->attachments->gallery($images),
+            'event.attachments.gallery' => $localImage === '' ? $this->attachments->gallery($images) : new TrustedHtml('<figure class="swc-gallery"><img loading="lazy" src="' . TemplateCompiler::escape($localImage) . '" alt="' . TemplateCompiler::escape($occurrence->imageAlt) . '"></figure>'),
             'event.attachments.file_list' => $this->attachments->fileList($files),
         ];
     }

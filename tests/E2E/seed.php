@@ -9,6 +9,7 @@ use SW\Calendar\Domain\Connection\Provider;
 use SW\Calendar\Domain\Source\SourceSettings;
 use SW\Calendar\Domain\Source\SourceStatus;
 use SW\Calendar\Domain\Source\Visibility;
+use SW\Calendar\Domain\Template\TemplateKind;
 use SW\Calendar\Services;
 use SW\Calendar\Tests\Support\FakeHttpClient;
 
@@ -31,11 +32,19 @@ foreach ( array( $public, $restricted ) as $id ) {
 	echo "sync $id: {$report->status} +{$report->metrics->created}\n";
 }
 $views = $services->views();
-$list  = $views->save( null, 'Termine', true, array( 'source_ids' => array( $public ), 'display_mode' => 'list', 'allowed_modes' => array( 'list', 'cards', 'month' ), 'html_cache' => true ) );
+// Only one display is designed differently: cards use the "Monatsliste – Bild rechts" event template, list and month keep their preset.
+$cards_event = null;
+foreach ( $services->templates()->all( TemplateKind::Event ) as $template ) {
+	if ( 'image-right-list' === $template->presetKey ) {
+		$cards_event = $template->id;
+		break;
+	}
+}
+$list  = $views->save( null, 'Termine', true, array( 'source_ids' => array( $public ), 'display_mode' => 'list', 'allowed_modes' => array( 'list', 'cards', 'month' ), 'event_template_ids_by_mode' => null === $cards_event ? array() : array( 'cards' => $cards_event ), 'html_cache' => true ) );
 $month = $views->save( null, 'Monat', true, array( 'source_ids' => array( $public ), 'display_mode' => 'month', 'html_cache' => true ) );
 $mixed = $views->save( null, 'Intern', true, array( 'source_ids' => array( $public, $restricted ), 'display_mode' => 'list', 'html_cache' => true ) );
-foreach ( array( 'liste' => "[sw_calendar id=\"$list\" limit=\"8\"]", 'karten' => "[sw_calendar id=\"$list\" view=\"cards\" limit=\"6\"]", 'monat' => "[sw_calendar id=\"$month\"]", 'intern' => "[sw_calendar id=\"$mixed\" limit=\"20\"]", 'block' => "<!-- wp:sw-cloudcalendar/calendar {\"viewId\":$list,\"limit\":3} /-->" ) as $slug => $content ) {
+foreach ( array( 'liste' => "[sw_calendar id=\"$list\" limit=\"8\"]", 'karten' => "[sw_calendar id=\"$list\" view=\"cards\" limit=\"6\"]", 'karten-monat' => "[sw_calendar id=\"$list\" view=\"month\"]", 'monat' => "[sw_calendar id=\"$month\"]", 'intern' => "[sw_calendar id=\"$mixed\" limit=\"20\"]", 'block' => "<!-- wp:sw-cloudcalendar/calendar {\"viewId\":$list,\"limit\":3} /-->" ) as $slug => $content ) {
 	wp_insert_post( array( 'post_type' => 'page', 'post_status' => 'publish', 'post_title' => ucfirst( $slug ), 'post_name' => $slug, 'post_content' => $content ) );
 }
 flush_rewrite_rules();
-echo "views $list $month $mixed\n";
+echo "views $list $month $mixed (cards event template " . ( null === $cards_event ? '0' : $cards_event ) . ")\n";

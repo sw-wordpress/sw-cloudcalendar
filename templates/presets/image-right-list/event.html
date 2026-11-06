@@ -1,0 +1,13 @@
+<article class="swc-right-row">
+  <div class="swc-right-row__date">
+    <span class="swc-right-row__weekday">{{event.weekday_short}}</span>
+    <span class="swc-right-row__day">{{event.day}}</span>
+  </div>
+  <div class="swc-right-row__content">
+    <p class="swc-right-row__meta"><time datetime="{{event.start_iso}}">{{event.date_range}}</time></p>
+    <h3 class="swc-right-row__title"><a href="{{event.detail_url}}" data-swc-detail="">{{event.title}}</a></h3>
+    {{#event.excerpt}}<p class="swc-right-row__excerpt">{{event.excerpt}}</p>{{/event.excerpt}}
+    {{^event.excerpt}}{{#event.location}}<p class="swc-right-row__excerpt">{{event.location}}</p>{{/event.location}}{{/event.excerpt}}
+  </div>
+  {{#event.has_images}}<a class="swc-right-row__media" href="{{event.detail_url}}" data-swc-detail="" aria-label="{{event.title}}"><img class="swc-right-row__image" src="{{event.image}}" alt="{{event.image_alt}}" loading="lazy"></a>{{/event.has_images}}
+</article>

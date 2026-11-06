@@ -21,7 +21,7 @@ use SW\Calendar\Presentation\Frontend\ViewLocale;
  */
 final class PublicController extends BaseController {
 
-	private const FILTER_PARAMS = array( 'source', 'view', 'limit', 'days', 'start', 'end', 'past', 'search', 'location', 'category', 'exclude', 'sort', 'template', 'show_images', 'show_attachments', 'month', 'page', 'per_page', 'navigation' );
+	private const FILTER_PARAMS = array( 'source', 'view', 'limit', 'days', 'start', 'end', 'past', 'search', 'location', 'category', 'exclude', 'sort', 'template', 'show_images', 'show_attachments', 'month', 'page', 'per_page', 'navigation', 'color_titles', 'legend', 'columns', 'day_limit', 'navigation_group', 'mode_switcher', 'show_search' );
 
 	public function register_routes(): void {
 		register_rest_route(
@@ -51,12 +51,16 @@ final class PublicController extends BaseController {
 		);
 		register_rest_route(
 			self::NAMESPACE,
-			'/events/(?P<id>\d+)',
+			'/events/(?P<id>\d+|local\.[1-9][0-9]*\.[A-Za-z0-9_-]{1,254})',
 			array(
 				'methods'             => 'GET',
 				'callback'            => array( $this, 'event' ),
 				'permission_callback' => '__return_true',
-				'args'                => $this->id_arg() + array(
+				'args'                => array(
+					'id'       => array(
+						'type'     => 'string',
+						'required' => true,
+					),
 					'view'     => array(
 						'type'              => 'integer',
 						'required'          => true,
@@ -148,7 +152,7 @@ final class PublicController extends BaseController {
 			return $this->too_many();
 		}
 		$this->use_page_url( $request );
-		$result = ViewLocale::run( $this->services, ViewLocale::for_view( $this->services, (int) $request['view'] ), fn (): RenderResult => $this->services->renderer()->renderDetail( (int) $request['view'], (int) $request['id'], $this->current_user() ) );
+		$result = ViewLocale::run( $this->services, ViewLocale::for_view( $this->services, (int) $request['view'] ), fn (): RenderResult => $this->services->renderer()->renderDetail( (int) $request['view'], (string) $request['id'], $this->current_user() ) );
 		if ( RenderResult::OK !== $result->status ) {
 			return $this->error( 'swc_not_found', __( 'Event not found.', 'sw-cloudcalendar' ), 404 );
 		}

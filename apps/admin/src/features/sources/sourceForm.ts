@@ -80,8 +80,10 @@ export function requiredConfirmations(error: ApiError): ConfirmationFlag[] | nul
  * Whether a calendar of this connection is private at the provider (mirrors
  * SourceManager::provider_private: OAuth and authenticated ICS feeds).
  */
-export function connectionIsPrivate(c: Pick<Connection, 'auth_mode'> | null | undefined): boolean {
-  return c?.auth_mode === 'oauth' || c?.auth_mode === 'http_header';
+export function connectionIsPrivate(
+  c: (Pick<Connection, 'auth_mode'> & Partial<Pick<Connection, 'provider'>>) | null | undefined,
+): boolean {
+  return c?.provider === 'local' || c?.auth_mode === 'oauth' || c?.auth_mode === 'http_header';
 }
 
 /** Fixed external id used by ICS connections (one feed per connection). */

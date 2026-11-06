@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace SW\Calendar\Presentation\Admin;
 
 use SW\Calendar\Application\Render\PresetLibrary;
+use SW\Calendar\Application\Render\PresetUpgrader;
 use SW\Calendar\Application\Render\PreviewRenderer;
 use SW\Calendar\Application\Render\Template\CssSanitizer;
 use SW\Calendar\Application\Render\Template\PlaceholderRegistry;
@@ -121,21 +122,22 @@ final class TemplateManager {
 			throw new ValidationException( array( 'id' => 'not_found' ), 'Template not found.', 404 );
 		}
 		$errors = array();
-		$name   = trim( sanitize_text_field( (string) ( $data['name'] ?? $existing?->name ?? '' ) ) );
+		$name   = trim( sanitize_text_field( (string) ( $data['name'] ?? $existing->name ?? '' ) ) );
 		if ( '' === $name || mb_strlen( $name ) > 190 ) {
 			$errors['name'] = 'invalid';
 		}
 		// The kind of an existing template cannot change: views reference it by kind.
-		$kind = $existing?->kind ?? TemplateKind::tryFrom( (string) ( $data['kind'] ?? '' ) );
+		$kind = $existing->kind ?? TemplateKind::tryFrom( (string) ( $data['kind'] ?? '' ) );
 		$mode = EditorMode::tryFrom( (string) ( $data['editor_mode'] ?? $existing?->editorMode->value ?? 'html' ) );
 		if ( null === $kind ) {
 			throw new ValidationException( array( 'kind' => 'invalid' ) );
 		}
 		if ( null === $mode ) {
 			$errors['editor_mode'] = 'invalid';
+			$mode                  = EditorMode::Html; // Reported below; keeps the type non-null.
 		}
-		$body   = str_replace( "\r\n", "\n", (string) ( $data['body'] ?? $existing?->body ?? '' ) );
-		$css    = str_replace( "\r\n", "\n", (string) ( $data['css'] ?? $existing?->css ?? '' ) );
+		$body   = str_replace( "\r\n", "\n", (string) ( $data['body'] ?? $existing->body ?? '' ) );
+		$css    = str_replace( "\r\n", "\n", (string) ( $data['css'] ?? $existing->css ?? '' ) );
 		$schema = array_key_exists( 'visual_schema', $data ) ? $data['visual_schema'] : $existing?->visualSchema;
 		if ( null !== $schema && ( ! is_array( $schema ) || strlen( (string) wp_json_encode( $schema ) ) > self::MAX_SCHEMA_BYTES ) ) {
 			$errors['visual_schema'] = 'invalid';
@@ -153,15 +155,21 @@ final class TemplateManager {
 		if ( array() !== $errors ) {
 			throw new ValidationException( $errors );
 		}
-		$id = $this->services->templates()->save( $id, $name, $kind, $mode, $body, $css, $schema, $existing?->presetKey ?? ( isset( $data['preset_key'] ) ? sanitize_key( (string) $data['preset_key'] ) : null ) );
+		$id = $this->services->templates()->save( $id, $name, $kind, $mode, $body, $css, $schema, $existing->presetKey ?? ( isset( $data['preset_key'] ) ? sanitize_key( (string) $data['preset_key'] ) : null ) );
 		$this->services->audit()->record( null === $existing ? 'template_created' : 'template_updated', 'template', $id );
-		return $this->services->templates()->find( $id );
+		return $this->require( $id );
+	}
+
+	private function require( int $id ): Template {
+		$template = $this->services->templates()->find( $id );
+		if ( null === $template ) {
+			throw new ValidationException( array( 'id' => 'not_found' ), 'Template not found.', 404 );
+		}
+		return $template;
 	}
 
 	public function delete( int $id ): void {
-		if ( null === $this->services->templates()->find( $id ) ) {
-			throw new ValidationException( array( 'id' => 'not_found' ), 'Template not found.', 404 );
-		}
+		$this->require( $id );
 		if ( array() !== $this->services->views()->ids_using_template( $id ) ) {
 			throw new ValidationException( array( 'id' => 'in_use' ), 'The template is used by a view.', 409 );
 		}
@@ -192,7 +200,7 @@ final class TemplateManager {
 				null,
 				$key
 			);
-			$created[] = $this->services->templates()->find( $id );
+			$created[] = $this->require( $id );
 		}
 		return $created;
 	}
@@ -205,6 +213,15 @@ final class TemplateManager {
 		foreach ( $this->services->presets()->keys() as $key ) {
 			$this->install_preset( $key );
 		}
+	}
+
+	/** Brings stored preset copies that still carry an outdated shipped CSS up to date (customised ones stay). */
+	public function upgrade_legacy_presets(): int {
+		$count = ( new PresetUpgrader( $this->services->templates(), $this->services->presets() ) )->upgrade();
+		if ( $count > 0 ) {
+			$this->services->audit()->record( 'templates_preset_upgraded', 'template', 0 );
+		}
+		return $count;
 	}
 
 	/**
@@ -239,14 +256,14 @@ final class TemplateManager {
 				);
 			}
 		}
-		if ( array() !== $errors ) {
+		if ( array() !== $errors || ! isset( $parts['container'], $parts['event'], $parts['detail'] ) ) {
 			return array(
 				'html'   => '',
 				'css'    => (object) array(),
 				'errors' => $errors,
 			);
 		}
-		$urls     = new PreviewUrlGenerator( SW_CALENDAR_URL . 'assets/img/preview.png' );
+		$urls     = new PreviewUrlGenerator( add_query_arg( 'ver', SW_CALENDAR_VERSION, SW_CALENDAR_URL . 'assets/img/preview.png' ) );
 		$renderer = new PreviewRenderer( $this->services->dates(), $urls, $this->services->sanitizer(), $this->services->labels(), (int) get_option( 'start_of_week', 1 ) );
 		$tz       = new \DateTimeZone( Settings::site_timezone() );
 		$result   = $renderer->render( $parts['container'], $parts['event'], $parts['detail'], $mode, $this->services->clock()->now(), $tz, $scopes, $css );

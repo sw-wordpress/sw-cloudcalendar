@@ -9,7 +9,17 @@ import {
   writableSettings,
   defaultSourceSettings,
 } from '../src/features/sources/sourceForm';
-import { cleanColorRules, fromFilterForm, toFilterForm } from '../src/features/views/viewForm';
+import {
+  blankView,
+  cleanColorRules,
+  cleanModeTemplates,
+  fromFilterForm,
+  fromModeTemplateForm,
+  toFilterForm,
+  toModeTemplateForm,
+  toViewInput,
+} from '../src/features/views/viewForm';
+import type { CalendarView, DisplayMode } from '../src/types/api';
 import { normaliseConfig } from '../src/config';
 import type { Diagnostics } from '../src/types/api';
 import { buildPreviewDocument, escapeStyleContent, flattenCss } from '../src/utils/previewDoc';
@@ -110,6 +120,46 @@ describe('view form', () => {
     expect(cleanColorRules({ '1': '#AABBCC', '2': '#000000', '3': 'red' }, [1, 3])).toEqual({
       '1': '#aabbcc',
     });
+  });
+  it('keeps the primary colour and defaults to none for older views', () => {
+    expect(blankView().primary_color).toBe('');
+    const stored = { ...blankView(), id: 5, revision: 1, primary_color: '#aa3300' } as CalendarView;
+    expect(toViewInput(stored).primary_color).toBe('#aa3300');
+    const legacy = { ...blankView(), id: 6, revision: 1 } as unknown as Record<string, unknown>;
+    delete legacy.primary_color;
+    expect(toViewInput(legacy as unknown as CalendarView).primary_color).toBe('');
+  });
+  it('carries mode specific templates and lets unset modes inherit again', () => {
+    // REST may answer an empty map as `[]`, so a stored view is read defensively.
+    const stored = {
+      ...blankView(),
+      id: 5,
+      revision: 1,
+      shortcode: '[sw_calendar id="5"]',
+      dynamic: false,
+      event_template_ids_by_mode: { cards: 7, list: 0 },
+      container_template_ids_by_mode: [],
+    } as unknown as CalendarView;
+    const copy = toViewInput(stored);
+    expect(copy.event_template_ids_by_mode).toEqual({ cards: 7 }); // an id of 0 is no override
+    expect(copy.container_template_ids_by_mode).toEqual({});
+
+    const form = toModeTemplateForm(copy);
+    expect(form.event).toEqual({ list: null, cards: 7, month: null });
+    expect(form.container).toEqual({ list: null, cards: null, month: null });
+    expect(fromModeTemplateForm(form)).toEqual({
+      container_template_ids_by_mode: {},
+      event_template_ids_by_mode: { cards: 7 },
+    });
+
+    form.event.cards = null;
+    expect(fromModeTemplateForm(form).event_template_ids_by_mode).toEqual({});
+    expect(cleanModeTemplates([])).toEqual({});
+    const hostile: unknown = { cards: '7', month: 3, week: 4, list: null };
+    expect(
+      cleanModeTemplates(hostile as Partial<Record<DisplayMode, number | null>>),
+      'Strings, unknown modes and empty values never become overrides',
+    ).toEqual({ month: 3 });
   });
 });
 

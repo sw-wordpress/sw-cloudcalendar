@@ -13,7 +13,7 @@ import { setupLinks, setupValues } from './providerSetup';
  */
 const open = defineModel<boolean>({ required: true });
 const props = defineProps<{
-  provider: Exclude<Provider, 'ics'>;
+  provider: Exclude<Provider, 'ics' | 'local'>;
   redirectUri: string;
   attachmentAccess: boolean;
 }>();

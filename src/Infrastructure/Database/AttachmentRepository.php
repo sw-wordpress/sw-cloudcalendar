@@ -173,7 +173,7 @@ final class AttachmentRepository implements AttachmentStoreInterface, Attachment
 				$limit
 			)
 		);
-		return array_map( 'strval', is_array( $keys ) ? $keys : array() );
+		return array_map( 'strval', $keys );
 	}
 
 	/**
@@ -184,7 +184,7 @@ final class AttachmentRepository implements AttachmentStoreInterface, Attachment
 	public function pending_refs( int $source_id ): array {
 		$table = Schema::table( 'attachments' );
 		$refs  = Db::wpdb()->get_col( Db::wpdb()->prepare( "SELECT DISTINCT provider_ref_hash FROM {$table} WHERE source_id = %d AND sync_state IN (%s, %s)", $source_id, 'pending', 'failed' ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		return array_map( 'strval', is_array( $refs ) ? $refs : array() );
+		return array_map( 'strval', $refs );
 	}
 
 	/**
@@ -193,7 +193,7 @@ final class AttachmentRepository implements AttachmentStoreInterface, Attachment
 	public function preview_keys_for( string $storage_key ): array {
 		$table = Schema::table( 'attachments' );
 		$keys  = Db::wpdb()->get_col( Db::wpdb()->prepare( "SELECT DISTINCT preview_key FROM {$table} WHERE storage_key = %s AND preview_key IS NOT NULL AND preview_key <> ''", $storage_key ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		return array_map( 'strval', is_array( $keys ) ? $keys : array() );
+		return array_map( 'strval', $keys );
 	}
 
 	public function forgetStorageKey( string $storageKey ): void {
@@ -258,7 +258,7 @@ final class AttachmentRepository implements AttachmentStoreInterface, Attachment
 		}
 		return array(
 			'counts'      => $counts,
-			'last_errors' => array_values( array_map( 'strval', is_array( $errors ) ? $errors : array() ) ),
+			'last_errors' => array_map( 'strval', $errors ),
 			'bytes'       => $this->storedBytes( $source_id ),
 		);
 	}

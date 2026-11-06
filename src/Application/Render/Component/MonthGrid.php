@@ -19,17 +19,19 @@ use SW\Calendar\Domain\Event\Occurrence;
  */
 final class MonthGrid
 {
+    /** @param array<string, mixed> $navigationFilters Current search and mode for non-JavaScript navigation. */
     public function __construct(
         private readonly DateFormatterInterface $dates,
         private readonly UrlGeneratorInterface $urls,
         private readonly RenderLabels $labels,
+        private readonly array $navigationFilters = [],
     ) {
     }
 
     /**
-     * @param list<array{occurrence: Occurrence, html: string}> $events Rendered event templates in display order.
+     * @param list<array{occurrence: Occurrence, html: string, color?: string}> $events Rendered event templates in display order.
      */
-    public function render(QueryRange $range, array $events, \DateTimeZone $tz, \DateTimeImmutable $now): TrustedHtml
+    public function render(QueryRange $range, array $events, \DateTimeZone $tz, \DateTimeImmutable $now, int $dayLimit = 3): TrustedHtml
     {
         $month = $range->month ?? new \DateTimeImmutable($range->floatingStart->format('Y-m-01'), $tz);
         $first = new \DateTimeImmutable($range->floatingStart->format('Y-m-d') . ' 00:00:00', $tz);
@@ -80,8 +82,16 @@ final class MonthGrid
                 . '</div>';
             if ($items !== []) {
                 $html .= '<ul class="swc-month__events">';
-                foreach ($items as $item) {
-                    $html .= '<li class="swc-month__event" data-swc-event="' . $item['occurrence']->id . '">' . $item['html'] . '</li>';
+                foreach ($items as $index => $item) {
+                    if ($index === $dayLimit) {
+                        $html .= '<li class="swc-month__more"><details><summary>' . $this->e(sprintf($this->labels->moreEvents, count($items) - $dayLimit)) . '</summary><ul class="swc-month__events">';
+                    }
+                    $color = \SW\Calendar\Application\Render\ViewRenderer::color($item['color'] ?? '');
+                    $text = \SW\Calendar\Application\Render\ViewRenderer::textColor($color);
+                    $html .= '<li class="swc-month__event" style="--swc-event-color:' . $color . ';--swc-event-text:' . $text . '" data-swc-event="' . $this->e((string) $item['occurrence']->id) . '">' . $item['html'] . '</li>';
+                }
+                if (count($items) > $dayLimit) {
+                    $html .= '</ul></details></li>';
                 }
                 $html .= '</ul>';
             }
@@ -107,7 +117,7 @@ final class MonthGrid
      * Earlier/further events of lists and cards. Unavailable directions are rendered as disabled text so the layout
      * does not jump; links work without JavaScript and are enhanced by the frontend script.
      */
-    public function listNavigation(int $viewId, int $page, bool $hasPrevious, bool $hasNext): TrustedHtml
+    public function listNavigation(int $viewId, int $page, bool $hasPrevious, bool $hasNext, ?string $month = null): TrustedHtml
     {
         if (!$hasPrevious && !$hasNext) {
             return new TrustedHtml('');
@@ -115,13 +125,13 @@ final class MonthGrid
         $previous = $page === 1 ? -1 : $page - 1;
         $next = $page === -1 ? 1 : $page + 1;
         $html = '<nav class="swc-nav swc-nav--list" aria-label="' . $this->e($this->labels->eventNavigation) . '">'
-            . $this->pageLink($viewId, $previous, $hasPrevious, 'swc-nav__prev', $this->labels->previousEvents, '‹', true)
-            . $this->pageLink($viewId, $next, $hasNext, 'swc-nav__next', $this->labels->nextEvents, '›', false)
+            . $this->pageLink($viewId, $previous, $hasPrevious, 'swc-nav__prev', $this->labels->previousEvents, '‹', true, $month)
+            . $this->pageLink($viewId, $next, $hasNext, 'swc-nav__next', $this->labels->nextEvents, '›', false, $month)
             . '</nav>';
         return new TrustedHtml($html);
     }
 
-    private function pageLink(int $viewId, int $page, bool $enabled, string $class, string $label, string $arrow, bool $arrowFirst): string
+    private function pageLink(int $viewId, int $page, bool $enabled, string $class, string $label, string $arrow, bool $arrowFirst, ?string $month): string
     {
         $content = $arrowFirst
             ? '<span aria-hidden="true">' . $arrow . '</span> <span class="swc-nav__text">' . $this->e($label) . '</span>'
@@ -129,13 +139,13 @@ final class MonthGrid
         if (!$enabled) {
             return '<span class="' . $class . ' is-disabled" aria-disabled="true">' . $content . '</span>';
         }
-        return '<a class="' . $class . '" href="' . $this->e($this->urls->page($viewId, $page)) . '" data-swc-page="' . $page . '" rel="nofollow">' . $content . '</a>';
+        return '<a class="' . $class . '" href="' . $this->e($this->urls->calendar($viewId, array_replace($this->navigationFilters, ['page' => $page, 'month' => $month]))) . '" data-swc-page="' . $page . '" rel="nofollow">' . $content . '</a>';
     }
 
     private function link(int $viewId, \DateTimeImmutable $month, \DateTimeZone $tz, string $class, string $label, string $arrow): string
     {
         $value = $month->format('Y-m');
-        return '<a class="' . $class . '" href="' . $this->e($this->urls->month($viewId, $value)) . '" data-swc-month="' . $value . '" rel="nofollow">'
+        return '<a class="' . $class . '" href="' . $this->e($this->urls->calendar($viewId, array_replace($this->navigationFilters, ['month' => $value]))) . '" data-swc-month="' . $value . '" rel="nofollow">'
             . '<span aria-hidden="true">' . $arrow . '</span> <span class="swc-nav__text">' . $this->e($label)
             . '<span class="swc-screen-reader-text">: ' . $this->e($this->dates->format($month, $tz, 'F Y')) . '</span></span></a>';
     }

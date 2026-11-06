@@ -20,6 +20,7 @@ import type {
   Source,
   SourceCreateInput,
   SourceUpdateInput,
+  SourceEvent,
   StorageCheck,
   SyncRun,
   Template,
@@ -64,8 +65,11 @@ export function createApi(client: ApiClient) {
       update: (id: number, input: SourceUpdateInput) =>
         client.put<Source>(`admin/sources/${id}`, input),
       remove: (id: number) => client.delete<DeletedResult>(`admin/sources/${id}`),
+      syncNow: (id: number) => client.post<Source>(`admin/sources/${id}/sync-now`),
       sync: (id: number, full = false) =>
         client.post<QueuedResult>(`admin/sources/${id}/sync`, full ? { full: true } : {}),
+      events: (id: number, q: PageQuery & { month?: string } = {}) =>
+        client.get<Paginated<SourceEvent>>(`admin/sources/${id}/events`, q as Query),
       runs: (id: number, q: PageQuery = {}) =>
         client.get<Paginated<SyncRun>>(`admin/sources/${id}/runs`, q as Query),
     },

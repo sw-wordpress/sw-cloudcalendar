@@ -17,16 +17,18 @@ use SW\Calendar\Domain\Source\Visibility;
  */
 final class SourceAccessService implements SourceAccessInterface
 {
+    /** @param null|\Closure(Source, ?int): bool $externalAccess */
     public function __construct(
         private readonly SourceRepositoryInterface $sources,
         private readonly UserContextInterface $users,
+        private readonly ?\Closure $externalAccess = null,
     ) {
     }
 
     public function canReadSource(int $sourceId, ?int $wpUserId): bool
     {
         $source = $this->sources->find($sourceId);
-        return $source !== null && $this->allows($source, $this->users->rolesOf($wpUserId));
+        return $source !== null && $this->allows($source, $this->users->rolesOf($wpUserId)) && ($this->externalAccess === null || ($this->externalAccess)($source, $wpUserId));
     }
 
     public function filterAllowedSources(array $sourceIds, ?int $wpUserId): array
@@ -45,7 +47,7 @@ final class SourceAccessService implements SourceAccessInterface
         $roles = $this->users->rolesOf($wpUserId);
         return array_values(array_filter(
             $ids,
-            fn (int $id): bool => isset($sources[$id]) && $this->allows($sources[$id], $roles)
+            fn (int $id): bool => isset($sources[$id]) && $this->allows($sources[$id], $roles) && ($this->externalAccess === null || ($this->externalAccess)($sources[$id], $wpUserId))
         ));
     }
 

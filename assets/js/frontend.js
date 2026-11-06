@@ -30,7 +30,7 @@
 	function api( path, params ) {
 		const url = new URL( config.restRoot + path, window.location.href );
 		Object.keys( params || {} ).forEach( function ( key ) {
-			if ( params[ key ] !== undefined && params[ key ] !== null && params[ key ] !== '' ) {
+			if ( params[ key ] !== undefined && params[ key ] !== null && ( params[ key ] !== '' || key === 'search' ) ) {
 				url.searchParams.set( key, String( params[ key ] ) );
 			}
 		} );
@@ -68,7 +68,7 @@
 
 	function pageUrl() {
 		const url = new URL( window.location.href );
-		[ 'swc_event', 'swc_view', 'swc_month' ].forEach( function ( key ) {
+		[ 'swc_event', 'swc_view', 'swc_month', 'swc_page', 'swc_mode', 'swc_search' ].forEach( function ( key ) {
 			url.searchParams.delete( key );
 		} );
 		return url.toString();
@@ -130,7 +130,14 @@
 		} );
 		const body = document.createElement( 'div' );
 		body.className = 'swc-dialog__body';
-		dialog.appendChild( close );
+        const header = document.createElement( 'header' );
+        header.className = 'swc-dialog__header';
+        const title = document.createElement( 'h2' );
+        title.className = 'swc-dialog__title';
+        title.textContent = i18n.details || 'Details';
+        header.appendChild( title );
+        header.appendChild( close );
+        dialog.appendChild( header );
 		dialog.appendChild( body );
 		dialog.addEventListener( 'click', function ( event ) {
 			if ( event.target === dialog ) {
@@ -152,6 +159,7 @@
 				const body = box.querySelector( '.swc-dialog__body' );
 				body.textContent = '';
 				body.appendChild( fragment( data.html ) );
+                body.scrollTop = 0;
 				box.showModal();
 				box.addEventListener( 'close', function restore() {
 					box.removeEventListener( 'close', restore );
@@ -174,9 +182,31 @@
 			return;
 		}
 		const viewId = calendar.getAttribute( 'data-swc-view' );
+        if ( link.hasAttribute( 'data-swc-switch' ) ) {
+            event.preventDefault();
+            if ( calendar.getAttribute( 'aria-busy' ) === 'true' ) return;
+            const mode = link.getAttribute( 'data-swc-switch' );
+            const filters = Object.assign( stateOf( calendar ), { view: mode, page: 1 } );
+            renderInto( calendar, viewId, filters ).then( function ( root ) {
+                if ( root ) {
+                    const active = root.querySelector( '.swc-mode-tabs__tab[aria-current="page"]' );
+                    if ( active ) active.focus();
+                }
+            } );
+            return;
+        }
+
 		if ( link.hasAttribute( 'data-swc-month' ) ) {
 			event.preventDefault();
-			const filters = Object.assign( stateOf( calendar ), { month: link.getAttribute( 'data-swc-month' ), view: calendar.getAttribute( 'data-swc-mode' ) } );
+            const group = calendar.getAttribute( 'data-swc-group' );
+            if ( group ) {
+                document.querySelectorAll( '.swc-calendar[data-swc-view]' ).forEach( function ( sibling ) {
+                    if ( sibling !== calendar && sibling.getAttribute( 'data-swc-group' ) === group ) {
+                        renderInto( sibling, sibling.getAttribute( 'data-swc-view' ), Object.assign( stateOf( sibling ), { month: link.getAttribute( 'data-swc-month' ), page: 1, view: sibling.getAttribute( 'data-swc-mode' ) } ) );
+                    }
+                } );
+            }
+			const filters = Object.assign( stateOf( calendar ), { page: 1, month: link.getAttribute( 'data-swc-month' ), view: calendar.getAttribute( 'data-swc-mode' ) } );
 			renderInto( calendar, viewId, filters ).then( function ( root ) {
 				if ( root ) {
 					const label = root.querySelector( '.swc-nav__label' );
@@ -211,6 +241,24 @@
 		}
 	} );
 
+    document.addEventListener( 'submit', function ( event ) {
+        const form = event.target;
+        if ( ! ( form instanceof HTMLFormElement ) || ! form.matches( '.swc-search' ) || event.defaultPrevented ) return;
+        const calendar = form.closest( '.swc-calendar[data-swc-view]' );
+        if ( ! calendar ) return;
+        event.preventDefault();
+        if ( calendar.getAttribute( 'aria-busy' ) === 'true' ) return;
+        const input = form.querySelector( 'input[type="search"]' );
+        if ( ! input ) return;
+        const filters = Object.assign( stateOf( calendar ), { search: input.value.trim(), page: 1, view: calendar.getAttribute( 'data-swc-mode' ) } );
+        renderInto( calendar, calendar.getAttribute( 'data-swc-view' ), filters ).then( function ( root ) {
+            if ( root ) {
+                const next = root.querySelector( '.swc-search input[type="search"]' );
+                if ( next ) next.focus( { preventScroll: true } );
+            }
+        } );
+    } );
+
 	function init() {
 		document.querySelectorAll( '.swc-calendar.swc-dynamic[data-swc-view]' ).forEach( function ( placeholder ) {
 			let filters = {};
@@ -220,8 +268,8 @@
 				filters = {};
 			}
 			const viewId = placeholder.getAttribute( 'data-swc-view' );
-			const eventId = parseInt( placeholder.getAttribute( 'data-swc-event' ) || '0', 10 );
-			if ( eventId > 0 ) {
+			const eventId = placeholder.getAttribute( 'data-swc-event' ) || '0';
+			if ( /^[1-9][0-9]*$|^local\.[1-9][0-9]*\.[A-Za-z0-9_-]{1,254}$/.test( eventId ) ) {
 				api( 'events/' + eventId, { view: viewId, page_url: pageUrl() } )
 					.then( function ( data ) {
 						addCss( data.css );

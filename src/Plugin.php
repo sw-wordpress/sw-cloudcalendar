@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace SW\Calendar;
 
+use SW\Calendar\Application\Render\PresetUpgrader;
 use SW\Calendar\Infrastructure\Database\Schema;
 use SW\Calendar\Infrastructure\WordPress\Capabilities;
 use SW\Calendar\Infrastructure\WordPress\QueueRunner;
@@ -25,6 +26,8 @@ use SW\Calendar\Presentation\Rest\ViewsController;
 use SW\Calendar\Presentation\Shortcode\CalendarShortcode;
 
 final class Plugin {
+
+	private const PRESET_REVISION_OPTION = 'sw_calendar_preset_revision';
 
 	private static ?Plugin $instance = null;
 	private bool $booted             = false;
@@ -62,6 +65,17 @@ final class Plugin {
 
 	public function load_textdomain(): void {
 		load_plugin_textdomain( 'sw-cloudcalendar', false, dirname( plugin_basename( SW_CALENDAR_FILE ) ) . '/languages' );
+		// Reuse the bundled German catalog for the formal variant unless a dedicated translation exists.
+		if ( 'de_DE_formal' === determine_locale() ) {
+			foreach ( array( WP_LANG_DIR . '/plugins/', SW_CALENDAR_DIR . 'languages/' ) as $directory ) {
+				foreach ( array( '.mo', '.l10n.php' ) as $extension ) {
+					if ( is_readable( $directory . 'sw-cloudcalendar-de_DE_formal' . $extension ) ) {
+						return;
+					}
+				}
+			}
+			load_textdomain( 'sw-cloudcalendar', SW_CALENDAR_DIR . 'languages/sw-cloudcalendar-de_DE.mo', 'de_DE_formal' );
+		}
 	}
 
 	/** Cheap version comparison; migrations are idempotent. Also covers sites created after a network activation. */
@@ -70,6 +84,16 @@ final class Plugin {
 			Capabilities::grant_defaults();
 			( new TemplateManager( Services::instance() ) )->seed_presets();
 		}
+		$this->maybe_upgrade_presets();
+	}
+
+	/** Runs once per {@see PresetUpgrader::REVISION}; skipped until the tables exist. */
+	private function maybe_upgrade_presets(): void {
+		if ( (int) get_option( self::PRESET_REVISION_OPTION, 0 ) >= PresetUpgrader::REVISION || Schema::needs_migration() ) {
+			return;
+		}
+		( new TemplateManager( Services::instance() ) )->upgrade_legacy_presets();
+		update_option( self::PRESET_REVISION_OPTION, PresetUpgrader::REVISION, true );
 	}
 
 	public function initialize_site( \WP_Site $site ): void {

@@ -30,7 +30,7 @@ final class FilterSchema
         $values = [];
         foreach ($raw as $key => $value) {
             $key = strtolower((string) $key);
-            if (in_array($key, self::PASSTHROUGH, true) || $value === null || $value === '') {
+            if (in_array($key, self::PASSTHROUGH, true) || $value === null || ($value === '' && $key !== 'search')) {
                 continue;
             }
             switch ($key) {
@@ -39,7 +39,7 @@ final class FilterSchema
                     $this->accept($values, $errors, 'source', $ids, 'invalid_ids');
                     break;
                 case 'exclude':
-                    $ids = $this->ids($value);
+                    $ids = $this->eventIds($value);
                     $this->accept($values, $errors, 'exclude', $ids, 'invalid_ids');
                     break;
                 case 'view':
@@ -63,6 +63,18 @@ final class FilterSchema
                     $month = is_string($value) && preg_match('/^(\d{4})-(0[1-9]|1[0-2])$/', $value) === 1 ? $value : null;
                     $this->accept($values, $errors, 'month', $month, 'invalid_month');
                     break;
+                case 'columns':
+                case 'day_limit':
+                    $this->accept($values, $errors, $key, $this->int($value, 1, $key === 'columns' ? 4 : 20), 'out_of_range');
+                    break;
+                case 'navigation_group':
+                    $group = is_string($value) && preg_match('/^[a-zA-Z0-9_-]{1,64}$/D', $value) === 1 ? $value : null;
+                    $this->accept($values, $errors, $key, $group, 'invalid_group');
+                    break;
+                case 'mode_switcher':
+                case 'show_search':
+                case 'color_titles':
+                case 'legend':
                 case 'past':
                 case 'navigation':
                 case 'show_images':
@@ -72,7 +84,7 @@ final class FilterSchema
                     break;
                 case 'search':
                 case 'location':
-                    $text = $this->text($value);
+                    $text = $key === 'search' && is_scalar($value) && trim((string) $value) === '' ? '' : $this->text($value);
                     $this->accept($values, $errors, $key, $text, 'too_long');
                     break;
                 case 'sort':
@@ -129,6 +141,13 @@ final class FilterSchema
                 $values['page'] ?? 1,
                 $values['per_page'] ?? null,
                 $values['navigation'] ?? null,
+                $values['color_titles'] ?? null,
+                $values['legend'] ?? null,
+                $values['columns'] ?? null,
+                $values['day_limit'] ?? null,
+                $values['navigation_group'] ?? null,
+                $values['mode_switcher'] ?? null,
+                $values['show_search'] ?? null,
             ),
             $errors,
             $unknown,
@@ -168,6 +187,26 @@ final class FilterSchema
         }
         $ids = array_values(array_unique($ids));
         return $ids === [] || count($ids) > self::MAX_IDS ? null : $ids;
+    }
+
+    /** @return list<int|string>|null */
+    private function eventIds(mixed $value): ?array
+    {
+        $parts = is_array($value) ? $value : explode(',', (string) $value);
+        $ids = [];
+        foreach ($parts as $part) {
+            $part = trim((string) $part);
+            if (\SW\Calendar\Application\Local\EventReference::parse($part) !== null) {
+                $ids[] = $part;
+            } else {
+                $numeric = $this->ids([$part]);
+                if ($numeric === null) {
+                    return null;
+                }
+                $ids[] = $numeric[0];
+            }
+        }
+        return $ids !== [] && count($ids) <= self::MAX_IDS ? array_values(array_unique($ids)) : null;
     }
 
     private function int(mixed $value, int $min, int $max): ?int

@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace SW\Calendar;
 
+use SW\Calendar\Application\Local\LocalOccurrenceQuery;
+use SW\Calendar\Application\Local\LocalSourceRegistry;
 use SW\Calendar\Application\Access\SourceAccessService;
 use SW\Calendar\Application\Attachments\AttachmentSyncService;
 use SW\Calendar\Application\Port\HttpClientInterface;
@@ -47,6 +49,7 @@ use SW\Calendar\Infrastructure\OAuth\OAuthService;
 use SW\Calendar\Infrastructure\Provider\AuthorizedApi;
 use SW\Calendar\Infrastructure\Provider\Google\GoogleCalendarProvider;
 use SW\Calendar\Infrastructure\Provider\Ics\IcsProvider;
+use SW\Calendar\Infrastructure\Provider\Local\LocalProvider;
 use SW\Calendar\Infrastructure\Provider\Microsoft\GraphCalendarProvider;
 use SW\Calendar\Infrastructure\Provider\ProviderRegistry;
 use SW\Calendar\Infrastructure\Storage\FinfoMimeDetector;
@@ -80,12 +83,12 @@ final class Services {
 	}
 
 	/**
-	 * @template T of object
-	 * @param class-string<T>|string $id
-	 * @param callable(): T          $factory
-	 * @return T
+	 * Returns the shared instance. A service replaced via set() may have any type, so the result is untyped here;
+	 * the native return type of each accessor enforces the contract at runtime.
+	 *
+	 * @param callable(): object $factory
 	 */
-	private function share( string $id, callable $factory ): object {
+	private function share( string $id, callable $factory ): mixed {
 		return $this->services[ $id ] ??= $factory();
 	}
 
@@ -141,6 +144,21 @@ final class Services {
 		return $this->share( 'occurrences', static fn (): OccurrenceRepository => new OccurrenceRepository() );
 	}
 
+	public function local_sources(): LocalSourceRegistry {
+		return $this->share(
+			'local_sources',
+			static function (): LocalSourceRegistry {
+				$registry = new LocalSourceRegistry();
+				do_action( 'sw_calendar_register_local_sources', $registry );
+				return $registry;
+			}
+		);
+	}
+
+	public function event_queries(): LocalOccurrenceQuery {
+		return $this->share( 'event_queries', fn () => new LocalOccurrenceQuery( $this->occurrences(), $this->sources(), $this->connections(), $this->local_sources(), $this->logger() ) );
+	}
+
 	public function attachments(): AttachmentRepository {
 		return $this->share( 'attachments', static fn (): AttachmentRepository => new AttachmentRepository() );
 	}
@@ -170,7 +188,7 @@ final class Services {
 	}
 
 	public function access(): SourceAccessService {
-		return $this->share( 'access', fn (): SourceAccessService => new SourceAccessService( $this->sources(), new WpUserContext() ) );
+		return $this->share( 'access', fn (): SourceAccessService => new SourceAccessService( $this->sources(), new WpUserContext(), fn ( $source, $user ) => $this->event_queries()->canRead( $source, $user ) ) );
 	}
 
 	public function http(): HttpClientInterface {
@@ -186,6 +204,7 @@ final class Services {
 			'providers',
 			fn (): ProviderRegistry => new ProviderRegistry(
 				array(
+					Provider::Local->value     => fn () => new LocalProvider( $this->local_sources() ),
 					Provider::Ics->value       => fn () => new IcsProvider( $this->http(), $this->credentials() ),
 					Provider::Google->value    => fn () => new GoogleCalendarProvider( new AuthorizedApi( $this->http(), $this->oauth(), $this->credentials(), OAuthEndpoints::GOOGLE_HOSTS ) ),
 					Provider::Microsoft->value => fn () => new GraphCalendarProvider( new AuthorizedApi( $this->http(), $this->oauth(), $this->credentials(), OAuthEndpoints::MICROSOFT_HOSTS ) ),
@@ -299,7 +318,21 @@ final class Services {
 					__( 'Preview', 'sw-cloudcalendar' ),
 					__( 'Earlier events', 'sw-cloudcalendar' ),
 					__( 'More events', 'sw-cloudcalendar' ),
-					__( 'Event navigation', 'sw-cloudcalendar' )
+					__( 'Event navigation', 'sw-cloudcalendar' ),
+					__( 'Choose display', 'sw-cloudcalendar' ),
+					_x( 'List', 'calendar display mode', 'sw-cloudcalendar' ),
+					_x( 'Cards', 'calendar display mode', 'sw-cloudcalendar' ),
+					_x( 'Month', 'calendar display mode', 'sw-cloudcalendar' ),
+					__( 'Search events', 'sw-cloudcalendar' ),
+					__( 'Search', 'sw-cloudcalendar' ),
+					__( 'Searches titles, descriptions and locations within the selected date range.', 'sw-cloudcalendar' ),
+					/* translators: %d: number of matching events */
+					__( '%d events found', 'sw-cloudcalendar' ),
+					__( 'Event details', 'sw-cloudcalendar' ),
+					_x( 'Date', 'event details', 'sw-cloudcalendar' ),
+					_x( 'Time', 'event details', 'sw-cloudcalendar' ),
+					_x( 'Location', 'event details', 'sw-cloudcalendar' ),
+					__( 'View image', 'sw-cloudcalendar' )
 				);
 			}
 		);
@@ -317,10 +350,10 @@ final class Services {
 				$this->views(),
 				$this->sources(),
 				$this->access(),
-				$this->occurrences(),
+				$this->event_queries(),
 				$this->attachments(),
 				$this->template_provider(),
-				new EventValues( $this->dates(), $this->urls(), $this->sanitizer(), new AttachmentRenderer( $this->urls(), $this->labels() ) ),
+				new EventValues( $this->dates(), $this->urls(), $this->sanitizer(), new AttachmentRenderer( $this->urls(), $this->labels() ), $this->labels() ),
 				$this->dates(),
 				$this->urls(),
 				$this->cache(),
@@ -331,7 +364,8 @@ final class Services {
 					(bool) Settings::get( 'html_cache' ),
 					Settings::site_timezone(),
 					$this->labels()
-				)
+				),
+				liveSource: fn ( int $id ): bool => $this->event_queries()->isLocal( $id )
 			)
 		);
 	}

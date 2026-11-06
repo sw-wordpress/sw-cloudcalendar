@@ -1,9 +1,8 @@
-import { fileURLToPath, URL } from 'node:url';
 import { resolve } from 'node:path';
 import { defineConfig } from 'vitest/config';
 import vue from '@vitejs/plugin-vue';
 import { quasar, transformAssetUrls } from '@quasar/vite-plugin';
-import { swcScope } from './tools/postcssScope';
+import { swcScope } from './tools/postcssScope.ts';
 
 /** Ship only the woff2 icon font (all supported browsers); drops the 200 KB legacy woff. */
 function woff2Only() {
@@ -17,7 +16,7 @@ function woff2Only() {
   };
 }
 
-const outDir = resolve(__dirname, '../../assets/admin');
+const outDir = resolve(import.meta.dirname, '../../assets/admin');
 
 /**
  * Dev server: `SWC_WP_ORIGIN=https://my-site.test npm run dev` proxies `/wp-json` to a real
@@ -28,7 +27,7 @@ const wpOrigin = process.env.SWC_WP_ORIGIN;
 export default defineConfig(() => ({
   base: './',
   plugins: [woff2Only(), vue({ template: { transformAssetUrls } }), quasar()],
-  resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
+  resolve: { alias: { '@': resolve(import.meta.dirname, 'src') } },
   css: { postcss: { plugins: [swcScope()] } },
   server: {
     port: 5173,
@@ -46,8 +45,8 @@ export default defineConfig(() => ({
     target: 'es2020',
     modulePreload: { polyfill: false },
     chunkSizeWarningLimit: 900,
-    rollupOptions: {
-      input: { app: resolve(__dirname, 'src/main.ts') },
+    rolldownOptions: {
+      input: { app: resolve(import.meta.dirname, 'src/main.ts') },
       output: {
         entryFileNames: 'app.js',
         chunkFileNames: 'chunks/[name]-[hash].js',
@@ -64,6 +63,26 @@ export default defineConfig(() => ({
     environment: 'jsdom',
     include: ['tests/**/*.test.ts'],
     css: false,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'text-summary', 'lcov'],
+      reportsDirectory: 'coverage',
+      // Vitest 5 matches files inside the project against relative paths; allowExternal
+      // also includes the unbundled frontend/block scripts outside this package.
+      allowExternal: true,
+      include: [
+        'src/**/*.{ts,js,vue}',
+        'tools/**/*.ts',
+        '../../assets/js/**/*.js',
+        '../../blocks/**/*.js',
+      ],
+      // Type-only declarations contain no executable statements.
+      exclude: ['**/*.d.ts', 'src/types/**'],
+      // Vitest compares with >=; scripts/check-coverage.mjs additionally enforces lines > 80 % exactly.
+      thresholds: {
+        lines: 80.01,
+      },
+    },
     server: { deps: { inline: ['quasar'] } },
   },
 }));

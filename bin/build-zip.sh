@@ -32,7 +32,7 @@ rsync -a --exclude-from="$UNTRACKED" --exclude-from=- "$ROOT/" "$STAGE/$NAME/" <
 .gitignore
 .editorconfig
 .phpunit.cache
-.phpstan.cache
+/.phpstan.cache
 .phpcs*.cache
 /vendor
 /vendor-prefixed
@@ -49,7 +49,7 @@ rsync -a --exclude-from="$UNTRACKED" --exclude-from=- "$ROOT/" "$STAGE/$NAME/" <
 /docs/CODE-STYLE.md
 /docs/composer-vendor-prefixed.md
 phpunit.xml.dist
-phpstan.neon.dist
+/phpstan.neon*
 phpcs*.xml.dist
 PLAN.md
 composer.lock

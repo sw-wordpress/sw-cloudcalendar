@@ -53,7 +53,20 @@ await p.setViewportSize({ width: 390, height: 844 });
 await p.screenshot({ path: `${out}/guest-month-mobile.png`, fullPage: true });
 await p.setViewportSize({ width: 1280, height: 900 });
 await p.goto(base + '/karten/'); await p.waitForLoadState('networkidle');
+const rightRows = await p.locator('.swc-right-row').count();
+const cardItems = await p.locator('.swc-card').count();
+check('cards use their own event template', rightRows > 0 && cardItems === 0, `right-row: ${rightRows}, card: ${cardItems}`);
 await p.screenshot({ path: `${out}/guest-cards.png`, fullPage: true });
+await p.goto(base + '/liste/'); await p.waitForLoadState('networkidle');
+check('list of the same view keeps its preset', (await p.locator('.swc-row').count()) > 0 && (await p.locator('.swc-right-row').count()) === 0);
+await p.goto(base + '/karten-monat/'); await p.waitForLoadState('networkidle');
+check(
+  'month grid of the same view keeps its chips',
+  (await p.locator('table.swc-month td').count()) >= 28 &&
+    (await p.locator('.swc-chip').count()) > 0 &&
+    (await p.locator('.swc-right-row').count()) === 0,
+);
+await p.screenshot({ path: `${out}/guest-cards-month.png`, fullPage: true });
 await p.goto(base + '/intern/'); await p.waitForLoadState('networkidle');
 const html = await p.content();
 check('protected view: no event markup in page source as guest', !(await (await fetch(base + '/intern/')).text()).includes('swc-events__item'));
@@ -86,6 +99,15 @@ for (const route of ['', 'connections', 'sources', 'views', 'templates', 'sync',
 p.errors = [];
 await p.goto(`${base}/wp-admin/admin.php?page=sw-cloudcalendar#/views/1`); await p.waitForLoadState('networkidle'); await p.waitForTimeout(2500);
 check('view editor preview iframe', (await p.locator('iframe[sandbox]').count()) > 0, p.errors.slice(0, 2).join(' | '));
+const modeRows = p.locator('[data-swc-mode-templates] [data-swc-mode]');
+await modeRows.first().waitFor({ timeout: 8000 }).catch(() => {});
+const cardsField = p.locator('[data-swc-mode-templates] [data-swc-mode="cards"]').first();
+const cardsChoice = ((await cardsField.textContent()) || '').replace(/\s+/g, ' ');
+check(
+  'view editor offers per-display templates and loads the stored choice',
+  (await modeRows.count()) === 3 && p.errors.length === 0 && cardsChoice.includes('Bild rechts'),
+  `rows: ${await modeRows.count()} | ${cardsChoice.slice(0, 90)}${p.errors.length ? ' | ' + p.errors[0] : ''}`,
+);
 await p.screenshot({ path: `${out}/admin-view-editor.png`, fullPage: true });
 p.errors = [];
 await p.goto(`${base}/wp-admin/admin.php?page=sw-cloudcalendar#/templates/2`); await p.waitForLoadState('networkidle'); await p.waitForTimeout(2500);
@@ -94,3 +116,4 @@ await p.screenshot({ path: `${out}/admin-template-editor.png`, fullPage: true })
 await c.close();
 await browser.close();
 console.log(results.join('\n'));
+process.exitCode = results.some((result) => result.startsWith('FAIL ')) ? 1 : 0;

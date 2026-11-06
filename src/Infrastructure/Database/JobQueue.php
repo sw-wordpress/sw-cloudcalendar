@@ -42,26 +42,31 @@ final class JobQueue implements JobQueueInterface {
 		);
 	}
 
-	public function claim( \DateTimeImmutable $now, \DateTimeImmutable $leaseUntil ): ?Job {
+	/** When a source is given, claim only its sync job and allow an explicit retry before run_after. */
+	public function claim( \DateTimeImmutable $now, \DateTimeImmutable $leaseUntil, ?int $only_sync_source = null ): ?Job {
 		$wpdb  = Db::wpdb();
 		$table = Schema::table( 'jobs' );
 		$ids   = $wpdb->get_col( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 			$wpdb->prepare(
-				"SELECT id FROM {$table} WHERE (status = 'queued' AND run_after <= %s) OR (status = 'running' AND lock_until < %s) ORDER BY run_after ASC, id ASC LIMIT 10", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				"SELECT id FROM {$table} WHERE ((status = 'queued' AND (run_after <= %s OR %d > 0)) OR (status = 'running' AND lock_until < %s)) AND (%d = 0 OR (source_id = %d AND job_type = 'sync_source')) ORDER BY run_after ASC, id ASC LIMIT 10", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				Db::format( $now ),
-				Db::format( $now )
+				$only_sync_source ?? 0,
+				Db::format( $now ),
+				$only_sync_source ?? 0,
+				$only_sync_source ?? 0
 			)
 		);
-		foreach ( is_array( $ids ) ? $ids : array() as $id ) {
+		foreach ( $ids as $id ) {
 			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- fixed table name from the schema allowlist.
 			$claimed = $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
 				$wpdb->prepare(
 					"UPDATE {$table} SET status = 'running', lock_until = %s, attempts = attempts + 1, updated_at = %s
-					WHERE id = %d AND ((status = 'queued' AND run_after <= %s) OR (status = 'running' AND lock_until < %s))",
+					WHERE id = %d AND ((status = 'queued' AND (run_after <= %s OR %d > 0)) OR (status = 'running' AND lock_until < %s))",
 					Db::format( $leaseUntil ),
 					Db::now(),
 					(int) $id,
 					Db::format( $now ),
+					$only_sync_source ?? 0,
 					Db::format( $now )
 				)
 			);
@@ -119,7 +124,7 @@ final class JobQueue implements JobQueueInterface {
 		$table  = Schema::table( 'jobs' );
 		$rows   = Db::wpdb()->get_results( "SELECT status, COUNT(*) AS n FROM {$table} GROUP BY status", ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$counts = array();
-		foreach ( is_array( $rows ) ? $rows : array() as $row ) {
+		foreach ( $rows as $row ) {
 			$counts[ (string) $row['status'] ] = (int) $row['n'];
 		}
 		return $counts;

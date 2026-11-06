@@ -15,7 +15,7 @@ interface OccurrenceQueryInterface
      * have ended at the range end (backward paging).
      *
      * @param list<int> $sourceIds
-     * @param list<int> $excludeIds
+     * @param list<int|string> $excludeIds
      * @return array{items: list<Occurrence>, total: int}
      */
     public function find(
@@ -31,5 +31,5 @@ interface OccurrenceQueryInterface
         bool $endedBeforeRangeEnd = false,
     ): array;
 
-    public function findById(int $id): ?Occurrence;
+    public function findById(int|string $id): ?Occurrence;
 }

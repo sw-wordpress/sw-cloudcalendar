@@ -169,7 +169,7 @@ final class ConnectionsController extends BaseController {
 	public function disconnect( \WP_REST_Request $request ): \WP_REST_Response|\WP_Error {
 		try {
 			$this->manager()->disconnect( (int) $request['id'] );
-			return new \WP_REST_Response( $this->manager()->to_array( $this->services->connections()->find( (int) $request['id'] ) ) );
+			return new \WP_REST_Response( $this->manager()->to_array( $this->manager()->require( (int) $request['id'] ) ) );
 		} catch ( \Throwable $e ) {
 			return $this->from_exception( $e );
 		}

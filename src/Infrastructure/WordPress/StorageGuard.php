@@ -24,6 +24,7 @@ final class StorageGuard implements StorageGuardInterface {
 	public const CHECK_TTL  = DAY_IN_SECONDS;
 	private const PROBE_TTL = 6 * HOUR_IN_SECONDS;
 
+	/** @var array<string, mixed>|null */
 	private ?array $state = null;
 
 	public function root(): string {

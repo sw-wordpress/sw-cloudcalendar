@@ -1,96 +1,154 @@
 # SW CloudCalendar
 
-WordPress-Plugin zur **read-only** Einbindung von Google Calendar, Microsoft 365 (Exchange Online) und ICS-Feeds.
-Termine werden im Hintergrund lokal synchronisiert und mit frei gestaltbaren Vorlagen als Liste, Karten oder
-Monatsraster angezeigt – per Shortcode oder Gutenberg-Block. Anhänge werden auf Wunsch lokal gespeichert und nur
-von WordPress ausgeliefert. Sichtbarkeit gilt immer für eine ganze Kalenderquelle: öffentlich, angemeldete Benutzer
-oder ausgewählte Rollen.
+[![Release](https://img.shields.io/github/v/release/sw-wordpress/sw-cloudcalendar?sort=semver)](https://github.com/sw-wordpress/sw-cloudcalendar/releases)
+[![CI](https://github.com/sw-wordpress/sw-cloudcalendar/actions/workflows/tests.yml/badge.svg)](https://github.com/sw-wordpress/sw-cloudcalendar/actions/workflows/tests.yml)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=sw-wordpress_sw-cloudcalendar&metric=coverage)](https://sonarcloud.io/summary/overall?id=sw-wordpress_sw-cloudcalendar)
+[![SonarQube Issues](https://sonarcloud.io/api/project_badges/measure?project=sw-wordpress_sw-cloudcalendar&metric=vulnerabilities)](https://sonarcloud.io/project/issues?id=sw-wordpress_sw-cloudcalendar&impactSoftwareQualities=SECURITY&resolved=false)
+![PHPStan level 8](https://img.shields.io/badge/phpstan%20level-8%20of%209-brightgreen?style=flat-square&logo=php)
+![PHP 8.2+](https://img.shields.io/badge/PHP-8.2%2B-777bb4?style=flat-square&logo=php&logoColor=white)
+![WordPress 6.5+](https://img.shields.io/badge/WordPress-6.5%2B-21759b?style=flat-square&logo=wordpress&logoColor=white)
+[![License GPL-2.0-or-later](https://img.shields.io/badge/License-GPL--2.0--or--later-blue?style=flat-square)](https://www.gnu.org/licenses/gpl-2.0.html)
 
-- Spezifikation: `docs/SPECIFICATIONS.md`, Konzept: `docs/CALENDAR_PLUGIN_CONCEPT.md`
-- Entscheidungen und offene Punkte: `docs/decisions.md`
-- REST-API: `docs/rest-api.md`, Template-Sprache: `docs/templates.md`
-- Entwicklung/Tests: `docs/development.md`, `docs/testing.md`
+Shows appointments from Google Calendar, Microsoft 365 and [ICS](https://en.wikipedia.org/wiki/ICalendar) feeds
+on your WordPress site, read-only. Events are copied to your site in the background and displayed as a list,
+cards or a month grid via shortcode or block.
 
-## Voraussetzungen
+## Features
 
-WordPress 6.5+, PHP 8.2+ mit `sodium` (Pflicht), `fileinfo` (für Anhänge dringend empfohlen), GD oder Imagick
-(Vorschaubilder), MySQL 8 / MariaDB 10.6 mit InnoDB.
+- **Three calendar sources** — Google Calendar, Microsoft 365 (Exchange Online) and any ICS feed.
+- **Background synchronisation** — Page views never contact the calendar providers.
+- **Your own layout** — Visual and HTML template editor with presets and live preview.
+- **Visibility per calendar** — Public, logged-in users or selected roles; protected calendars never end up in cached pages.
+- **Protected attachments** — Optionally stored locally and delivered only by WordPress after an access check.
 
-## Admin-Oberfläche bauen
+## Languages
 
-Im Plugin-Verzeichnis `make build` ausführen (benötigt Make, Node.js >=18.18 und npm).
-Beim ersten Build und nach Änderungen an `apps/admin/package.json` oder der zugehörigen
-Lockdatei werden die Abhängigkeiten automatisch mit `npm ci --include=dev` installiert.
-Der bestehende Build prüft TypeScript und schreibt die Admin-Assets nach `assets/admin/`.
+English, German.
 
-## Empfohlene Konfiguration (`wp-config.php`)
+## Usage
+
+1. Open **Calendar → Connections**, click **Add connection** and choose ICS, Google or Microsoft 365.
+   For Google and Microsoft 365 click **Authorise** after saving ([provider setup](docs/setup.md#connections-calendar--connections)).
+2. Open **Calendar → Sources**, click **Create source**, choose the calendar and **Visibility**, then **Create as draft**.
+3. Edit the source, set **Status** to **Active** and save. The first synchronisation runs in the background.
+4. Open **Calendar → Views**, click **Create view**, pick sources and **Display mode**, then **Copy shortcode**
+   (e.g. `[sw_calendar id="12"]`) or add the block **Calendar (SW CloudCalendar)**. More examples: [docs/setup.md](docs/setup.md#shortcode).
+
+## Configuration
+
+### Requirements
+
+PHP 8.2+ with sodium, mbstring, JSON and XML (fileinfo recommended, GD or Imagick for image previews), WordPress 6.5+, MySQL 8.0+ or MariaDB 10.6+ (InnoDB), single site or multisite.
+
+### Settings
+
+Global options (HTML cache, default time zone, API rate limit, cron mode, storage quota, logging, data removal)
+are under **Calendar → Settings**; health checks under **Calendar → Diagnostics**.
+
+Recommended `wp-config.php` constants (details: [docs/setup.md](docs/setup.md#wp-configphp-details)):
 
 ```php
-// Eigener Schlüssel für gespeicherte Zugangsdaten (32 Byte, base64 oder beliebige lange Zeichenkette).
+// Key for stored credentials. Default: derived from the WordPress salts (warning in Diagnostics).
 define( 'SW_CALENDAR_ENCRYPTION_KEY', '…' );
-// Ablage für Anhänge AUSSERHALB des Webroots.
+// Previous key during key rotation. Default: none.
+define( 'SW_CALENDAR_ENCRYPTION_KEY_PREVIOUS', '…' );
+// Attachment storage OUTSIDE the web root. Default: random folder below uploads/,
+// used only if it is proven not to be publicly reachable; otherwise attachment sync stays blocked.
 define( 'SW_CALENDAR_PRIVATE_STORAGE_PATH', '/var/lib/wordpress-private/sw-cloudcalendar' );
-// Optional: größeres Synchronisationsfenster (Tage je Richtung, Standard 1095).
-// define( 'SW_CALENDAR_MAX_WINDOW_DAYS', 1095 );
+// Maximum synchronisation window in days per direction. Default: 1095.
+define( 'SW_CALENDAR_MAX_WINDOW_DAYS', 1095 );
 ```
 
-Ohne eigenen Schlüssel wird ein Schlüssel aus den WordPress-Salts abgeleitet (Warnung in der Diagnose). Ohne
-Speicherpfad legt das Plugin ein zufälliges Verzeichnis unter `uploads/` an und akzeptiert es nur, wenn ein
-HTTP-Test beweist, dass Dateien darin nicht abrufbar sind (unter Nginx in der Regel eine eigene `location`-Regel
-nötig); andernfalls bleibt der Anhangs-Sync gesperrt.
+`SW_CALENDAR_AUTOLOADER` and `SW_CALENDAR_TEST_SAVEPOINTS` are for the test environment only.
 
-## Einrichtung
+### Background tasks
 
-1. **Verbindung anlegen** (Kalender → Verbindungen)
-   - *ICS*: Feed-URL (HTTPS; `webcal://` wird umgewandelt), optional Authorization-Header.
-   - *Google*: In der Google Cloud Console ein OAuth-Client vom Typ „Webanwendung“ anlegen, Calendar API (und für
-     Anhänge die Drive API) aktivieren, die angezeigte Redirect-URI eintragen; Client-ID und -Secret im Plugin
-     speichern und „Autorisieren“. Alternativ API-Schlüssel für bei Google öffentliche Kalender.
-     `drive.readonly` ist ein eingeschränkter Scope und kann eine App-Verifizierung erfordern.
-   - *Microsoft 365*: In Entra ID eine App-Registrierung (Web) mit der Redirect-URI anlegen, delegierte
-     Berechtigungen `Calendars.Read`, `User.Read`, `offline_access`, Client-Secret erzeugen; Tenant, Client-ID und
-     Secret im Plugin speichern und „Autorisieren“. Freigegebene Postfächer und Gruppenkalender sind in V1 nicht
-     unterstützt.
-2. **Quelle anlegen**: Kalender wählen, Sichtbarkeit festlegen, Zeitfenster und Intervall, ggf. Anhänge. Neue Quellen
-   sind Entwürfe; erst „Aktiv“ synchronisiert und zeigt sie an. Einen beim Anbieter privaten Kalender öffentlich zu
-   zeigen erfordert eine ausdrückliche Bestätigung (wird protokolliert).
-3. **Ansicht anlegen**: Quellen, Darstellung, Vorlagen und Filtervorgaben; den Shortcode kopieren oder den Block
-   „Kalender (SW CloudCalendar)“ verwenden.
+Every 5 minutes WP-Cron checks which sources are due (default: every 6 hours per source); a daily job cleans up
+logs and files. On sites with little traffic or with `DISABLE_WP_CRON`, set **Cron mode** to
+**System cron (WP-CLI)** and add `* * * * * cd /path/to/wordpress && wp sw-cloudcalendar queue run`.
+All WP-CLI commands: [docs/setup.md](docs/setup.md#operation).
 
-## Shortcode
+### Integrations
 
-```text
-[sw_calendar id="12"]
-[sw_calendar id="12" view="list" limit="5" days="30"]
-[sw_calendar id="12" source="2,3" search="Gottesdienst"]
-[sw_calendar id="12" start="2026-11-01" end="2026-12-31" location="Kirche"]
-[sw_calendar id="12" template="7" show_images="true" show_attachments="false"]
-[sw_calendar id="12" navigation="false"]
+- **Google Calendar** — OAuth or API key; Drive files as attachments.
+- **Microsoft 365** — Delegated OAuth with your own Entra ID app registration.
+- **ICS feeds** — Any iCalendar URL, optionally with an Authorization header.
+
+### Deactivation and removal
+
+Deactivating keeps all data and only stops the scheduled tasks. Deleting the plugin also keeps everything unless
+**Delete all data on uninstall** is enabled under **Calendar → Settings**; then all tables, options, the plugin's
+own folder below `uploads/` and Google tokens (revoked) are removed. A folder set via
+`SW_CALENDAR_PRIVATE_STORAGE_PATH` is never deleted. On multisite, removal only covers the main site.
+
+## Troubleshooting
+
+| Problem | Solution |
+|---|---|
+| Events are not updated. | With `DISABLE_WP_CRON`, switch to **System cron (WP-CLI)** and set up the cron job; see **Calendar → Diagnostics**. |
+| Attachments are not synchronised. | The fallback folder below `uploads/` is publicly reachable (often Nginx). Set `SW_CALENDAR_PRIVATE_STORAGE_PATH`. |
+| Google asks to **Re-authorise** every 7 days. | The Google app is in "Testing" mode; publish it or use "Internal" with Google Workspace. |
+| A protected calendar only shows "Loading calendar…". | Protected views are loaded with JavaScript; make sure scripts are not blocked. |
+
+## Built with AI
+
+This plugin was implemented with AI assistance. Why it exists and how AI is used:
+[sw-wordpress manifest](https://github.com/sw-wordpress/.github/blob/main/profile/README.md).
+
+AI agents must follow the project rules before changing code:
+
+- Rules and mandatory coverage: [AGENTS.md](AGENTS.md), [docs/CODE-STYLE.md](docs/CODE-STYLE.md)
+- Plan and specification: [PLAN.md](PLAN.md), [docs/SPECIFICATIONS.md](docs/SPECIFICATIONS.md), [docs/CALENDAR_PLUGIN_CONCEPT.md](docs/CALENDAR_PLUGIN_CONCEPT.md)
+- Decisions and open points: [docs/decisions.md](docs/decisions.md), further docs in [docs/](docs/)
+- README structure: [README-STANDARD.md](https://github.com/sw-wordpress/sw-securelogin/blob/master/docs/README-STANDARD.md)
+
+## Local plugin sources
+
+Other WordPress plugins can provide calendars directly without copying events. Registration API, schema, permissions
+and examples: [Local sources](docs/local-sources.md). ChurchTools Suite supplies its adapter externally.
+
+## Development
+
+Requirements: PHP 8.2+, Composer, Node.js 22.22.2+ (Node 22 line) with npm, Make, MariaDB (test database), GNU gettext (translations)
+and Docker for the release build.
+
+```sh
+composer install
+make build                                   # admin SPA (apps/admin) -> assets/admin/
+bin/test-db.sh start                         # private MariaDB on 127.0.0.1:33078
+(cd tests/wp && composer install)            # WordPress test environment
+
+composer check                               # cs, cs:wp, PHPStan and PHPUnit (unit + integration)
+composer test:wp                             # WordPress integration tests
+composer test:performance                    # 2000 events/month; JSON report (tests/Performance)
+bin/i18n.sh check                            # translations complete and up to date
+(cd apps/admin && npm run typecheck && npm run lint && npm test)
+
+bin/build-zip.sh                             # release ZIP in dist/
 ```
 
-Navigation: In der Monatsansicht „Vorheriger/Nächster Monat“, bei Liste und Karten „Frühere/Weitere Termine“
-(frühere = bereits beendete Termine vor dem Anzeigezeitraum). Pro Ansicht abschaltbar, per `navigation` überschreibbar.
+Every change needs tests; line coverage must stay above 80 % for PHP and JavaScript/TypeScript.
+Details: [docs/development.md](docs/development.md), [docs/testing.md](docs/testing.md) (incl. browser tests),
+[docs/sonarqube.md](docs/sonarqube.md). GitHub Actions run all checks on every push.
 
-Filter können eine Ansicht nur einschränken, nie erweitern. Ansichten mit nicht-öffentlichen Quellen werden per
-JavaScript nachgeladen und nie in (evtl. öffentlich gecachtes) Seiten-HTML geschrieben.
+## License
 
-## Betrieb
+[GPL-2.0-or-later](https://www.gnu.org/licenses/gpl-2.0.html) — see [LICENSE](LICENSE). Provided by Stefan Warnat.
 
-- Jede Quelle wird standardmäßig alle 6 Stunden synchronisiert (einstellbar 1–48 Stunden, „Jetzt synchronisieren“
-  jederzeit). Die Warteschlange prüft über WP-Cron alle 5 Minuten, ob etwas fällig ist. Für Seiten mit wenig Besuchern oder `DISABLE_WP_CRON` in den
-  Einstellungen „System-Cron“ wählen und z. B. `* * * * * wp sw-cloudcalendar queue run` einrichten.
-- WP-CLI: `wp sw-cloudcalendar sources list | connections test --id=1 | sync --source=3 | sync --all --full |
-  attachments sync --source=3 | attachments prune --dry-run | cache clear | diagnostics | queue run`.
-- Deaktivieren behält alle Daten. Beim Löschen des Plugins werden Daten nur entfernt, wenn „Daten bei Deinstallation
-  löschen“ aktiviert ist (Google-Tokens werden dabei widerrufen).
+Bundled third-party components (license texts in the linked repositories; the release package does not include copies):
 
-## SonarQube Cloud
-
-The test workflow uploads merged PHP Clover coverage and analyzes same-repository PRs
-and pushes to the default branch. Configure the `SONAR_TOKEN` Actions secret and
-`SONAR_ORGANIZATION` Actions variable (organization-level bindings may be reused).
-Project mapping and source paths are in `sonar-project.properties`. Fork PRs run tests
-without access to the scanner token. Coverage uses the existing PHPUnit scopes;
-unmeasured application code is not excluded from SonarQube. Frontend tests and builds
-run separately; JavaScript/TypeScript coverage is not collected by this PHP rollout.
-Generated assets and third-party dependencies are not application analysis inputs.
+- PHP, isolated in `vendor-prefixed/` of the release build:
+  - [sabre/vobject](https://github.com/sabre-io/vobject) — BSD-3-Clause
+  - [sabre/xml](https://github.com/sabre-io/xml) — BSD-3-Clause
+  - [sabre/uri](https://github.com/sabre-io/uri) — BSD-3-Clause
+- JavaScript, bundled in `assets/admin/`:
+  - [Vue](https://github.com/vuejs/core) — MIT
+  - [Vue Router](https://github.com/vuejs/router) — MIT
+  - [Pinia](https://github.com/vuejs/pinia) — MIT
+  - [Vue I18n](https://github.com/intlify/vue-i18n) (incl. @intlify packages) — MIT
+  - [Quasar](https://github.com/quasarframework/quasar) — MIT
+  - [CodeMirror 6](https://github.com/codemirror/dev) (incl. @lezer, style-mod, w3c-keyname, crelt, find-cluster-break) — MIT
+- Fonts, bundled in `assets/admin/assets/`:
+  - [Inter](https://github.com/rsms/inter) — OFL-1.1
+  - [JetBrains Mono](https://github.com/JetBrains/JetBrainsMono) — OFL-1.1
+  - [Material Icons Round](https://github.com/google/material-design-icons) (via @quasar/extras) — Apache-2.0

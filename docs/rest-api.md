@@ -113,7 +113,7 @@ required` (public source with `public_only=false`), `settings.attachments.sync_a
 
 | Method | Path | Body / result |
 |---|---|---|
-| GET/POST | `/admin/views` | View body: `{ name, enabled, source_ids, default_filters, display_mode, allowed_modes, container_template_id, event_template_id, detail_template_id, allowed_template_ids, timezone, language, color_rules, html_cache, date_format, time_format, show_navigation }` |
+| GET/POST | `/admin/views` | View body: `{ name, enabled, source_ids, default_filters, display_mode, allowed_modes, container_template_id, event_template_id, detail_template_id, allowed_template_ids, container_template_ids_by_mode, event_template_ids_by_mode, timezone, language, color_rules, primary_color, html_cache, date_format, time_format, show_navigation }` – the two `*_by_mode` maps are keyed by display mode (`list`/`cards`/`month`) and hold template ids that replace the view-wide choice for that mode only; validation errors are reported as `event_template_ids_by_mode.cards`. See [templates.md](templates.md) for the precedence. `primary_color` is `#rrggbb` or empty (default); it colours the display mode tabs and the search button of that view (CSS variable `--swc-primary` on the wrapper). |
 | GET/PUT/DELETE | `/admin/views/{id}` | result adds `id, revision, shortcode, dynamic` (dynamic = contains non-public sources → loaded via REST) |
 | POST | `/admin/views/preview` | `{ id?, view: <View body>, filters?: {…} }` → `{ html, css: {scope: css}, total }` – renders the unsaved (or disabled) form state with the ACL of the current admin; validation errors like PUT; never cached |
 
@@ -152,3 +152,17 @@ shape as `/validate`) when body or CSS are invalid; other field errors (e.g. `na
 | GET | `/admin/meta` | `{ roles, auth_modes, supported_mime_types, default_mime_types, event_types, max_window_days, redirect_uri, storage_safe, site_timezone, timezones, date_format, time_format, encryption_fallback }` |
 
 Sync run: `{ id, source_id, started_at, finished_at, status: running|success|failed, mode: full|delta, created, updated, deleted, attachments, error_code, message, metrics }`.
+
+## Local plugin sources (v1)
+
+`GET /admin/meta` also returns `local_sources: [{id, name}]`. Connections accept `provider: "local"`, `auth_mode: "none"`,
+`settings: {adapter: "<registered-id>"}`. Sources report `local: true` and force event/file synchronization off.
+Public source creation requires explicit publication confirmation. Local sources do not support the sync action.
+
+Event IDs may be numeric (existing API) or an opaque `local.<source-id>.<base64url-id>` reference. Detail routes and
+`swc_event` links accept both. Event collections additionally expose an optional `image: {url, alt}` for public local
+preview images. Local view responses use `no-store`; all view/source/adapter restrictions apply before reads.
+
+New filters: `color_titles`, `legend` (boolean), `columns` (1–4), `day_limit` (1–20), `navigation_group`
+(`[A-Za-z0-9_-]`, 1–64 chars). `month` also restricts list/card queries to that month.
+See [local-sources.md](local-sources.md) for the adapter contract.

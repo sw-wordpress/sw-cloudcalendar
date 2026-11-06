@@ -66,19 +66,19 @@ final class ConnectionManager {
 			throw new ValidationException( array( 'id' => 'not_found' ), 'Connection not found.', 404 );
 		}
 		$errors   = array();
-		$provider = $existing?->provider ?? Provider::tryFrom( (string) ( $data['provider'] ?? '' ) );
+		$provider = $existing->provider ?? Provider::tryFrom( (string) ( $data['provider'] ?? '' ) );
 		if ( null === $provider ) {
 			throw new ValidationException( array( 'provider' => 'invalid' ) );
 		}
-		$auth = $existing?->authMode ?? AuthMode::tryFrom( (string) ( $data['auth_mode'] ?? '' ) );
+		$auth = $existing->authMode ?? AuthMode::tryFrom( (string) ( $data['auth_mode'] ?? '' ) );
 		if ( null === $auth || ! in_array( $auth, AuthMode::allowedFor( $provider ), true ) ) {
 			throw new ValidationException( array( 'auth_mode' => 'invalid' ) );
 		}
-		$name = trim( sanitize_text_field( (string) ( $data['name'] ?? $existing?->name ?? '' ) ) );
+		$name = trim( sanitize_text_field( (string) ( $data['name'] ?? $existing->name ?? '' ) ) );
 		if ( '' === $name || mb_strlen( $name ) > 190 ) {
 			$errors['name'] = 'invalid';
 		}
-		$settings = $this->settings( $provider, $auth, (array) ( $data['settings'] ?? array() ), $existing?->settings ?? array(), $errors );
+		$settings = $this->settings( $provider, $auth, (array) ( $data['settings'] ?? array() ), $existing->settings ?? array(), $errors );
 		$secrets  = array();
 		foreach ( (array) ( $data['secrets'] ?? array() ) as $key => $value ) {
 			if ( ! in_array( $key, self::SECRET_KEYS[ $auth->value ], true ) ) {
@@ -130,7 +130,7 @@ final class ConnectionManager {
 			$this->services->credentials()->update( (int) $id, $secrets );
 		}
 		$this->services->audit()->record( null === $existing ? 'connection_created' : 'connection_updated', 'connection', (int) $id, array( 'provider' => $provider->value ) );
-		return $repo->find( (int) $id );
+		return $this->require( (int) $id );
 	}
 
 	/**
@@ -143,6 +143,13 @@ final class ConnectionManager {
 		$settings = $current;
 		$bool     = static fn ( mixed $v ): bool => in_array( $v, array( true, 1, '1', 'true', 'yes', 'on' ), true );
 		switch ( $provider ) {
+			case Provider::Local:
+				$adapter = (string) ( $current['adapter'] ?? $input['adapter'] ?? '' );
+				if ( ! isset( $current['adapter'] ) && null === $this->services->local_sources()->get( $adapter ) ) {
+					$errors['settings.adapter'] = 'unavailable';
+				}
+				$settings = array( 'adapter' => $adapter );
+				break;
 			case Provider::Ics:
 				if ( array_key_exists( 'url', $input ) || ! isset( $settings['url'] ) ) {
 					$url             = IcsProvider::normalizeUrl( esc_url_raw( (string) ( $input['url'] ?? '' ), array( 'https', 'http', 'webcal', 'webcals' ) ) );
@@ -287,9 +294,11 @@ final class ConnectionManager {
 	 */
 	public function calendars( int $id ): array {
 		$connection = $this->require( $id );
-		return array_map(
-			static fn ( $definition ): array => $definition->toArray(),
-			$this->services->providers()->get( $connection->provider )->listCalendars( $connection )
+		return array_values(
+			array_map(
+				static fn ( $definition ): array => $definition->toArray(),
+				$this->services->providers()->get( $connection->provider )->listCalendars( $connection )
+			)
 		);
 	}
 
@@ -336,7 +345,7 @@ final class ConnectionManager {
 		return rest_url( 'sw-cloudcalendar/v1/oauth/callback' );
 	}
 
-	private function require( int $id ): Connection {
+	public function require( int $id ): Connection {
 		$connection = $this->services->connections()->find( $id );
 		if ( null === $connection ) {
 			throw new ValidationException( array( 'id' => 'not_found' ), 'Connection not found.', 404 );

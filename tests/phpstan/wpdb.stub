@@ -1,0 +1,19 @@
+<?php
+
+/**
+ * Corrects WordPress core PHPDoc for PHPStan. The plugin interpolates only trusted identifiers
+ * ($wpdb->prefix tables, fixed column lists) into queries and binds every value via placeholders,
+ * so `literal-string` is too strict; prepare() returns null only for an empty query, which never occurs here.
+ */
+class wpdb
+{
+    /**
+     * @param string      $query
+     * @param array|mixed $args
+     * @param mixed       ...$args
+     * @return string
+     */
+    public function prepare($query, ...$args)
+    {
+    }
+}

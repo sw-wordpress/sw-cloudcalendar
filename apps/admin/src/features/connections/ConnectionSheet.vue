@@ -31,6 +31,7 @@ const FALLBACK_MODES: Record<Provider, AuthMode[]> = {
   google: ['oauth', 'api_key'],
   microsoft: ['oauth'],
   ics: ['none', 'http_header'],
+  local: ['none'],
 };
 
 const provider = ref<Provider>('ics');
@@ -42,6 +43,7 @@ const secrets = ref<Record<SecretKey, string>>({ client_secret: '', api_key: '',
 
 function blankSettings(): Required<ConnectionSettings> {
   return {
+    adapter: '',
     url: '',
     allow_http: false,
     max_feed_mb: 10,
@@ -65,7 +67,7 @@ const redirectUri = computed(
 const secretsSet = computed(() => new Set(props.connection?.secrets_set ?? []));
 
 const providerOptions = computed(() =>
-  (['google', 'microsoft', 'ics'] as Provider[]).map((p) => ({
+  (['google', 'microsoft', 'ics', 'local'] as Provider[]).map((p) => ({
     value: p,
     label: t(`providers.${p}`),
   })),
@@ -95,6 +97,8 @@ watch(open, (isOpen) => {
 function payloadSettings(): ConnectionSettings {
   const s = settings.value;
   switch (provider.value) {
+    case 'local':
+      return { adapter: s.adapter };
     case 'ics':
       return { url: s.url.trim(), allow_http: s.allow_http, max_feed_mb: Number(s.max_feed_mb) };
     case 'google':
@@ -186,7 +190,7 @@ const required = (v: unknown): true | string =>
           :disabled="isEdit"
         />
         <p v-if="isEdit" class="swc-muted swc-hint">{{ t('connections.immutableHint') }}</p>
-        <p class="swc-hint">{{ t(`connections.modeHints.${authMode}`) }}</p>
+        <p v-if="provider !== 'local'" class="swc-hint">{{ t(`connections.modeHints.${authMode}`) }}</p>
         <q-input
           v-model="name"
           outlined
@@ -199,6 +203,27 @@ const required = (v: unknown): true | string =>
         />
       </FormSection>
 
+      <FormSection
+        v-if="provider === 'local'"
+        :title="t('connections.localTitle')"
+        :description="t('connections.localHint')"
+      >
+        <q-select
+          v-model="settings.adapter"
+          outlined
+          dense
+          emit-value
+          map-options
+          :options="
+            (lookups.meta?.local_sources ?? []).map((s) => ({ label: s.name, value: s.id }))
+          "
+          :label="t('connections.localTitle')"
+          :disable="isEdit"
+          :rules="[required]"
+          :error="!!fields.field('settings.adapter')"
+          :error-message="fields.field('settings.adapter')"
+        />
+      </FormSection>
       <!-- ICS -->
       <FormSection
         v-if="provider === 'ics'"
@@ -247,7 +272,7 @@ const required = (v: unknown): true | string =>
 
       <!-- Google / Microsoft -->
       <FormSection
-        v-else
+        v-else-if="provider !== 'local'"
         :title="t(`connections.${provider}.title`)"
         :description="t(`connections.${provider}.hint`)"
       >
@@ -330,7 +355,7 @@ const required = (v: unknown): true | string =>
       </FormSection>
     </div>
     <ProviderSetupDialog
-      v-if="provider !== 'ics'"
+      v-if="provider === 'google' || provider === 'microsoft'"
       v-model="guideOpen"
       :provider="provider"
       :redirect-uri="redirectUri"

@@ -11,6 +11,7 @@ namespace SW\Calendar\Presentation\Admin;
 
 use SW\Calendar\Domain\Connection\AuthMode;
 use SW\Calendar\Domain\Connection\Connection;
+use SW\Calendar\Domain\Connection\Provider;
 use SW\Calendar\Domain\Job\JobType;
 use SW\Calendar\Domain\Source\AttachmentPolicy;
 use SW\Calendar\Domain\Source\Confirmation;
@@ -45,6 +46,7 @@ final class SourceManager {
 			'id'                    => $source->id,
 			'connection_id'         => $source->connectionId,
 			'provider'              => $connection?->provider->value,
+			'local'                 => Provider::Local === $connection?->provider,
 			'external_id'           => $source->externalId,
 			'name'                  => $source->name,
 			'color'                 => $source->color,
@@ -76,24 +78,24 @@ final class SourceManager {
 			throw new ValidationException( array( 'id' => 'not_found' ), 'Source not found.', 404 );
 		}
 		$errors        = array();
-		$connection_id = $existing?->connectionId ?? (int) ( $data['connection_id'] ?? 0 );
+		$connection_id = $existing->connectionId ?? (int) ( $data['connection_id'] ?? 0 );
 		$connection    = $this->services->connections()->find( $connection_id );
 		if ( null === $connection ) {
 			throw new ValidationException( array( 'connection_id' => 'not_found' ) );
 		}
-		$external_id = $existing?->externalId ?? trim( (string) ( $data['external_id'] ?? '' ) );
+		$external_id = $existing->externalId ?? trim( (string) ( $data['external_id'] ?? '' ) );
 		if ( '' === $external_id || strlen( $external_id ) > 512 || 1 === preg_match( '/[\x00-\x1F]/', $external_id ) ) {
 			$errors['external_id'] = 'invalid';
 		}
-		$name = trim( sanitize_text_field( (string) ( $data['name'] ?? $existing?->name ?? '' ) ) );
+		$name = trim( sanitize_text_field( (string) ( $data['name'] ?? $existing->name ?? '' ) ) );
 		if ( '' === $name || mb_strlen( $name ) > 190 ) {
 			$errors['name'] = 'invalid';
 		}
-		$color = strtolower( (string) ( $data['color'] ?? $existing?->color ?? '#3366cc' ) );
+		$color = strtolower( (string) ( $data['color'] ?? $existing->color ?? '#3366cc' ) );
 		if ( 1 !== preg_match( '/^#[0-9a-f]{6}$/', $color ) ) {
 			$errors['color'] = 'invalid';
 		}
-		$timezone = (string) ( $data['timezone'] ?? $existing?->timezone ?? 'UTC' );
+		$timezone = (string) ( $data['timezone'] ?? $existing->timezone ?? 'UTC' );
 		if ( ! in_array( $timezone, timezone_identifiers_list(), true ) && 'UTC' !== $timezone ) {
 			$errors['timezone'] = 'invalid';
 		}
@@ -102,7 +104,7 @@ final class SourceManager {
 			$errors['visibility'] = 'invalid';
 			$visibility           = Visibility::Roles;
 		}
-		$roles = array_values( array_unique( array_map( 'strval', (array) ( $data['roles'] ?? $existing?->roles ?? array() ) ) ) );
+		$roles = array_values( array_unique( array_map( 'strval', (array) ( $data['roles'] ?? $existing->roles ?? array() ) ) ) );
 		$known = array_keys( wp_roles()->get_names() );
 		foreach ( $roles as $role ) {
 			if ( ! in_array( $role, $known, true ) ) {
@@ -116,12 +118,27 @@ final class SourceManager {
 			$roles = array();
 		}
 		$status = SourceStatus::tryFrom( (string) ( $data['status'] ?? $existing?->status->value ?? SourceStatus::Draft->value ) );
-		if ( null === $status || ( null === $existing && SourceStatus::Draft !== $status ) || ( SourceStatus::Error === $status && SourceStatus::Error !== $existing?->status ) ) {
+		if ( null === $status || ( null === $existing && SourceStatus::Draft !== $status ) || ( SourceStatus::Error === $status && SourceStatus::Error !== $existing->status ) ) {
 			// New sources are drafts; "error" is set by the sync engine only.
 			$errors['status'] = 'invalid';
-			$status           = $existing?->status ?? SourceStatus::Draft;
+			$status           = $existing->status ?? SourceStatus::Draft;
 		}
 
+		if ( Provider::Local === $connection->provider ) {
+			if ( null === $existing ) {
+				$calendars = $this->services->providers()->get( $connection->provider )->listCalendars( $connection );
+				if ( ! in_array( $external_id, array_map( static fn ( $calendar ): string => $calendar->externalId, $calendars ), true ) ) {
+					$errors['external_id'] = 'not_found';
+				}
+			}
+			$data['settings'] = array_replace_recursive(
+				(array) ( $data['settings'] ?? array() ),
+				array(
+					'sync_enabled' => false,
+					'attachments'  => array( 'sync_attachments' => false ),
+				)
+			);
+		}
 		$settings_errors = array();
 		$raw_settings    = array_replace_recursive( $existing?->settings->toArray() ?? array(), is_array( $data['settings'] ?? null ) ? $data['settings'] : array() );
 		// Confirmations can only be granted through the explicit flags below, never by posting the stored structure.
@@ -132,13 +149,13 @@ final class SourceManager {
 		}
 
 		$now        = $this->services->clock()->now();
-		$revision   = ( $existing?->revision ?? 0 ) + 1;
+		$revision   = ( $existing->revision ?? 0 ) + 1;
 		$user       = get_current_user_id();
 		$was_public = Visibility::Public === $existing?->visibility;
 		$audit      = array();
 
 		// Publication of a provider-private calendar.
-		$publication = Visibility::Public === $visibility ? ( $was_public ? $existing?->settings->publicationConfirmation : null ) : null;
+		$publication = Visibility::Public === $visibility ? ( $was_public ? $existing->settings->publicationConfirmation : null ) : null;
 		if ( Visibility::Public === $visibility && $this->provider_private( $connection ) && null === $publication ) {
 			if ( true === ( $data['confirm_publication'] ?? false ) ) {
 				$publication = new Confirmation( $user, $now, $revision );
@@ -149,7 +166,7 @@ final class SourceManager {
 		}
 
 		// Publication of private attachments on a public source.
-		$file_confirmation = Visibility::Public === $visibility && $was_public ? $existing?->settings->attachments->privateAttachmentsConfirmation : null;
+		$file_confirmation = Visibility::Public === $visibility && $was_public ? $existing->settings->attachments->privateAttachmentsConfirmation : null;
 		if ( $settings->attachments->requiresPrivateConfirmation( $visibility ) && null === $file_confirmation ) {
 			if ( true === ( $data['confirm_private_attachments'] ?? false ) ) {
 				$file_confirmation = new Confirmation( $user, $now, $revision );
@@ -196,7 +213,7 @@ final class SourceManager {
 			$id = $repo->create( $connection->id, $external_id, $name, $color, $timezone, $visibility, $roles, $settings );
 			$this->services->audit()->record( 'source_created', 'source', $id, array( 'visibility' => $visibility->value ) );
 			$this->record_confirmations( $audit, $id, $revision );
-			return $repo->find( $id );
+			return $this->require( $id );
 		}
 
 		$repo->update( (int) $id, $name, $color, $timezone, $visibility, $roles, $settings, $status );
@@ -221,11 +238,11 @@ final class SourceManager {
 		if ( $window_changed ) {
 			$this->services->sync_state()->resetCursor( (int) $id );
 		}
-		if ( $window_changed || $filters_changed || $acl_changed || $policy_changed || $existing->timezone !== $timezone ) {
+		if ( ! $this->services->event_queries()->isLocal( (int) $id ) && ( $window_changed || $filters_changed || $acl_changed || $policy_changed || $existing->timezone !== $timezone ) ) {
 			$this->request_sync( (int) $id, $window_changed );
 		}
 		$this->services->invalidator()->sourceChanged( (int) $id );
-		return $repo->find( (int) $id );
+		return $this->require( (int) $id );
 	}
 
 	/**
@@ -245,6 +262,9 @@ final class SourceManager {
 		if ( null === $source ) {
 			throw new ValidationException( array( 'id' => 'not_found' ), 'Source not found.', 404 );
 		}
+		if ( $this->services->event_queries()->isLocal( $id ) ) {
+			throw new ValidationException( array( 'source' => 'local_read_only' ), 'Local sources do not need synchronization.' );
+		}
 		if ( $full ) {
 			$this->services->sync_state()->resetCursor( $id );
 		}
@@ -255,13 +275,49 @@ final class SourceManager {
 		}
 	}
 
+	/** Runs one source's queued sync under a job lease and the existing source lock. */
+	public function synchronize_now( int $id ): \SW\Calendar\Application\Sync\SyncReport {
+		$source = $this->services->sources()->find( $id );
+		if ( null === $source ) {
+			throw new ValidationException( array( 'id' => 'not_found' ), 'Source not found.', 404 );
+		}
+		if ( $this->services->event_queries()->isLocal( $id ) || ! $source->status->isSyncable() || ! $source->settings->syncEnabled ) {
+			throw new ValidationException( array( 'source' => 'not_syncable' ), 'Source cannot be synchronized.', 409 );
+		}
+		$now  = $this->services->clock()->now();
+		$jobs = $this->services->jobs();
+		$jobs->enqueue( JobType::SyncSource, $id, array( 'full' => false ), hash( 'sha256', 'sync_source|' . $id ), $now );
+		$job = $jobs->claim( $now, $now->modify( '+600 seconds' ), $id );
+		if ( null === $job ) {
+			throw new ValidationException( array( 'source' => 'locked' ), 'Synchronization already running.', 409 );
+		}
+		try {
+			$report = $this->services->sync()->sync( $id, (bool) ( $job->payload['full'] ?? false ) );
+			if ( \SW\Calendar\Application\Sync\SyncReport::LOCKED === $report->status ) {
+				$jobs->fail( $job->id, 'LOCKED', $now->modify( '+60 seconds' ) );
+			} else {
+				$jobs->complete( $job->id );
+			}
+			return $report;
+		} catch ( \Throwable $e ) {
+			$jobs->fail( $job->id, 'Manual synchronization interrupted.', $now->modify( '+60 seconds' ) );
+			throw $e;
+		}
+	}
+
 	/**
 	 * Removes the source and its data. Delivery stops immediately; files are removed by the storage cleanup.
 	 */
-	public function delete( int $id ): void {
-		if ( null === $this->services->sources()->find( $id ) ) {
+	private function require( int $id ): Source {
+		$source = $this->services->sources()->find( $id );
+		if ( null === $source ) {
 			throw new ValidationException( array( 'id' => 'not_found' ), 'Source not found.', 404 );
 		}
+		return $source;
+	}
+
+	public function delete( int $id ): void {
+		$this->require( $id );
 		$this->services->sources()->setStatus( $id, SourceStatus::Disabled );
 		$this->services->attachments()->deleteSource( $id );
 		$this->services->occurrences()->deleteSource( $id );
@@ -278,6 +334,6 @@ final class SourceManager {
 	 * for calendars that Google already publishes).
 	 */
 	private function provider_private( Connection $connection ): bool {
-		return in_array( $connection->authMode, array( AuthMode::OAuth, AuthMode::HttpHeader ), true );
+		return Provider::Local === $connection->provider || in_array( $connection->authMode, array( AuthMode::OAuth, AuthMode::HttpHeader ), true );
 	}
 }

@@ -66,6 +66,23 @@ Event und Detail zusätzlich:
 
 `data-swc-detail` auf einem Link öffnet die Detailansicht im Dialog (mit JavaScript), sonst navigiert er zur Detailseite.
 
+## Templates je Darstellung
+
+Eine Ansicht wählt Container- und Termin-Template **pro Darstellung** (`list`, `cards`, `month`). Ohne eigene Wahl
+übernimmt eine Darstellung das Template der ganzen Ansicht; ist dort ebenfalls nichts gewählt, greift das Preset der
+Darstellung. Reihenfolge bis zur Ausgabe:
+
+1. das in der Einbettung freigegebene `template` (nur Termin-Template, muss in `allowed_template_ids` enthalten sein),
+2. das Template der gewählten Darstellung,
+3. das Template der ganzen Ansicht,
+4. das Preset der Darstellung (`PresetLibrary::defaultFor()`).
+
+Der Wechsel der Darstellung (Tabs oder `view="cards"`) löst beide Templates neu: ein nur für Karten gewähltes Template
+erscheint deshalb nie im Monatsraster, und die Monatsliste gestaltet Liste und Karten getrennt. Detail-Templates sind
+darstellungsunabhängig. `allowed_template_ids` bleibt ansichtsbezogen – ein Standard-Template einer Darstellung ist keine
+Freigabe für den Parameter `template`. Der HTML-Cache (SPEC §12) enthält Darstellung und aufgelöste Templates im
+Schlüssel, ein nur über eine Darstellung gebundenes Template ist ebenfalls vor Löschung geschützt.
+
 ## Cache
 
 Der AST wird unter `swc:tpl:{id}:{sha256(body|css|engine|allowlist)}` gespeichert; jede Änderung an Body, CSS, Engine-

@@ -152,6 +152,7 @@ final class SystemController extends BaseController {
 			array(
 				'roles'                => wp_roles()->get_names(),
 				'auth_modes'           => $auth_modes,
+				'local_sources'        => $this->services->local_sources()->choices(),
 				'supported_mime_types' => AttachmentPolicy::SUPPORTED_MIME_TYPES,
 				'default_mime_types'   => AttachmentPolicy::DEFAULT_MIME_TYPES,
 				'event_types'          => SourceSettings::KNOWN_EVENT_TYPES,

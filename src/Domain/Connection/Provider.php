@@ -9,4 +9,5 @@ enum Provider: string
     case Google = 'google';
     case Microsoft = 'microsoft';
     case Ics = 'ics';
+    case Local = 'local';
 }

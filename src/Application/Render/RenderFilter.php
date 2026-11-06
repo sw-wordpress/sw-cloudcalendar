@@ -14,7 +14,7 @@ final class RenderFilter
 {
     /**
      * @param list<int>|null $sourceIds
-     * @param list<int>      $exclude
+     * @param list<int|string> $exclude
      */
     public function __construct(
         public readonly ?array $sourceIds = null,
@@ -35,6 +35,13 @@ final class RenderFilter
         public readonly int $page = 1,
         public readonly ?int $perPage = null,
         public readonly ?bool $navigation = null,
+        public readonly ?bool $colorTitles = null,
+        public readonly ?bool $legend = null,
+        public readonly ?int $columns = null,
+        public readonly ?int $dayLimit = null,
+        public readonly ?string $navigationGroup = null,
+        public readonly ?bool $modeSwitcher = null,
+        public readonly ?bool $showSearch = null,
     ) {
     }
 
@@ -65,9 +72,16 @@ final class RenderFilter
             $this->showImages ?? $defaults->showImages,
             $this->showAttachments ?? $defaults->showAttachments,
             $this->month ?? $defaults->month,
-            $this->page,
+            ($this->month ?? $defaults->month) !== null ? max(1, $this->page) : $this->page,
             $this->perPage ?? $defaults->perPage,
             $this->navigation ?? $defaults->navigation,
+            $this->colorTitles ?? $defaults->colorTitles,
+            $this->legend ?? $defaults->legend,
+            $this->columns ?? $defaults->columns,
+            $this->dayLimit ?? $defaults->dayLimit,
+            $this->navigationGroup ?? $defaults->navigationGroup,
+            $this->modeSwitcher ?? $defaults->modeSwitcher,
+            $this->showSearch ?? $defaults->showSearch,
         );
     }
 
@@ -103,6 +117,13 @@ final class RenderFilter
             'page' => $this->page,
             'per_page' => $this->perPage,
             'navigation' => $this->navigation,
+            'color_titles' => $this->colorTitles,
+            'legend' => $this->legend,
+            'columns' => $this->columns,
+            'day_limit' => $this->dayLimit,
+            'navigation_group' => $this->navigationGroup,
+            'mode_switcher' => $this->modeSwitcher,
+            'show_search' => $this->showSearch,
         ];
     }
 

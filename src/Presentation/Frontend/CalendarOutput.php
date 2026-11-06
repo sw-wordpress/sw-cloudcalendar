@@ -44,9 +44,23 @@ final class CalendarOutput {
 
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only navigation parameters, validated below.
 		$targeted = isset( $_GET[ WpUrlGenerator::VIEW_PARAM ] ) && absint( $_GET[ WpUrlGenerator::VIEW_PARAM ] ) === $view_id;
-		$event_id = $targeted && isset( $_GET[ WpUrlGenerator::EVENT_PARAM ] ) ? absint( $_GET[ WpUrlGenerator::EVENT_PARAM ] ) : 0;
+		$event_id = $targeted && isset( $_GET[ WpUrlGenerator::EVENT_PARAM ] ) ? sanitize_text_field( wp_unslash( $_GET[ WpUrlGenerator::EVENT_PARAM ] ) ) : 0;
 		$month    = $targeted && isset( $_GET[ WpUrlGenerator::MONTH_PARAM ] ) ? sanitize_text_field( wp_unslash( $_GET[ WpUrlGenerator::MONTH_PARAM ] ) ) : '';
 		$page     = $targeted && isset( $_GET[ WpUrlGenerator::PAGE_PARAM ] ) ? (int) $_GET[ WpUrlGenerator::PAGE_PARAM ] : 0;
+		if ( '' === $month && isset( $_GET['cts_month'], $_GET['cts_year'] ) && is_scalar( $_GET['cts_month'] ) && is_scalar( $_GET['cts_year'] ) ) {
+			$legacy_month = (int) $_GET['cts_month'];
+			$legacy_year  = (int) $_GET['cts_year'];
+			if ( $legacy_month >= 1 && $legacy_month <= 12 && $legacy_year >= 1 && $legacy_year <= 9999 ) {
+				$month = sprintf( '%04d-%02d', $legacy_year, $legacy_month );
+			}
+		}
+		if ( $targeted && isset( $_GET[ WpUrlGenerator::MODE_PARAM ] ) && is_string( $_GET[ WpUrlGenerator::MODE_PARAM ] ) ) {
+			$filters['view'] = sanitize_text_field( wp_unslash( $_GET[ WpUrlGenerator::MODE_PARAM ] ) );
+		}
+		if ( $targeted && isset( $_GET[ WpUrlGenerator::SEARCH_PARAM ] ) && is_string( $_GET[ WpUrlGenerator::SEARCH_PARAM ] ) ) {
+			$filters['search'] = sanitize_text_field( wp_unslash( $_GET[ WpUrlGenerator::SEARCH_PARAM ] ) );
+		}
+
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 		if ( '' !== $month && 1 === preg_match( '/^\d{4}-(0[1-9]|1[0-2])$/', $month ) ) {
 			$filters['month'] = $month;
@@ -65,13 +79,13 @@ final class CalendarOutput {
 	/**
 	 * @param array<string, mixed> $filters
 	 */
-	private function render_view( int $view_id, array $filters, int $event_id ): string {
+	private function render_view( int $view_id, array $filters, int|string $event_id ): string {
 		$renderer = $this->services->renderer();
 		if ( $renderer->requiresDynamicLoading( $view_id ) && ! $this->is_editor_preview() ) {
 			return $this->placeholder( $view_id, $filters, $event_id );
 		}
 		$user = get_current_user_id() > 0 ? get_current_user_id() : null;
-		if ( $event_id > 0 ) {
+		if ( 0 !== $event_id && '0' !== $event_id && '' !== $event_id ) {
 			$detail = $renderer->renderDetail( $view_id, $event_id, $user );
 			if ( RenderResult::OK === $detail->status ) {
 				return $this->css( $detail->css ) . $this->back_link( $view_id ) . $detail->html;
@@ -116,16 +130,16 @@ final class CalendarOutput {
 	/**
 	 * @param array<string, mixed> $filters
 	 */
-	private function placeholder( int $view_id, array $filters, int $event_id ): string {
+	private function placeholder( int $view_id, array $filters, int|string $event_id ): string {
 		$labels = $this->services->labels();
 		// The REST endpoint validates strictly; invalid shortcode values are dropped here like in inline rendering.
 		$parsed  = ( new FilterSchema() )->normalize( $filters );
 		$filters = array_diff_key( $filters, $parsed->errors, array_flip( $parsed->unknown ) );
 		return sprintf(
-			'<div class="swc-calendar swc-dynamic" data-swc-view="%1$d" data-swc-filters="%2$s" data-swc-event="%3$d" aria-busy="true"><p class="swc-loading">%4$s</p><noscript><p>%5$s</p></noscript></div>',
+			'<div class="swc-calendar swc-dynamic" data-swc-view="%1$d" data-swc-filters="%2$s" data-swc-event="%3$s" aria-busy="true"><p class="swc-loading">%4$s</p><noscript><p>%5$s</p></noscript></div>',
 			$view_id,
 			esc_attr( (string) wp_json_encode( (object) $filters ) ),
-			$event_id,
+			esc_attr( (string) $event_id ),
 			esc_html( $labels->loading ),
 			esc_html( $labels->requiresJavascript )
 		);
