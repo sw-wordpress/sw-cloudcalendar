@@ -732,6 +732,17 @@ const en: typeof de = {
     resetDone: 'Reset to preset. Save to apply.',
     cssHint:
       "The CSS is automatically scoped to the template; url(), {'@'}import and similar are not allowed.",
+    cssVarsTitle: 'Available CSS variables',
+    cssVarsHint:
+      'Use with var(--name, fallback). Pick the view colour or the calendar colour for each property.',
+    cssVars: {
+      '--swc-primary':
+        'Main colour of the view (view setting “Primary colour”); only set when a colour is chosen there – always use it with a fallback.',
+      '--swc-primary-text': 'Readable text colour on the main colour (automatic contrast).',
+      '--swc-event-color':
+        'Colour of the calendar of the respective event (including the “Colours per source” override).',
+      '--swc-event-text': 'Readable text colour on the calendar colour (automatic contrast).',
+    },
     validation: 'Validation',
     valid: 'Valid',
     invalid: '1 error | {n} errors',

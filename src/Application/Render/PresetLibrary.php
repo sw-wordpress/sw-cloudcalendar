@@ -19,6 +19,7 @@ final class PresetLibrary
     public const TIMELINE_LIST = 'timeline-list';
     public const MONTHLY_LIST = 'monthly-list';
     public const IMAGE_RIGHT_LIST = 'image-right-list';
+    public const DATE_BADGE_LIST = 'date-badge-list';
 
     public function __construct(private readonly string $directory)
     {
@@ -29,7 +30,7 @@ final class PresetLibrary
      */
     public function keys(): array
     {
-        return [self::CLASSIC_LIST, self::EVENT_CARDS, self::MONTH_GRID, self::TIMELINE_LIST, self::MONTHLY_LIST, self::IMAGE_RIGHT_LIST];
+        return [self::CLASSIC_LIST, self::EVENT_CARDS, self::MONTH_GRID, self::TIMELINE_LIST, self::MONTHLY_LIST, self::IMAGE_RIGHT_LIST, self::DATE_BADGE_LIST];
     }
 
     public static function defaultFor(DisplayMode $mode): string
