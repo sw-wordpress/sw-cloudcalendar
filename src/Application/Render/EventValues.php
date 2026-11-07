@@ -95,6 +95,7 @@ final class EventValues
             'event.end_iso' => $occurrence->allDay ? $endInclusive->format('Y-m-d') : $end->format(DATE_ATOM),
             'event.day' => $this->dates->format($start, $tz, 'j'),
             'event.month_short' => $this->dates->format($start, $tz, 'M'),
+            'event.year_short' => $this->dates->format($start, $tz, 'y'),
             'event.weekday_short' => $this->dates->format($start, $tz, 'D'),
             'event.weekday' => $this->dates->format($start, $tz, 'l'),
             'event.all_day' => $occurrence->allDay,

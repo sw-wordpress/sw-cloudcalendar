@@ -1,0 +1,29 @@
+/*
+ * Colours – pick one source per property:
+ *   --swc-primary / --swc-primary-text      main colour of the view (set in the view settings)
+ *   --swc-event-color / --swc-event-text    colour of the event's calendar
+ */
+.swc-badge-row {
+  --swc-badge-bg: var(--swc-primary, #f7dc63);
+  --swc-badge-text: var(--swc-primary-text, #000);
+  --swc-badge-border: #000;
+  display: grid; grid-template-columns: 5.25rem minmax(0,1fr); gap: .75rem; margin: .5rem 0;
+}
+.swc-badge-row__badge { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: .75rem .25rem; background: var(--swc-badge-bg); color: var(--swc-badge-text); line-height: 1.1; }
+.swc-badge-row__day { font-size: 2.25rem; }
+.swc-badge-row__month { font-size: .7rem; }
+.swc-badge-row__card { display: grid; grid-template-columns: minmax(0,2fr) minmax(0,1.2fr) minmax(0,1.2fr); gap: .5rem 1.5rem; align-items: center; padding: 1rem 1.25rem; border: 3px solid var(--swc-badge-border); min-width: 0; overflow-wrap: anywhere; }
+.swc-badge-row__title { margin: 0; grid-column: 1; font-size: 1.15em; }
+.swc-badge-row__title a { color: inherit; text-decoration: none; }
+.swc-badge-row__title a:hover, .swc-badge-row__title a:focus-visible { text-decoration: underline; }
+.swc-badge-row__meta { display: flex; gap: .6rem; align-items: flex-start; margin: 0; font-size: .9em; line-height: 1.6; }
+.swc-badge-row__when { grid-column: 2; }
+.swc-badge-row__where { grid-column: 3; }
+.swc-badge-row__icon { flex: 0 0 1.1rem; box-sizing: border-box; height: 1.1rem; margin-top: .25rem; }
+.swc-badge-row__icon--time { border: 2px solid var(--swc-badge-bg); border-radius: 50%; }
+.swc-badge-row__icon--place { background: var(--swc-badge-bg); border-radius: 50% 50% 50% 0; transform: rotate(-45deg) scale(.8); }
+@media (max-width: 700px) {
+  .swc-badge-row { grid-template-columns: 4rem minmax(0,1fr); }
+  .swc-badge-row__card { grid-template-columns: minmax(0,1fr); }
+  .swc-badge-row__title, .swc-badge-row__when, .swc-badge-row__where { grid-column: 1; }
+}

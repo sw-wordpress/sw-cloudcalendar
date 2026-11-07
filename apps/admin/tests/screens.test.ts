@@ -899,6 +899,15 @@ describe('admin actions against REST contracts', () => {
       expect(written('admin/templates/7', 'PUT')).toMatchObject({ body: template.body, css: '' });
     });
   });
+  it('documents the available CSS variables in the CSS tab', async () => {
+    await render('/templates/7', async (wrapper) => {
+      const list = wrapper.get('.swc-te__cssvars-list');
+      for (const name of ['--swc-primary', '--swc-primary-text', '--swc-event-color', '--swc-event-text']) {
+        expect(list.text()).toContain(name);
+      }
+      expect(list.findAll('dd')).toHaveLength(4);
+    });
+  });
   it('resets markup and CSS of a preset based template to the current preset', async () => {
     const originalTemplate = routes['admin/templates/7'];
     const originalPresets = routes['admin/templates/presets'];

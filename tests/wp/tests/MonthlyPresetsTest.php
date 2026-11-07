@@ -88,6 +88,26 @@ final class MonthlyPresetsTest extends SWC_TestCase {
 		);
 	}
 
+	public function test_date_badge_list_renders_badge_with_documented_color_variables(): void {
+		$source = $this->source( $this->ics_connection() );
+		$start  = new DateTimeImmutable( '2026-11-15T17:00:00Z' );
+		$event  = ( new LocalEvent( 'badge', 'cal', 'Abendgottesdienst', $start, $start->modify( '+1 hour' ), location: 'Haderner Herz' ) )->occurrence( $source );
+		$this->services->occurrences()->replaceSnapshot( $source, array( $event ), 1 );
+		$view   = $this->preset_view( 'date-badge-list', $source );
+		$result = $this->services->renderer()->render( $view, array( 'start' => '2026-11-01', 'end' => '2026-12-01', 'navigation' => 'false' ), null );
+		$this->assertSame( 1, $result->total );
+		$this->assertStringContainsString( '<span class="swc-badge-row__day">15</span>', $result->html );
+		$this->assertStringContainsString( '<span class="swc-badge-row__month">Nov 26</span>', $result->html );
+		$this->assertStringContainsString( 'swc-badge-row__where', $result->html );
+		$this->assertStringContainsString( '--swc-event-color:', $result->html );
+		$this->assertStringContainsString( '--swc-event-text:', $result->html );
+
+		$css = $this->services->presets()->css( 'date-badge-list', TemplateKind::Event );
+		$this->assertNull( CssSanitizer::findForbidden( $css ) );
+		$this->assertStringContainsString( 'var(--swc-primary, #f7dc63)', $css, 'View colour is the default, with a fallback for views without a primary colour' );
+		$this->assertSame( array(), $this->services->compiler()->validate( $this->services->presets()->body( 'date-badge-list', TemplateKind::Detail ) ?? '', TemplateKind::Detail ) );
+	}
+
 	public function test_classic_list_keeps_flat_layout(): void {
 		$source = $this->source( $this->ics_connection() );
 		$this->sync( $source );

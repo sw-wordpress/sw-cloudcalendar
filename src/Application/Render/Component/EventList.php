@@ -49,7 +49,7 @@ final class EventList
                 }
             }
             $html .= '<li class="swc-events__item' . ($occurrence->status === OccurrenceStatus::Tentative ? ' is-tentative' : '') . '"'
-                . ' style="--swc-event-color:' . ViewRenderer::color($item['color'] ?? '') . '" data-swc-event="' . TemplateCompiler::escape((string) $occurrence->id) . '" data-swc-source="' . $occurrence->sourceId . '">' . $item['html'] . '</li>';
+                . ' style="--swc-event-color:' . ViewRenderer::color($item['color'] ?? '') . ';--swc-event-text:' . ViewRenderer::textColor($item['color'] ?? '') . '" data-swc-event="' . TemplateCompiler::escape((string) $occurrence->id) . '" data-swc-source="' . $occurrence->sourceId . '">' . $item['html'] . '</li>';
         }
         return new TrustedHtml($html . '</' . $tag . '>' . ($groupTimezone === null ? '' : '</section>'));
     }

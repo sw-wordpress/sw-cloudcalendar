@@ -25,6 +25,8 @@ Beispiel entsprechend einer Seite mit Veranstaltungsliste und Monatsraster (12/1
 
 Unter **Templates → Preset-Galerie** stehen **Monatsliste** und **Monatsliste – Bild rechts** zur Verfügung. Jeweils das Container- und Event-Template der installierten Kopie in der Ansicht wählen. Die Monatsüberschriften verwenden den Terminbeginn in der Ansichtszeitzone; Ganztagstermine behalten ihr Kalenderdatum. Eigene Container können dafür {{calendar.events_by_month}} verwenden.
 
+Das Preset **Date Badge List** zeigt je Termin ein Datums-Badge (Tag, Monat, Jahr), Titel, Zeit und Ort. Die Badge-Farbe folgt standardmäßig der Primärfarbe der Ansicht; für die Kalenderfarbe im Template-CSS `var(--swc-event-color)` verwenden (siehe [Templates](templates.md#css-variablen)).
+
 Für die bisherige bebilderte Liste das Preset **timeline-list** für das Event-Template verwenden. Bei mehreren Spalten bleibt
 auf kleinen Bildschirmen eine Spalte. `month` begrenzt Listen auf den Kalendermonat; im Raster werden zusätzlich die
 angrenzenden Tage der vollständigen Wochen berücksichtigt. Listen/Karten behalten zusätzlich die Seitennavigation

@@ -52,6 +52,7 @@ final class PlaceholderRegistry
         'event.end_iso' => [PlaceholderType::Text, 'End as ISO 8601'],
         'event.day' => [PlaceholderType::Text, 'Day of month of the start'],
         'event.month_short' => [PlaceholderType::Text, 'Abbreviated month name of the start'],
+        'event.year_short' => [PlaceholderType::Text, 'Two-digit year of the start'],
         'event.weekday_short' => [PlaceholderType::Text, 'Abbreviated weekday name of the start'],
         'event.weekday' => [PlaceholderType::Text, 'Weekday name of the start'],
         'event.all_day' => [PlaceholderType::Flag, 'All-day event'],

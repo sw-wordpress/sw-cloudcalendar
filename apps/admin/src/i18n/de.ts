@@ -748,6 +748,17 @@ const de = {
     resetDone: 'Auf Preset zurückgesetzt. Zum Übernehmen speichern.',
     cssHint:
       "Das CSS wird automatisch auf das Template begrenzt; url(), {'@'}import und Ähnliches sind nicht erlaubt.",
+    cssVarsTitle: 'Verfügbare CSS-Variablen',
+    cssVarsHint:
+      'Mit var(--name, Fallback) nutzbar. Wähle je Eigenschaft die Farbe der Ansicht oder die des Kalenders.',
+    cssVars: {
+      '--swc-primary':
+        'Hauptfarbe der Ansicht (Ansichts-Einstellung „Primärfarbe“); nur gesetzt, wenn dort eine Farbe gewählt ist – daher immer mit Fallback verwenden.',
+      '--swc-primary-text': 'Lesbare Textfarbe auf der Hauptfarbe (automatischer Kontrast).',
+      '--swc-event-color':
+        'Farbe des Kalenders des jeweiligen Termins (inkl. Überschreibung „Farben je Quelle“).',
+      '--swc-event-text': 'Lesbare Textfarbe auf der Kalenderfarbe (automatischer Kontrast).',
+    },
     validation: 'Prüfung',
     valid: 'Gültig',
     invalid: '1 Fehler | {n} Fehler',

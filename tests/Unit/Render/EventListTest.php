@@ -46,7 +46,8 @@ final class EventListTest extends TestCase
         self::assertSame(2, substr_count($html, '<ul class="swc-events'));
         self::assertStringContainsString('November 2026 &lt;unsafe&gt;', $html);
         self::assertStringContainsString(' is-tentative', $html);
-        self::assertStringContainsString('--swc-event-color:#3366cc', $html);
+        self::assertStringContainsString('--swc-event-color:#3366cc;--swc-event-text:#ffffff', $html);
+        self::assertStringContainsString('--swc-event-color:#123456;--swc-event-text:', $html);
         self::assertStringNotContainsString('red;bad', $html);
         self::assertStringNotContainsString('<unsafe>', $html);
         self::assertStringContainsString('swc-empty', (string) $list->render([], DisplayMode::List));
@@ -58,5 +59,6 @@ final class EventListTest extends TestCase
         self::assertSame([], $compiler->validate('{{calendar.events_by_month}}', TemplateKind::Container));
         self::assertNotSame([], $compiler->validate('{{calendar.events_by_month}}', TemplateKind::Event));
         self::assertSame([], $compiler->validate('{{event.weekday_short}}', TemplateKind::Event));
+        self::assertSame([], $compiler->validate('{{event.year_short}}', TemplateKind::Event));
     }
 }
