@@ -10,6 +10,7 @@
 
 /* Lists and cards */
 .swc-events { list-style: none; margin: 0; padding: 0; }
+.swc-events--list {     list-style-type: none !important; margin: 0 !important; }
 .swc-events--list > .swc-events__item + .swc-events__item { border-top: 1px solid var(--swc-border); }
 .swc-events--cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 1rem; list-style:none; }
 .swc-events__item.is-tentative { opacity: .8; }
