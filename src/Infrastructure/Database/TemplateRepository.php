@@ -64,18 +64,33 @@ final class TemplateRepository implements TemplateRepositoryInterface {
 			);
 			return (int) Db::wpdb()->insert_id;
 		}
-		Db::wpdb()->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
-			Db::wpdb()->prepare(
-				"UPDATE {$table} SET name = %s, editor_mode = %s, body = %s, css = %s, schema_json = %s, revision = revision + 1, updated_at = %s WHERE id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-				$name,
-				$mode->value,
-				$body,
-				$css,
-				null === $schema ? null : Db::encode( $schema ),
-				Db::now(),
-				$id
-			)
-		);
+		if ( null === $schema ) {
+			// $wpdb->prepare( '%s', null ) becomes an empty string, not SQL NULL.
+			Db::wpdb()->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+				Db::wpdb()->prepare(
+					"UPDATE {$table} SET name = %s, editor_mode = %s, body = %s, css = %s, schema_json = NULL, revision = revision + 1, updated_at = %s WHERE id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+					$name,
+					$mode->value,
+					$body,
+					$css,
+					Db::now(),
+					$id
+				)
+			);
+		} else {
+			Db::wpdb()->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery
+				Db::wpdb()->prepare(
+					"UPDATE {$table} SET name = %s, editor_mode = %s, body = %s, css = %s, schema_json = %s, revision = revision + 1, updated_at = %s WHERE id = %d", // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+					$name,
+					$mode->value,
+					$body,
+					$css,
+					Db::encode( $schema ),
+					Db::now(),
+					$id
+				)
+			);
+		}
 		return $id;
 	}
 

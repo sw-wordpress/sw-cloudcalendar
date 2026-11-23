@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Bugs
+
+- Beim Aktualisieren einer Vorlage ohne visuelles Schema wird `schema_json` wieder als SQL-NULL gespeichert, nicht als leerer String.
+
 ### Other topics
 
 - Add the English user guide, a real initial-state Views screenshot, searchable documentation site, documentation build/deployment workflow and maintenance instructions; exclude documentation from release packages.
