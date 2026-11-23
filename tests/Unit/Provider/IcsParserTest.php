@@ -87,6 +87,54 @@ final class IcsParserTest extends TestCase
         self::assertSame('Grüße', $parsed['items'][0]->title);
     }
 
+    public function testDateListsKeepValidDatesAndSkipDurations(): void
+    {
+        $ics = <<<'ICS'
+            BEGIN:VCALENDAR
+            VERSION:2.0
+            BEGIN:VEVENT
+            UID:date-list@test
+            DTSTART:20261101T100000Z
+            EXDATE:P1D,20261102T100000Z
+            RDATE:P1D,20261103T100000Z
+            RDATE;VALUE=PERIOD:20261104T100000Z/PT1H
+            END:VEVENT
+            END:VCALENDAR
+            ICS;
+
+        $event = (new IcsParser())->parse($ics, new \DateTimeZone('UTC'))['items'][0];
+
+        self::assertCount(1, $event->exdates);
+        self::assertSame('2026-11-02T10:00:00+00:00', $event->exdates[0]->format(DATE_ATOM));
+        self::assertCount(1, $event->rdates);
+        self::assertSame('2026-11-03T10:00:00+00:00', $event->rdates[0]->format(DATE_ATOM));
+    }
+
+    public function testInvalidStartIsSkippedAndInvalidLastModifiedFallsBackToStamp(): void
+    {
+        $ics = <<<'ICS'
+            BEGIN:VCALENDAR
+            VERSION:2.0
+            BEGIN:VEVENT
+            UID:invalid-start@test
+            DTSTART:P1D
+            END:VEVENT
+            BEGIN:VEVENT
+            UID:valid-start@test
+            DTSTART:20261101T100000Z
+            LAST-MODIFIED:invalid
+            DTSTAMP:20261030T120000Z
+            END:VEVENT
+            END:VCALENDAR
+            ICS;
+
+        $items = (new IcsParser())->parse($ics, new \DateTimeZone('UTC'))['items'];
+
+        self::assertCount(1, $items);
+        self::assertSame('valid-start@test', $items[0]->seriesKey());
+        self::assertSame('2026-10-30T12:00:00+00:00', $items[0]->updatedAt?->format(DATE_ATOM));
+    }
+
     public function testTooManyEvents(): void
     {
         $this->expectException(CalendarException::class);

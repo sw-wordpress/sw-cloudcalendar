@@ -7,7 +7,7 @@
         "phpunit/phpunit": "^9.6",
         "wp-phpunit/wp-phpunit": "^6.8",
         "yoast/phpunit-polyfills": "^2.0",
-        "sabre/vobject": "^4.5"
+        "sabre/vobject": "^5.0"
     },
     "autoload-dev": {
         "psr-4": {

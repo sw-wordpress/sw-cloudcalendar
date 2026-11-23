@@ -4,6 +4,7 @@
 
 ### Other topics
 
+- Update the iCalendar parser and WordPress integration tests for Sabre VObject 5.
 - Add the English user guide, a real initial-state Views screenshot, searchable documentation site, documentation build/deployment workflow and maintenance instructions; exclude documentation from release packages.
 
 Historical entries below summarise published [GitHub release notes](https://github.com/sw-wordpress/sw-cloudcalendar/releases), not an inferred history of current features. Releases 1.0.0 and 0.8.0 have no release-note body and therefore no invented entries here.
