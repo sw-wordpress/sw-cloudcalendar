@@ -61,7 +61,11 @@ final class RecurrenceExpander
                 if (++$iterations > self::MAX_ITERATIONS) {
                     throw new CalendarException(ErrorCode::LimitExceeded, 'Recurrence rule exceeds the iteration limit.');
                 }
-                $current = \DateTimeImmutable::createFromInterface($iterator->current());
+                $date = $iterator->current();
+                if ($date === null) {
+                    break;
+                }
+                $current = \DateTimeImmutable::createFromInterface($date);
                 if ($current >= $windowEnd) {
                     break;
                 }

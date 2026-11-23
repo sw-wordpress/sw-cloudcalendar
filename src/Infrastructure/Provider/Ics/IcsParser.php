@@ -6,6 +6,7 @@ namespace SW\Calendar\Infrastructure\Provider\Ics;
 
 use Sabre\VObject\Component\VCalendar;
 use Sabre\VObject\Component\VEvent;
+use Sabre\VObject\InvalidDataException;
 use Sabre\VObject\Property;
 use Sabre\VObject\Property\ICalendar\DateTime as DateTimeProperty;
 use Sabre\VObject\Reader;
@@ -98,7 +99,9 @@ final class IcsParser
         foreach ($vevent->select('EXDATE') as $exdate) {
             if ($exdate instanceof DateTimeProperty) {
                 foreach ($exdate->getDateTimes($floatingTz) as $dt) {
-                    $exdates[] = $allDay ? self::floating($dt) : \DateTimeImmutable::createFromInterface($dt);
+                    if ($dt instanceof \DateTimeInterface) {
+                        $exdates[] = $allDay ? self::floating($dt) : \DateTimeImmutable::createFromInterface($dt);
+                    }
                 }
             }
         }
@@ -107,7 +110,9 @@ final class IcsParser
             if ($rdate instanceof DateTimeProperty) {
                 try {
                     foreach ($rdate->getDateTimes($floatingTz) as $dt) {
-                        $rdates[] = $allDay ? self::floating($dt) : \DateTimeImmutable::createFromInterface($dt);
+                        if ($dt instanceof \DateTimeInterface) {
+                            $rdates[] = $allDay ? self::floating($dt) : \DateTimeImmutable::createFromInterface($dt);
+                        }
                     }
                 } catch (\Throwable) {
                     // RDATE;VALUE=PERIOD is not supported; the remaining instances stay valid.
@@ -125,7 +130,14 @@ final class IcsParser
         $updated = null;
         foreach (['LAST-MODIFIED', 'DTSTAMP'] as $property) {
             if ($updated === null && isset($vevent->{$property}) && $vevent->{$property} instanceof DateTimeProperty) {
-                $updated = \DateTimeImmutable::createFromInterface($vevent->{$property}->getDateTime(new \DateTimeZone('UTC')));
+                try {
+                    $date = $vevent->{$property}->getDateTimes(new \DateTimeZone('UTC'))[0] ?? null;
+                    if ($date instanceof \DateTimeInterface) {
+                        $updated = \DateTimeImmutable::createFromInterface($date);
+                    }
+                } catch (InvalidDataException) {
+                    // Invalid optional timestamps fall back to the next property.
+                }
             }
         }
 
@@ -229,7 +241,10 @@ final class IcsParser
 
     private function time(DateTimeProperty $property, bool $allDay, \DateTimeZone $floatingTz): \DateTimeImmutable
     {
-        $dt = $property->getDateTime($floatingTz);
+        $dt = $property->getDateTimes($floatingTz)[0] ?? null;
+        if (!$dt instanceof \DateTimeInterface) {
+            throw new InvalidDataException('The event date is missing or invalid.');
+        }
         return $allDay ? self::floating($dt) : \DateTimeImmutable::createFromInterface($dt);
     }
 

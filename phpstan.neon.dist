@@ -9,6 +9,7 @@ parameters:
     bootstrapFiles:
         - tests/phpstan/bootstrap.php
     stubFiles:
+        - tests/phpstan/VObjectNode.stub
         - tests/phpstan/WP_REST_Request.stub
         - tests/phpstan/wpdb.stub
     scanFiles:

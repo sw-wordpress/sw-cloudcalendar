@@ -8,6 +8,7 @@
 
 ### Other topics
 
+- Update the iCalendar parser and WordPress integration tests for Sabre VObject 5.
 - Keep admin type checks and builds compatible with TypeScript 6, including browser key generation.
 - Add the English user guide, a real initial-state Views screenshot, searchable documentation site, documentation build/deployment workflow and maintenance instructions; exclude documentation from release packages.
 
