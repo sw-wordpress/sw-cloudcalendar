@@ -3,7 +3,7 @@
  * administrator for copying into wp-config.php; it is never sent to the server.
  */
 export function generateEncryptionKey(
-  random: (bytes: Uint8Array) => Uint8Array = (b) => crypto.getRandomValues(b),
+  random: (bytes: Uint8Array<ArrayBuffer>) => Uint8Array = (b) => crypto.getRandomValues(b),
 ): string {
   const bytes = random(new Uint8Array(32));
   let binary = '';
