@@ -10,7 +10,11 @@ describe('encryption key snippet', () => {
 
   it('creates different keys and a ready to paste define()', () => {
     expect(generateEncryptionKey()).not.toBe(generateEncryptionKey());
-    const fixed = generateEncryptionKey((b) => b.fill(255));
+    const fixed = generateEncryptionKey((bytes) => {
+      expect(bytes.buffer).toBeInstanceOf(ArrayBuffer);
+      expect(bytes).toHaveLength(32);
+      return bytes.fill(255);
+    });
     expect(encryptionKeySnippet(fixed)).toBe(`define( 'SW_CALENDAR_ENCRYPTION_KEY', '${fixed}' );`);
   });
 });
