@@ -129,7 +129,7 @@ final class ViewRenderer
             && ($view->preload || ($this->allPublic($sources) && !$this->containsLive($view)));
         // Local adapters may authorize visitors differently even on a public CloudCalendar source.
         $scope = $view->preload && (!$public || $this->containsLive($view)) ? 'user:' . ($userId ?? 0) : 'public';
-        $cacheKey = $cacheable ? $this->cacheKey($view, $sources, $filter, $mode, [$container, $event], $tz, $scope) : '';
+        $cacheKey = $cacheable ? $this->cacheKey($view, $sources, $filter, $mode, [$container, $event], $tz, $scope, $range) : '';
         if ($cacheable) {
             $hit = $this->cache->get($cacheKey);
             $cached = $hit === null ? null : RenderResult::fromCache($hit, $public);
@@ -198,8 +198,8 @@ final class ViewRenderer
         if ($filter->legend === true) {
             $html = $this->legend($sources, $view) . $html;
         }
-        $html = (new CalendarControls($this->urls, $this->settings->labels))->render($view, $mode, $filter, $found['total'], $range->month?->format('Y-m')) . $html;
-        $wrapped = $this->wrap($view, $mode, [$container, $event], $html, $filter, $range);
+        $html = (new CalendarControls($this->urls, $this->settings->labels))->render($view, $mode, $filter, $found['total']) . $html;
+        $wrapped = $this->wrap($view, $mode, [$container, $event], $html, $filter);
         $result = new RenderResult(
             RenderResult::OK,
             $wrapped,
@@ -531,17 +531,14 @@ final class ViewRenderer
     /**
      * @param list<ResolvedTemplate> $templates
      */
-    private function wrap(CalendarView $view, DisplayMode $mode, array $templates, string $html, RenderFilter $filter, QueryRange $range): string
+    private function wrap(CalendarView $view, DisplayMode $mode, array $templates, string $html, RenderFilter $filter): string
     {
         $classes = ['swc-calendar', 'swc-view-' . $view->id, 'swc-mode-' . $mode->value];
         foreach ($templates as $template) {
             $classes[] = $template->scopeClass;
         }
-        $state = $filter->toArray();
-        if ($range->month !== null) {
-            $state['month'] = $range->month->format('Y-m');
-        }
-        $state = array_filter($state, static fn ($value): bool => $value !== null && $value !== []);
+        // The grid's computed month is a display anchor. Only a selected month belongs in the filters.
+        $state = array_filter($filter->toArray(), static fn ($value): bool => $value !== null && $value !== []);
         $classes[] = 'swc-columns-' . ($filter->columns ?? 1);
         if ($filter->colorTitles === true) {
             $classes[] = 'swc-color-titles';
@@ -574,7 +571,7 @@ final class ViewRenderer
      * @param array<int, Source>     $sources
      * @param list<ResolvedTemplate> $templates
      */
-    private function cacheKey(CalendarView $view, array $sources, RenderFilter $filter, DisplayMode $mode, array $templates, \DateTimeZone $tz, string $scope): string
+    private function cacheKey(CalendarView $view, array $sources, RenderFilter $filter, DisplayMode $mode, array $templates, \DateTimeZone $tz, string $scope, QueryRange $range): string
     {
         $revisions = [];
         foreach ($sources as $source) {
@@ -596,6 +593,9 @@ final class ViewRenderer
             'scope' => $scope,
             'engine' => TemplateCompiler::ENGINE_VERSION,
         ];
+        if ($filter->month === null && $range->month !== null) {
+            $parts['grid_month'] = $range->month->format('Y-m');
+        }
         return 'swc:html:' . hash('sha256', (string) json_encode($parts));
     }
 

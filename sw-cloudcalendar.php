@@ -4,7 +4,7 @@
  * Update URI:        https://github.com/sw-wordpress/sw-cloudcalendar
  * Plugin URI:        https://example.com/sw-cloudcalendar
  * Description:       Read-only integration of Google Calendar, Microsoft 365 and ICS feeds: local synchronisation, flexible templates, protected attachments.
- * Version:           0.8.0
+ * Version:           1.0.0
  * Requires at least: 6.5
  * Requires PHP:      8.2
  * Author:            Stefan Warnat
@@ -19,7 +19,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SW_CALENDAR_VERSION', '0.8.0' );
+define( 'SW_CALENDAR_VERSION', '1.0.0' );
 define( 'SW_CALENDAR_FILE', __FILE__ );
 define( 'SW_CALENDAR_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SW_CALENDAR_URL', plugin_dir_url( __FILE__ ) );

@@ -4,6 +4,7 @@ import type de from './de';
 const en: typeof de = {
   app: {
     skipToContent: 'Skip to content',
+    footerSlogan: 'Open source by Stefan Warnat – free to use, free to change, better together.',
     mainNavigation: 'Main navigation',
     switchToDark: 'Switch to dark theme',
     switchToLight: 'Switch to light theme',

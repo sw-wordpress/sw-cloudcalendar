@@ -6,6 +6,8 @@
 const de = {
   app: {
     skipToContent: 'Zum Inhalt springen',
+    footerSlogan:
+      'Open Source von Stefan Warnat – frei nutzbar, frei veränderbar, gemeinsam besser.',
     mainNavigation: 'Hauptnavigation',
     switchToDark: 'Dunkles Design aktivieren',
     switchToLight: 'Helles Design aktivieren',

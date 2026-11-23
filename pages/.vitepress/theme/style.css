@@ -1,0 +1,22 @@
+/* Independent of the default theme's sidebar-only footer suppression. */
+.docs-footer {
+  border-top: 1px solid var(--vp-c-gutter);
+  padding: 32px 24px;
+  color: var(--vp-c-text-2);
+  background: var(--vp-c-bg);
+  font-size: 14px;
+  line-height: 24px;
+  text-align: center;
+}
+
+@media (min-width: 960px) {
+  .Layout:has(.VPContent.has-sidebar) .docs-footer {
+    margin-left: var(--vp-sidebar-width);
+  }
+}
+
+@media (min-width: 1440px) {
+  .Layout:has(.VPContent.has-sidebar) .docs-footer {
+    margin-left: calc((100vw - var(--vp-layout-max-width)) / 2 + var(--vp-sidebar-width));
+  }
+}

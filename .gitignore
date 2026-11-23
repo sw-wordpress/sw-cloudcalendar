@@ -18,3 +18,9 @@
 # Local analysis output
 /coverage/
 /.scannerwork/
+
+# Documentation sources are built in an external temporary directory.
+/pages/.vitepress/cache/
+/pages/.vitepress/dist/
+/pages/node_modules/
+/pages/.vitepress/node_modules/

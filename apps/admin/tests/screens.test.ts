@@ -1084,6 +1084,19 @@ describe('admin actions against REST contracts', () => {
       expect(document.activeElement?.id).toBe('swc-main');
     });
   });
+  it('shows the author slogan below the main content, also without access', async () => {
+    await render('/views', async (wrapper) => {
+      expect(wrapper.get('.swc-main > .swc-footer').text()).toContain('Stefan Warnat');
+    });
+    window.swcloudcalendarConfig!.capabilities = [];
+    try {
+      await render('/', async (wrapper) => {
+        expect(wrapper.find('.swc-main > .swc-footer').exists()).toBe(true);
+      });
+    } finally {
+      window.swcloudcalendarConfig!.capabilities = ['manage_sw_calendar'];
+    }
+  });
   it('renders an access error without mounting admin data for a user without capabilities', async () => {
     window.swcloudcalendarConfig!.capabilities = [];
     try {

@@ -112,6 +112,69 @@ final class CalendarControlsTest extends SWC_TestCase {
 		$this->assertStringContainsString( 'name="page_id" value="42"', $html );
 	}
 
+	/** @dataProvider mode_switch_round_trips */
+	public function test_mode_switch_round_trip_restores_the_list_events( bool $ajax, string $date_filter, string $first_day ): void {
+		$start = new DateTimeImmutable( '2026-10-22T10:00:00Z' );
+		$events = array();
+		for ( $i = 0; $i < 16; ++$i ) {
+			$at = $start->modify( '+' . $i . ' days' );
+			$events[] = ( new LocalEvent( (string) $i, 'cal', 'Choir ' . $at->format( 'm-d' ), $at, $at->modify( '+1 hour' ) ) )->occurrence( $this->source_id );
+		}
+		$events[] = ( new LocalEvent( 'other', 'cal', 'Sports meeting', $start, $start->modify( '+1 hour' ) ) )->occurrence( $this->source_id );
+		$this->services->occurrences()->replaceSnapshot( $this->source_id, $events, 2 );
+
+		$shortcode = '[sw_calendar id="' . $this->view_id . '" limit="10"' . $date_filter . ']';
+		$_GET = array( 'swc_view' => $this->view_id, 'swc_search' => 'Choir' );
+		try {
+			$initial = do_shortcode( $shortcode );
+			$month = $this->switch_mode( $initial, 'month', $ajax, $shortcode );
+			$list = $this->switch_mode( $month, 'list', $ajax, $shortcode );
+		} finally {
+			$_GET = array();
+		}
+
+		$this->assertStringContainsString( 'swc-mode-month', $month );
+		$this->assertStringContainsString( 'swc-mode-list', $list );
+		$this->assertStringContainsString( 'name="swc_search" value="Choir"', $list );
+		$this->assertStringNotContainsString( 'Sports meeting', $month );
+		preg_match_all( '/Choir \d{2}-\d{2}/', $initial, $initial_titles );
+		preg_match_all( '/Choir \d{2}-\d{2}/', $list, $list_titles );
+		$this->assertCount( 10, $initial_titles[0] );
+		$this->assertSame( 'Choir ' . $first_day, $initial_titles[0][0] );
+		$this->assertSame( $initial_titles[0], $list_titles[0] );
+	}
+
+	public static function mode_switch_round_trips(): array {
+		return array(
+			'AJAX upcoming' => array( true, '', '10-25' ),
+			'plain links upcoming' => array( false, '', '10-25' ),
+			'AJAX explicit month' => array( true, ' month="2026-10"', '10-22' ),
+			'plain links explicit month' => array( false, ' month="2026-10"', '10-22' ),
+			'AJAX explicit date range' => array( true, ' start="2026-10-23" end="2026-11-03"', '10-23' ),
+			'plain links explicit date range' => array( false, ' start="2026-10-23" end="2026-11-03"', '10-23' ),
+		);
+	}
+
+	private function switch_mode( string $html, string $mode, bool $ajax, string $shortcode ): string {
+		$document = new DOMDocument();
+		$document->loadHTML( $html, LIBXML_NOERROR | LIBXML_NOWARNING );
+		$xpath = new DOMXPath( $document );
+		$link = $xpath->query( '//a[@data-swc-switch="' . $mode . '"]' )->item( 0 );
+		$this->assertInstanceOf( DOMElement::class, $link );
+		if ( $ajax ) {
+			$calendar = $xpath->query( '//*[@data-swc-state]' )->item( 0 );
+			$this->assertInstanceOf( DOMElement::class, $calendar );
+			$state = json_decode( $calendar->getAttribute( 'data-swc-state' ), true, 512, JSON_THROW_ON_ERROR );
+			$params = array_replace( $state, array( 'view' => $link->getAttribute( 'data-swc-switch' ), 'page' => 1 ) );
+			$response = $this->rest( 'GET', '/views/' . $this->view_id . '/render', $params );
+			$this->assertSame( 200, $response->get_status() );
+			return $response->get_data()['html'];
+		}
+
+		parse_str( (string) wp_parse_url( $link->getAttribute( 'href' ), PHP_URL_QUERY ), $_GET );
+		return do_shortcode( $shortcode );
+	}
+
 	public function test_cached_controls_keep_the_correct_embedding_page(): void {
 		$urls = $this->services->urls();
 		$renderer = $this->services->renderer();

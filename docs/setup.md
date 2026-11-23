@@ -48,6 +48,8 @@ All filter parameters: `source`, `view`, `limit`, `days`, `start`, `end`, `past`
 - Filters can only narrow a view, never extend it.
 - Navigation: month view "Previous month"/"Next month", list and cards "Earlier events"/"More events" (earlier =
   events that already ended before the display range). Can be disabled per view and overridden with `navigation`.
+- Switching from the month grid's automatic month to list or cards restores the configured date range. An explicitly
+  selected month filters both list and cards.
 - By default, views with non-public sources are loaded via JavaScript and never written into (possibly publicly cached) page
   HTML (D-04).
 

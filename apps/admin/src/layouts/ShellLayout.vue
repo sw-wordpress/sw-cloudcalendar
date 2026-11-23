@@ -96,6 +96,7 @@ const transitionKey = computed(() => String(route.name ?? ''));
           <component :is="Component" :key="transitionKey" />
         </transition>
       </router-view>
+      <footer class="swc-footer">{{ t('app.footerSlogan') }}</footer>
     </main>
 
     <div class="swc-sr-only" role="status" aria-live="polite" aria-atomic="true">
@@ -278,6 +279,12 @@ const transitionKey = computed(() => String(route.name ?? ''));
   min-width: 0;
   padding: 28px clamp(16px, 3vw, 40px) 48px;
   outline: none;
+}
+.swc-footer {
+  margin-top: 32px;
+  color: var(--swc-muted);
+  font-size: 12px;
+  text-align: center;
 }
 .swc-main > * {
   max-width: 1320px;
